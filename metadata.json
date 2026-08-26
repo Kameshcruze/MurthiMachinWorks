@@ -1,0 +1,6 @@
+{
+  "name": "Murthi Machine Works",
+  "description": "Industrial machine tools and precision engineering machinery e-commerce catalog with live product management, WhatsApp enquiry, and admin dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
