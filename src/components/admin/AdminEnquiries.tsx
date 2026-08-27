@@ -39,8 +39,14 @@ export const AdminEnquiries: React.FC = () => {
 
   useEffect(() => {
     loadData();
-    window.addEventListener(DATA_CHANGE_EVENT, loadData);
-    return () => window.removeEventListener(DATA_CHANGE_EVENT, loadData);
+    const handleDataChange = (e: any) => {
+      const entity = e.detail?.entity;
+      if (!entity || entity === 'enquiries' || entity === 'all') {
+        loadData();
+      }
+    };
+    window.addEventListener(DATA_CHANGE_EVENT, handleDataChange);
+    return () => window.removeEventListener(DATA_CHANGE_EVENT, handleDataChange);
   }, []);
 
   const handleStatusChange = async (enquiryId: string, status: any) => {

@@ -86,8 +86,14 @@ export const AdminTeam: React.FC = () => {
 
   useEffect(() => {
     loadEmployees();
-    window.addEventListener(DATA_CHANGE_EVENT, loadEmployees);
-    return () => window.removeEventListener(DATA_CHANGE_EVENT, loadEmployees);
+    const handleDataChange = (e: any) => {
+      const entity = e.detail?.entity;
+      if (!entity || entity === 'employees' || entity === 'all') {
+        loadEmployees();
+      }
+    };
+    window.addEventListener(DATA_CHANGE_EVENT, handleDataChange);
+    return () => window.removeEventListener(DATA_CHANGE_EVENT, handleDataChange);
   }, []);
 
   const toggleRevealPassword = (id: string) => {

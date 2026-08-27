@@ -80,8 +80,14 @@ export const AdminProducts: React.FC = () => {
 
   useEffect(() => {
     loadData();
-    window.addEventListener(DATA_CHANGE_EVENT, loadData);
-    return () => window.removeEventListener(DATA_CHANGE_EVENT, loadData);
+    const handleDataChange = (e: any) => {
+      const entity = e.detail?.entity;
+      if (!entity || entity === 'products' || entity === 'categories' || entity === 'all') {
+        loadData();
+      }
+    };
+    window.addEventListener(DATA_CHANGE_EVENT, handleDataChange);
+    return () => window.removeEventListener(DATA_CHANGE_EVENT, handleDataChange);
   }, []);
 
   const openCreateModal = () => {

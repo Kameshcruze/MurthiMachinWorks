@@ -45,8 +45,8 @@ export const ProductsPage: React.FC = () => {
     }
   }, [params.categorySlug]);
 
-  const loadData = async () => {
-    setIsLoading(true);
+  const loadData = async (showLoading = false) => {
+    if (showLoading) setIsLoading(true);
     try {
       const [prods, cats] = await Promise.all([
         dataService.getProducts({ activeOnly: true }),
@@ -62,9 +62,15 @@ export const ProductsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    loadData();
-    window.addEventListener(DATA_CHANGE_EVENT, loadData);
-    return () => window.removeEventListener(DATA_CHANGE_EVENT, loadData);
+    loadData(true);
+    const handleDataChange = (e: any) => {
+      const entity = e.detail?.entity;
+      if (!entity || entity === 'products' || entity === 'categories' || entity === 'all') {
+        loadData(false);
+      }
+    };
+    window.addEventListener(DATA_CHANGE_EVENT, handleDataChange);
+    return () => window.removeEventListener(DATA_CHANGE_EVENT, handleDataChange);
   }, []);
 
   // Compute available brands

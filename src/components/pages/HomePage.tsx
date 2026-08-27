@@ -31,7 +31,8 @@ export const HomePage: React.FC = () => {
   const [selectedCategoryTab, setSelectedCategoryTab] = useState<string>('all');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const loadData = async () => {
+  const loadData = async (showLoading = false) => {
+    if (showLoading) setIsLoading(true);
     try {
       const [prods, cats] = await Promise.all([
         dataService.getProducts({ activeOnly: true }),
@@ -47,9 +48,15 @@ export const HomePage: React.FC = () => {
   };
 
   useEffect(() => {
-    loadData();
-    window.addEventListener(DATA_CHANGE_EVENT, loadData);
-    return () => window.removeEventListener(DATA_CHANGE_EVENT, loadData);
+    loadData(true);
+    const handleDataChange = (e: any) => {
+      const entity = e.detail?.entity;
+      if (!entity || entity === 'products' || entity === 'categories' || entity === 'all') {
+        loadData(false);
+      }
+    };
+    window.addEventListener(DATA_CHANGE_EVENT, handleDataChange);
+    return () => window.removeEventListener(DATA_CHANGE_EVENT, handleDataChange);
   }, []);
 
   const cleanWhatsAppNumber = (settings.whatsapp || '+91 95852 62522').replace(/[^0-9]/g, '');

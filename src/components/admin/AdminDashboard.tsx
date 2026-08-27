@@ -68,8 +68,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
 
   useEffect(() => {
     loadData();
-    window.addEventListener(DATA_CHANGE_EVENT, loadData);
-    return () => window.removeEventListener(DATA_CHANGE_EVENT, loadData);
+    const handleDataChange = () => {
+      loadData();
+    };
+    window.addEventListener(DATA_CHANGE_EVENT, handleDataChange);
+    return () => window.removeEventListener(DATA_CHANGE_EVENT, handleDataChange);
   }, []);
 
   const pendingEnquiries = enquiries.filter(e => e.status === 'new' || e.status === 'in_review');
@@ -113,9 +116,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
           <h2 className="font-heading font-bold text-2xl text-white">
             Operations & Machinery Control
           </h2>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
-            Logged in as <strong className="text-amber-400">{user?.name || 'Administrator'}</strong> (ID: {user?.id || 'emp-101'}) from IP <strong className="text-emerald-400 font-mono">{currentIp}</strong>. All catalog additions, modifications, and deletions are audit-logged in real-time.
-          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">

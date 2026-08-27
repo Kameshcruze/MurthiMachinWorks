@@ -15,10 +15,18 @@ const STORAGE_KEYS = {
 
 // Event bus for live synchronization across components
 export const DATA_CHANGE_EVENT = 'mmw_data_changed';
+let notifyTimer: any = null;
+const pendingChangedEntities = new Set<string>();
+
 export function notifyDataChanged(entity: string) {
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent(DATA_CHANGE_EVENT, { detail: { entity } }));
-  }
+  if (typeof window === 'undefined') return;
+  pendingChangedEntities.add(entity);
+  if (notifyTimer) clearTimeout(notifyTimer);
+  notifyTimer = setTimeout(() => {
+    const list = Array.from(pendingChangedEntities);
+    pendingChangedEntities.clear();
+    window.dispatchEvent(new CustomEvent(DATA_CHANGE_EVENT, { detail: { entity, entities: list } }));
+  }, 60);
 }
 
 // ---------------------------------------------
@@ -117,9 +125,9 @@ function getLocalProducts(): Product[] {
   }
 }
 
-function saveLocalProducts(products: Product[]): void {
+function saveLocalProducts(products: Product[], notify = true): void {
   localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
-  notifyDataChanged('products');
+  if (notify) notifyDataChanged('products');
 }
 
 function getLocalCategories(): Category[] {
@@ -135,9 +143,9 @@ function getLocalCategories(): Category[] {
   }
 }
 
-function saveLocalCategories(cats: Category[]): void {
+function saveLocalCategories(cats: Category[], notify = true): void {
   localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(cats));
-  notifyDataChanged('categories');
+  if (notify) notifyDataChanged('categories');
 }
 
 function getLocalEnquiries(): Enquiry[] {
@@ -153,9 +161,9 @@ function getLocalEnquiries(): Enquiry[] {
   }
 }
 
-function saveLocalEnquiries(enqs: Enquiry[]): void {
+function saveLocalEnquiries(enqs: Enquiry[], notify = true): void {
   localStorage.setItem(STORAGE_KEYS.ENQUIRIES, JSON.stringify(enqs));
-  notifyDataChanged('enquiries');
+  if (notify) notifyDataChanged('enquiries');
 }
 
 function getLocalSettings(): SiteSettings {
@@ -184,9 +192,9 @@ function getLocalSettings(): SiteSettings {
   }
 }
 
-function saveLocalSettings(settings: SiteSettings): void {
+function saveLocalSettings(settings: SiteSettings, notify = true): void {
   localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
-  notifyDataChanged('settings');
+  if (notify) notifyDataChanged('settings');
 }
 
 function getLocalAuditLogs(): AuditLog[] {
@@ -202,9 +210,9 @@ function getLocalAuditLogs(): AuditLog[] {
   }
 }
 
-function saveLocalAuditLogs(logs: AuditLog[]): void {
+function saveLocalAuditLogs(logs: AuditLog[], notify = true): void {
   localStorage.setItem(STORAGE_KEYS.AUDIT_LOGS, JSON.stringify(logs));
-  notifyDataChanged('audit_logs');
+  if (notify) notifyDataChanged('audit_logs');
 }
 
 function getLocalEmployees(): EmployeeUser[] {
@@ -220,9 +228,9 @@ function getLocalEmployees(): EmployeeUser[] {
   }
 }
 
-function saveLocalEmployees(emps: EmployeeUser[]): void {
+function saveLocalEmployees(emps: EmployeeUser[], notify = true): void {
   localStorage.setItem(STORAGE_KEYS.EMPLOYEES, JSON.stringify(emps));
-  notifyDataChanged('employees');
+  if (notify) notifyDataChanged('employees');
 }
 
 // ---------------------------------------------
@@ -492,7 +500,7 @@ export const dataService = {
 
         if (!error && data) {
           if (data.length > 0) {
-            saveLocalEmployees(data);
+            saveLocalEmployees(data, false);
             return data;
           } else {
             // Seed initial employees if table was just created
@@ -1145,7 +1153,7 @@ export const dataService = {
             ...c,
             product_count: products.filter(p => p.category_id === c.id || p.category_id === c.slug).length
           }));
-          saveLocalCategories(list);
+          saveLocalCategories(list, false);
           return list;
         }
       } catch (err) {
@@ -1430,7 +1438,7 @@ export const dataService = {
           }
           if (needsUpdate) {
             supabase.from('site_settings').upsert([data]).then(() => {});
-            saveLocalSettings(data);
+            saveLocalSettings(data, false);
           }
           return data;
         }

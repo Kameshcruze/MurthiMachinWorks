@@ -30,8 +30,8 @@ export const AdminCategories: React.FC = () => {
     is_active: true
   });
 
-  const loadData = async () => {
-    setIsLoading(true);
+  const loadData = async (showLoading = false) => {
+    if (showLoading) setIsLoading(true);
     try {
       const cats = await dataService.getCategories();
       setCategories(cats);
@@ -43,9 +43,15 @@ export const AdminCategories: React.FC = () => {
   };
 
   useEffect(() => {
-    loadData();
-    window.addEventListener(DATA_CHANGE_EVENT, loadData);
-    return () => window.removeEventListener(DATA_CHANGE_EVENT, loadData);
+    loadData(true);
+    const handleDataChange = (e: any) => {
+      const entity = e.detail?.entity;
+      if (!entity || entity === 'categories' || entity === 'products' || entity === 'all') {
+        loadData(false);
+      }
+    };
+    window.addEventListener(DATA_CHANGE_EVENT, handleDataChange);
+    return () => window.removeEventListener(DATA_CHANGE_EVENT, handleDataChange);
   }, []);
 
   const handleStartCreate = () => {

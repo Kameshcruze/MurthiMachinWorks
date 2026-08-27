@@ -83,8 +83,14 @@ export const AdminAuditLogs: React.FC = () => {
   useEffect(() => {
     if (isAdmin) {
       loadLogs();
-      window.addEventListener(DATA_CHANGE_EVENT, loadLogs);
-      return () => window.removeEventListener(DATA_CHANGE_EVENT, loadLogs);
+      const handleDataChange = (e: any) => {
+        const entity = e.detail?.entity;
+        if (!entity || entity === 'audit_logs' || entity === 'all') {
+          loadLogs();
+        }
+      };
+      window.addEventListener(DATA_CHANGE_EVENT, handleDataChange);
+      return () => window.removeEventListener(DATA_CHANGE_EVENT, handleDataChange);
     } else {
       setIsLoading(false);
     }
