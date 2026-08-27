@@ -4,6 +4,7 @@ import { dataService, DATA_CHANGE_EVENT } from '../../services/dataService';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
 import { getClientIp } from '../../utils/ipService';
+import { isSupabaseConfigured } from '../../services/supabase';
 import {
   Shield,
   Activity,
@@ -28,6 +29,7 @@ import {
   ArrowRight,
   RefreshCw,
   Eye,
+  Cloud,
   X
 } from 'lucide-react';
 
@@ -246,16 +248,22 @@ export const AdminAuditLogs: React.FC = () => {
             <Shield className="w-6 h-6" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h2 className="font-heading font-bold text-lg sm:text-xl text-white">
                 Enterprise Product & Access Audit Log
               </h2>
-              <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
-                LIVE CAPTURE ACTIVE
-              </span>
+              {isSupabaseConfigured() ? (
+                <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                  <Cloud className="w-3 h-3" /> SUPABASE CLOUD ACTIVE
+                </span>
+              ) : (
+                <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
+                  LIVE CAPTURE ACTIVE
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-              Every newly added, updated, duplicated, or deleted machinery item is permanently stamped with the exact employee ID, name, timestamp, and network IP address.
+              Every newly added, updated, or deleted machinery product is permanently recorded in Supabase PostgreSQL with the employee ID, login user name, timestamp, and network IP address. All portal users can view these audit logs from any device.
             </p>
           </div>
         </div>

@@ -108,15 +108,51 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 8. Enable Row Level Security (RLS)
+-- 8. Create Admin Users / Team Accounts Table
+CREATE TABLE IF NOT EXISTS public.admin_users (
+    id TEXT PRIMARY KEY DEFAULT ('emp-' || uuid_generate_v4()::text),
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL DEFAULT 'user123',
+    role TEXT DEFAULT 'editor' CHECK (role IN ('super_admin', 'manager', 'editor', 'viewer')),
+    role_label TEXT DEFAULT 'Catalog Specialist',
+    department TEXT DEFAULT 'Catalog & Operations',
+    phone TEXT,
+    is_active BOOLEAN DEFAULT true,
+    last_login TIMESTAMPTZ,
+    last_ip TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 9. Create Audit Logs Table (Live IP & Employee Tracking)
+CREATE TABLE IF NOT EXISTS public.audit_logs (
+    id TEXT PRIMARY KEY DEFAULT ('log-' || uuid_generate_v4()::text),
+    action TEXT NOT NULL CHECK (action IN ('CREATE', 'UPDATE', 'DELETE', 'DUPLICATE', 'STATUS_CHANGE')),
+    target_type TEXT NOT NULL CHECK (target_type IN ('PRODUCT', 'CATEGORY', 'ENQUIRY', 'SETTINGS', 'USER')),
+    target_id TEXT,
+    target_name TEXT,
+    user_id TEXT,
+    user_email TEXT,
+    user_name TEXT,
+    user_role TEXT,
+    ip_address TEXT,
+    details TEXT,
+    changes JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 10. Enable Row Level Security (RLS)
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.product_images ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.enquiries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.enquiry_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
--- 9. Drop previous restrictive policies if they exist
+-- 11. Drop previous restrictive policies if they exist
 DROP POLICY IF EXISTS "Allow public read active categories" ON public.categories;
 DROP POLICY IF EXISTS "Allow public read active products" ON public.products;
 DROP POLICY IF EXISTS "Allow public read product images" ON public.product_images;
@@ -129,16 +165,73 @@ DROP POLICY IF EXISTS "Allow authenticated full access to product images" ON pub
 DROP POLICY IF EXISTS "Allow authenticated full access to enquiries" ON public.enquiries;
 DROP POLICY IF EXISTS "Allow authenticated full access to enquiry items" ON public.enquiry_items;
 DROP POLICY IF EXISTS "Allow authenticated full access to site settings" ON public.site_settings;
+DROP POLICY IF EXISTS "Public full access admin_users" ON public.admin_users;
+DROP POLICY IF EXISTS "Public full access audit_logs" ON public.audit_logs;
 
--- 10. Create Permissive Policies for Web & Admin
+-- 12. Create Permissive Policies for Web & Admin
 CREATE POLICY "Public full access categories" ON public.categories FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access products" ON public.products FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access product_images" ON public.product_images FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access enquiries" ON public.enquiries FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access enquiry_items" ON public.enquiry_items FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public full access site_settings" ON public.site_settings FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public full access admin_users" ON public.admin_users FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public full access audit_logs" ON public.audit_logs FOR ALL USING (true) WITH CHECK (true);
 
--- 11. Initial Data Seeding (Categories)
+-- 13. Initial Team Accounts Seeding
+INSERT INTO public.admin_users (id, name, email, password, role, role_label, department, phone, is_active, last_ip)
+VALUES
+(
+    'emp-101',
+    'Murthi Ramanathan',
+    'admin@murthimachineworks.com',
+    'admin123',
+    'super_admin',
+    'Managing Director & Super Admin',
+    'Executive Management',
+    '+91 95852 62522',
+    true,
+    '117.203.14.88'
+),
+(
+    'emp-102',
+    'K. Sundaramoorthy',
+    'production@murthimachineworks.com',
+    'plant123',
+    'manager',
+    'Plant Operations Manager',
+    'Manufacturing & Heavy Assembly',
+    '+91 95852 62522',
+    true,
+    '117.203.14.88'
+),
+(
+    'emp-103',
+    'R. Karthikeyan',
+    'catalog@murthimachineworks.com',
+    'editor123',
+    'editor',
+    'Catalog Specialist',
+    'Digital Catalog & Technical Specs',
+    '+91 95852 62522',
+    true,
+    '117.203.14.88'
+),
+(
+    'emp-104',
+    'V. Selvaraj',
+    'sales@murthimachineworks.com',
+    'sales123',
+    'viewer',
+    'Industrial Sales Engineer',
+    'Commercial Quotes & Customer RFQs',
+    '+91 95852 62522',
+    true,
+    '117.203.14.88'
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- 14. Initial Data Seeding (Categories)
 INSERT INTO public.categories (id, name, slug, description, image_url, is_active, sort_order)
 VALUES 
 ('MMW-lathe', 'Lathe Machines', 'lathe-machines', 'Heavy duty all-geared, medium duty, and precision tool room lathe machines.', 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80', true, 1),
@@ -243,13 +336,60 @@ VALUES
 )
 ON CONFLICT (id) DO NOTHING;
 
--- 14. Initial Product Images Seeding
+-- 15. Initial Product Images Seeding
 INSERT INTO public.product_images (id, product_id, image_url, sort_order, is_primary, caption)
 VALUES
 ('img-1-1', 'prod-1', 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=85', 1, true, 'Front view'),
 ('img-2-1', 'prod-2', 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1200&q=85', 1, true, 'Universal milling machine'),
 ('img-3-1', 'prod-3', 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=85', 1, true, 'VMC-850 center'),
 ('img-4-1', 'prod-4', 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=85', 1, true, 'Radial arm drill')
+ON CONFLICT (id) DO NOTHING;
+
+-- 16. Initial Audit Logs Seeding
+INSERT INTO public.audit_logs (id, action, target_type, target_id, target_name, user_id, user_email, user_name, user_role, ip_address, details, created_at)
+VALUES
+(
+    'log-init-1',
+    'CREATE',
+    'PRODUCT',
+    'prod-1',
+    'Heavy Duty All-Geared Precision Lathe Machine',
+    'emp-101',
+    'admin@murthimachineworks.com',
+    'Murthi Ramanathan',
+    'Managing Director & Super Admin',
+    '117.203.14.88',
+    'Provisioned heavy-duty lathe master catalog specifications and base pricing.',
+    NOW() - INTERVAL '2 days'
+),
+(
+    'log-init-2',
+    'UPDATE',
+    'PRODUCT',
+    'prod-2',
+    'Universal Heavy Duty Milling Machine with DRO',
+    'emp-103',
+    'catalog@murthimachineworks.com',
+    'R. Karthikeyan',
+    'Catalog Specialist',
+    '117.203.14.88',
+    'Updated technical specifications with 3-Axis DRO and 7.5 kW motor rating.',
+    NOW() - INTERVAL '1 day'
+),
+(
+    'log-init-3',
+    'CREATE',
+    'PRODUCT',
+    'prod-3',
+    'Precision CNC Vertical Machining Center VMC-850',
+    'emp-102',
+    'production@murthimachineworks.com',
+    'K. Sundaramoorthy',
+    'Plant Operations Manager',
+    '117.203.14.88',
+    'Created new CNC Vertical Machining Center model VMC-850 with Fanuc 0i-MF controller.',
+    NOW() - INTERVAL '5 hours'
+)
 ON CONFLICT (id) DO NOTHING;
 `;
 

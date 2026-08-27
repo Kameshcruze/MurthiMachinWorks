@@ -22,7 +22,8 @@ export type PageRoute =
   | 'admin-audit-logs'
   | 'admin-team'
   | 'admin-settings'
-  | 'admin-sql-setup';
+  | 'admin-sql-setup'
+  | 'admin-database';
 
 interface NavigationContextType {
   currentPage: PageRoute;
@@ -58,7 +59,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       else if (sub === 'audit-logs' || sub === 'audit') setCurrentPage('admin-audit-logs');
       else if (sub === 'team' || sub === 'employees' || sub === 'users') setCurrentPage('admin-team');
       else if (sub === 'settings') setCurrentPage('admin-settings');
-      else if (sub === 'sql-setup') setCurrentPage('admin-sql-setup');
+      else if (sub === 'sql-setup' || sub === 'database' || sub === 'supabase') setCurrentPage('admin-sql-setup');
       else setCurrentPage('admin-dashboard');
       return;
     }
@@ -114,6 +115,20 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       case 'admin/dashboard':
         setCurrentPage('admin-dashboard');
         break;
+      case 'admin/sql-setup':
+      case 'admin/database':
+      case 'admin/supabase':
+        setCurrentPage('admin-sql-setup');
+        break;
+      case 'admin/audit-logs':
+      case 'admin/audit':
+        setCurrentPage('admin-audit-logs');
+        break;
+      case 'admin/team':
+      case 'admin/employees':
+      case 'admin/users':
+        setCurrentPage('admin-team');
+        break;
       default:
         setCurrentPage('home');
         break;
@@ -159,7 +174,10 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     else if (page === 'admin-audit-logs') hash = 'admin/audit-logs';
     else if (page === 'admin-team') hash = 'admin/team';
     else if (page === 'admin-settings') hash = 'admin/settings';
-    else if (page === 'admin-sql-setup') hash = 'admin/sql-setup';
+    else if (page === 'admin-sql-setup' || page === 'admin-database') hash = 'admin/sql-setup';
+    else if (typeof page === 'string' && (page as string).startsWith('admin-')) {
+      hash = `admin/${(page as string).replace('admin-', '')}`;
+    }
 
     window.location.hash = hash;
     window.scrollTo({ top: 0, behavior: 'smooth' });

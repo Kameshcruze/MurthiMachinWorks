@@ -82,7 +82,7 @@ export const AdminDatabaseSetup: React.FC = () => {
       if (res.success) {
         showToast('Seeding Complete', res.message, 'success');
         setTestStatus('success');
-        setTestMessage('Supabase database populated with all machine tools and categories.');
+        setTestMessage('Supabase database populated with all machine tools, categories, team logins, and audit logs.');
       } else {
         showToast('Seeding Issue', res.message, 'warning');
         setTestStatus('error');

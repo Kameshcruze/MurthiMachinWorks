@@ -88,10 +88,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
-    // 2. Check Team Employee Accounts Database
+    // 2. Check Team Employee Accounts Database (Direct Supabase query first for instant multi-device sync)
     try {
-      const employees = await dataService.getEmployees();
-      const matchedEmp = employees.find(e => e.email.toLowerCase() === cleanEmail);
+      let matchedEmp: EmployeeUser | undefined;
+
+      if (supabase && isSupabaseConfigured()) {
+        try {
+          const { data: cloudEmp, error: cloudErr } = await supabase
+            .from('admin_users')
+            .select('*')
+            .ilike('email', cleanEmail)
+            .maybeSingle();
+
+          if (!cloudErr && cloudEmp) {
+            matchedEmp = cloudEmp;
+          }
+        } catch (cloudFetchErr) {
+          console.warn('Direct Supabase employee lookup failed, checking local:', cloudFetchErr);
+        }
+      }
+
+      if (!matchedEmp) {
+        const employees = await dataService.getEmployees();
+        matchedEmp = employees.find(e => e.email.toLowerCase() === cleanEmail);
+      }
 
       if (matchedEmp) {
         if (!matchedEmp.is_active) {

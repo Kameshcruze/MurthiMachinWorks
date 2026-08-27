@@ -51,7 +51,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'audit-logs', label: 'Audit Logs (IP & User)', icon: Activity, highlight: true },
     { id: 'team', label: 'Employee Access & Roles', icon: Users },
     { id: 'settings', label: 'Website Settings', icon: Settings },
-    { id: 'database', label: 'Supabase SQL Setup', icon: Database },
+    { id: 'sql-setup', label: 'Supabase SQL Setup', icon: Database },
   ];
 
   return (
@@ -88,7 +88,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         <nav className="p-3 space-y-1.5 flex-1 overflow-y-auto">
           {navItems.map(item => {
             const Icon = item.icon;
-            const isActive = activeSection === item.id;
+            const isActive = activeSection === item.id || 
+              (item.id === 'sql-setup' && (activeSection === 'database' || activeSection === 'supabase')) ||
+              (item.id === 'database' && activeSection === 'sql-setup');
             return (
               <button
                 key={item.id}

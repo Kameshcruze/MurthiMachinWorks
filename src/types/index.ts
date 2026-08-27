@@ -136,10 +136,11 @@ export interface AdminUser {
   id: string;
   email: string;
   name: string;
-  role: 'super_admin' | 'admin' | 'manager' | 'editor' | 'sales';
+  role: 'super_admin' | 'admin' | 'manager' | 'editor' | 'sales' | 'viewer';
   department?: string;
   user_metadata?: any;
   created_at?: string;
+  updated_at?: string;
 }
 
 export type AuditActionType = 'CREATE' | 'UPDATE' | 'DELETE' | 'DUPLICATE' | 'STATUS_CHANGE';
@@ -173,7 +174,7 @@ export interface EmployeeUser {
   name: string;
   email: string;
   password?: string;
-  role: 'super_admin' | 'admin' | 'manager' | 'editor' | 'sales';
+  role: 'super_admin' | 'admin' | 'manager' | 'editor' | 'sales' | 'viewer';
   role_label?: string;
   department?: string;
   phone?: string;
@@ -181,6 +182,7 @@ export interface EmployeeUser {
   last_login?: string;
   last_ip?: string;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface FilterState {

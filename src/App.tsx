@@ -82,7 +82,7 @@ const AppContent: React.FC = () => {
       AdminView = <AdminTeam />;
     } else if (activeAdminSection === 'settings') {
       AdminView = <AdminSettings />;
-    } else if (activeAdminSection === 'database' || activeAdminSection === 'sql-setup') {
+    } else if (activeAdminSection === 'database' || activeAdminSection === 'sql-setup' || activeAdminSection === 'supabase') {
       AdminView = <AdminDatabaseSetup />;
     }
 

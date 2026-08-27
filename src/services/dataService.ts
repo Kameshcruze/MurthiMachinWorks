@@ -361,11 +361,14 @@ export const dataService = {
     const currentLogs = getLocalAuditLogs();
     saveLocalAuditLogs([logItem, ...currentLogs]);
 
-    // Save to Supabase
+    // Save to Supabase Cloud Database (for cross-device synchronization)
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('audit_logs').insert([logItem]);
+        const { error } = await supabase.from('audit_logs').insert([logItem]);
+        if (error) {
+          console.warn('Supabase audit log insert error:', error.message);
+        }
       } catch (err) {
         console.warn('Supabase audit log insert fallback:', err);
       }
@@ -403,23 +406,36 @@ export const dataService = {
         }
 
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
-          if (options?.searchQuery) {
-            const q = options.searchQuery.toLowerCase();
-            return data.filter((log: AuditLog) =>
-              log.target_name?.toLowerCase().includes(q) ||
-              log.target_id?.toLowerCase().includes(q) ||
-              log.user_name?.toLowerCase().includes(q) ||
-              log.user_email?.toLowerCase().includes(q) ||
-              log.user_id?.toLowerCase().includes(q) ||
-              log.ip_address?.toLowerCase().includes(q) ||
-              log.details?.toLowerCase().includes(q)
-            );
+        if (!error && data) {
+          if (data.length > 0) {
+            // Keep local backup in sync
+            try {
+              localStorage.setItem(STORAGE_KEYS.AUDIT_LOGS, JSON.stringify(data));
+            } catch {}
+
+            if (options?.searchQuery) {
+              const q = options.searchQuery.toLowerCase();
+              return data.filter((log: AuditLog) =>
+                log.target_name?.toLowerCase().includes(q) ||
+                log.target_id?.toLowerCase().includes(q) ||
+                log.user_name?.toLowerCase().includes(q) ||
+                log.user_email?.toLowerCase().includes(q) ||
+                log.user_id?.toLowerCase().includes(q) ||
+                log.ip_address?.toLowerCase().includes(q) ||
+                log.details?.toLowerCase().includes(q)
+              );
+            }
+            return data;
+          } else if (!options?.action && !options?.target_type && !options?.user_id && !options?.searchQuery) {
+            // If table is newly created on Supabase and empty, bootstrap initial logs
+            for (const log of INITIAL_AUDIT_LOGS) {
+              await supabase.from('audit_logs').upsert([log], { onConflict: 'id' });
+            }
+            return INITIAL_AUDIT_LOGS;
           }
-          return data;
         }
       } catch (err) {
-        console.warn('Supabase getAuditLogs fallback:', err);
+        console.warn('Supabase getAuditLogs fallback to local:', err);
       }
     }
 
@@ -487,18 +503,31 @@ export const dataService = {
   },
 
   // ---------------------------------------------
-  // EMPLOYEES & TEAM ACCESS
+  // EMPLOYEES & TEAM ACCESS (Cross-device Cloud Sync)
   // ---------------------------------------------
   async getEmployees(): Promise<EmployeeUser[]> {
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
-        const { data, error } = await supabase.from('admin_users').select('*').order('created_at', { ascending: false });
-        if (!error && data && data.length > 0) {
-          return data;
+        const { data, error } = await supabase
+          .from('admin_users')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && data) {
+          if (data.length > 0) {
+            saveLocalEmployees(data);
+            return data;
+          } else {
+            // Seed initial employees if table was just created
+            for (const emp of INITIAL_EMPLOYEES) {
+              await supabase.from('admin_users').upsert([emp], { onConflict: 'id' });
+            }
+            return INITIAL_EMPLOYEES;
+          }
         }
       } catch (err) {
-        console.warn('Supabase getEmployees fallback:', err);
+        console.warn('Supabase getEmployees fallback to local:', err);
       }
     }
     return getLocalEmployees();
@@ -515,7 +544,10 @@ export const dataService = {
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('admin_users').insert([newEmp]);
+        const { error } = await supabase.from('admin_users').insert([newEmp]);
+        if (error) {
+          console.warn('Supabase createEmployee insert error:', error.message);
+        }
       } catch (err) {
         console.warn('Supabase createEmployee fallback:', err);
       }
@@ -524,7 +556,7 @@ export const dataService = {
     const current = getLocalEmployees();
     saveLocalEmployees([newEmp, ...current]);
 
-    // Audit log
+    // Audit log in Supabase & Local
     await this.logAction({
       action: 'CREATE',
       target_type: 'USER',
@@ -543,13 +575,20 @@ export const dataService = {
 
     const updated: EmployeeUser = {
       ...current[index],
-      ...updates
+      ...updates,
+      updated_at: new Date().toISOString()
     };
 
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('admin_users').update(updates).eq('id', id);
+        const { error } = await supabase.from('admin_users').update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        }).eq('id', id);
+        if (error) {
+          console.warn('Supabase updateEmployee error:', error.message);
+        }
       } catch (err) {
         console.warn('Supabase updateEmployee fallback:', err);
       }
@@ -559,12 +598,13 @@ export const dataService = {
     saveLocalEmployees([...current]);
 
     // Audit log
+    const changedPassword = updates.password ? ' (Password updated)' : '';
     await this.logAction({
       action: 'UPDATE',
       target_type: 'USER',
       target_id: id,
       target_name: `${updated.name} (${updated.email})`,
-      details: `Updated profile / credentials for employee ${updated.name}.`
+      details: `Updated profile / credentials for employee ${updated.name}${changedPassword}.`
     });
 
     return updated;
@@ -577,7 +617,10 @@ export const dataService = {
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('admin_users').delete().eq('id', id);
+        const { error } = await supabase.from('admin_users').delete().eq('id', id);
+        if (error) {
+          console.warn('Supabase deleteEmployee error:', error.message);
+        }
       } catch (err) {
         console.warn('Supabase deleteEmployee fallback:', err);
       }
