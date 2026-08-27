@@ -35,7 +35,8 @@ export const INITIAL_CATEGORIES: Category[] = [
     description: 'Heavy duty all-geared, medium duty, and precision tool room lathe machines engineered for rigorous turning operations.',
     image_url: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80',
     is_active: true,
-    sort_order: 1
+    sort_order: 1,
+    keywords: ['lathe', 'turning machine', 'all geared lathe', 'tool room lathe', 'heavy duty lathe', 'spindle', 'chuck', 'facing', 'threading']
   },
   {
     id: 'MMW-milling',
@@ -44,7 +45,8 @@ export const INITIAL_CATEGORIES: Category[] = [
     description: 'Universal, vertical, and horizontal knee-type milling machines for precision slotting, facing, and gear cutting.',
     image_url: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80',
     is_active: true,
-    sort_order: 2
+    sort_order: 2,
+    keywords: ['milling', 'universal milling', 'vertical mill', 'horizontal mill', 'knee type', 'dro milling', 'gear cutting', 'slotting']
   },
   {
     id: 'MMW-cnc',
@@ -53,7 +55,8 @@ export const INITIAL_CATEGORIES: Category[] = [
     description: 'High-speed CNC vertical machining centers and precision turning centers with Siemens / Fanuc controllers.',
     image_url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
     is_active: true,
-    sort_order: 3
+    sort_order: 3,
+    keywords: ['cnc', 'vmc', 'vertical machining center', 'turning center', 'slant bed', 'fanuc', 'siemens', 'automatic tool changer', 'bt40']
   },
   {
     id: 'MMW-drilling',
@@ -62,7 +65,8 @@ export const INITIAL_CATEGORIES: Category[] = [
     description: 'Heavy duty radial arm drills, pillar drilling machines, and multi-spindle drilling equipment for structural steel.',
     image_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80',
     is_active: true,
-    sort_order: 4
+    sort_order: 4,
+    keywords: ['drilling machine', 'radial drill', 'pillar drill', 'radial arm', 'tapping machine', 'multi spindle', 'heavy drill', 'coimbatore drill']
   },
   {
     id: 'MMW-grinding',
@@ -71,7 +75,8 @@ export const INITIAL_CATEGORIES: Category[] = [
     description: 'Hydraulic surface grinders, universal cylindrical grinders, and tool & cutter grinders for micro-finish tolerances.',
     image_url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80',
     is_active: true,
-    sort_order: 5
+    sort_order: 5,
+    keywords: ['grinding machine', 'surface grinder', 'hydraulic grinder', 'cylindrical grinder', 'tool and cutter', 'magnetic chuck', 'micro finish']
   },
   {
     id: 'MMW-cutting',
@@ -80,7 +85,8 @@ export const INITIAL_CATEGORIES: Category[] = [
     description: 'Semi-automatic and double-column horizontal metal bandsaw cutting machines for structural steel and alloy billets.',
     image_url: 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80',
     is_active: true,
-    sort_order: 6
+    sort_order: 6,
+    keywords: ['bandsaw', 'metal cutting', 'sawing machine', 'double column bandsaw', 'horizontal bandsaw', 'billet cutting', 'pipe cutting']
   },
   {
     id: 'MMW-hydraulic',
@@ -89,7 +95,8 @@ export const INITIAL_CATEGORIES: Category[] = [
     description: 'C-frame, H-frame, and deep-throat hydraulic pressing machines for stamping, bending, and forging.',
     image_url: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=800&q=80',
     is_active: true,
-    sort_order: 7
+    sort_order: 7,
+    keywords: ['hydraulic press', 'power press', 'c frame press', 'h frame press', 'stamping press', 'deep drawing', '100 ton press']
   },
   {
     id: 'MMW-accessories',
@@ -98,7 +105,8 @@ export const INITIAL_CATEGORIES: Category[] = [
     description: 'Precision 3-jaw/4-jaw chucks, rotary tables, quick-change tool posts, DRO digital readout systems, and carbide tooling.',
     image_url: 'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&w=800&q=80',
     is_active: true,
-    sort_order: 8
+    sort_order: 8,
+    keywords: ['accessories', 'lathe chuck', '3 jaw chuck', '4 jaw chuck', 'rotary table', 'dro', 'digital readout', 'tool post', 'carbide tooling']
   }
 ];
 
@@ -111,6 +119,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category_id: 'MMW-lathe',
     category_name: 'Lathe Machines',
     brand: 'Murthi Precision',
+    keywords: ['lathe', 'all geared lathe', 'turning machine', 'heavy duty lathe', '450mm swing', 'threading', 'coimbatore lathe', 'center lathe', 'oil bath', 'gap bed lathe'],
     short_description: 'Induction hardened bedways, flame-treated gears, and 450mm swing over bed for heavy industrial turning.',
     description: 'The Murthi MMW-LT-450G is an industrial workhorse built for rigorous high-tolerance turning, threading, and boring applications. Engineered with heavy-ribbed cast iron bed, hardened & ground alloy steel gears running in enclosed oil bath, and rapid cross-feed mechanism. Designed specifically for heavy machine shops, roll-turning, and precision jobbing workshops requiring vibration-free operation.',
     price: 485000,
@@ -170,6 +179,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category_id: 'MMW-milling',
     category_name: 'Milling Machines',
     brand: 'Murthi Precision',
+    keywords: ['milling machine', 'universal milling', 'dro', 'digital readout', 'knee mill', 'gear cutting', 'swivel table', 'iso 50', 'vertical milling', 'slotting'],
     short_description: '3-Axis motorized feed with swivel table ±45°, ISO 40/50 spindle, and precision optical DRO.',
     description: 'Engineered for high metal removal rates and exceptional surface finishes. The Murthi MMW-ML-3U features an ultra-rigid column, hardened slideways with turcite-B coating, and high-torque mechanical feeds on X, Y, and Z axes. Perfect for mold & die making, precision slot milling, helical gear generation, and face milling.',
     price: 675000,
@@ -219,6 +229,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category_id: 'MMW-cnc',
     category_name: 'CNC Machinery',
     brand: 'Murthi Titan CNC',
+    keywords: ['vmc', 'cnc machine', 'vertical machining center', 'fanuc', 'siemens', 'atc', 'bt40', '10000 rpm', 'die mold', '3 axis cnc', 'aerospace machining'],
     short_description: 'BT-40 10,000 RPM spindle, 24-station arm type tool changer, Fanuc 0i-MF Plus controller.',
     description: 'High-rigidity C-frame structure with precision linear roller guideways on all axes for high-speed dynamic machining. Standard equipped with high-torque direct-drive spindle, telescopic way covers, and CTS (Coolant Through Spindle) preparation. Unrivaled stability for aerospace, automotive dies, and high-volume component manufacturing.',
     price: 2450000,
@@ -268,6 +279,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category_id: 'MMW-drilling',
     category_name: 'Drilling Machines',
     brand: 'Murthi Precision',
+    keywords: ['radial drill', 'drilling machine', '50mm drill', 'radial arm drill', 'hydraulic clamping', 'mt5 spindle', 'tapping', 'heavy drilling', 'coimbatore radial drill'],
     short_description: 'Hydraulic clamping, 1600mm arm radius, 50mm solid drilling capacity in steel, MT-5 spindle.',
     description: 'Designed for heavy engineering fabrication, pressure vessel manufacturing, and structural steel drilling. Features centralized hydraulic clamping for the column, arm, and drill head with ergonomic front controls. Multi-disc mechanical clutch ensures overload protection while auto-feed gearbox delivers dependable feed rates.',
     price: 520000,
@@ -317,6 +329,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category_id: 'MMW-grinding',
     category_name: 'Grinding Machines',
     brand: 'Murthi Precision',
+    keywords: ['surface grinder', 'hydraulic grinding', 'grinder', 'magnetic chuck', 'precision grinding', 'die finishing', 'tool grinding', '400x800', 'micro finish'],
     short_description: 'Working area 400 x 800 mm, auto cross/longitudinal feeds, electro-magnetic chuck & demagnetizer.',
     description: 'High-accuracy surface grinder for die makers, punch tool manufacturers, and precision engineering. Features cartridge-type spindle with high-precision angular contact bearings, hydrostatic lubrication slideways, and stepless hydraulic longitudinal table speeds with smooth shockless stroke reversal.',
     price: 740000,
@@ -360,6 +373,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category_id: 'MMW-cutting',
     category_name: 'Cutting & Sawing Machines',
     brand: 'Murthi CutMaster',
+    keywords: ['bandsaw', 'metal saw', 'double column bandsaw', 'horizontal bandsaw', 'billet cutting', 'pipe cutting', 'structural steel cutting', 'hydraulic bandsaw'],
     short_description: 'Dual column linear guides, hydraulic blade tensioning, and 350mm round bar cutting capacity.',
     description: 'Double column guided structure ensures maximum rigid beam stability for vibration-free cutting of high-tensile alloy steels, titanium, stainless steel pipes, and solid billets. Automatic hydraulic clamping vise, carbide blade guide pads, and electronic inverter for stepless blade speed regulation.',
     price: 360000,
@@ -402,6 +416,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category_id: 'MMW-hydraulic',
     category_name: 'Hydraulic Presses',
     brand: 'Murthi HydroTech',
+    keywords: ['hydraulic press', 'power press', 'c frame', '100 ton', 'sheet metal pressing', 'punching machine', 'stamping press', 'deep drawing', 'forging press'],
     short_description: '1000 kN nominal force, PLC touch screen control, light curtain safety sensors, and micro-inching stroke.',
     description: 'Designed for metal punching, stamping, deep drawing, straightening, and bearing pressing. Constructed with ultrasound-tested high tensile steel plates, stress relieved by thermal vibration. Hydraulic power pack uses Rexroth/Yuken valves for smooth pressure holding and leak-free operation.',
     price: 890000,
@@ -445,6 +460,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category_id: 'MMW-cnc',
     category_name: 'CNC Machinery',
     brand: 'Murthi Titan CNC',
+    keywords: ['cnc lathe', 'turning center', 'slant bed', 'fanuc cnc', '8 station turret', 'cnc turning', 'auto component turning', 'hydraulic chuck', 'high speed turning'],
     short_description: '30° true slant bed, 8-station hydraulic turret, 8-inch chuck, 4500 RPM spindle speed.',
     description: 'A rigid, high-productivity CNC slant bed lathe designed for rapid cycle times on automotive components, flanges, shafts, and precision fittings. Monoblock casting with 30-degree incline maximizes chip disposal and operator ergonomics.',
     price: 1850000,
@@ -494,6 +510,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category_id: 'MMW-accessories',
     category_name: 'Tooling & Accessories',
     brand: 'Murthi Precision Tooling',
+    keywords: ['lathe chuck', '3 jaw chuck', 'scroll chuck', '315mm chuck', 'forged chuck', 'reversible jaws', 'machinery tooling', 'turning accessory'],
     short_description: 'Forged steel body, hardened reversible two-piece jaws, A2-8 direct mount or flat back.',
     description: 'Premium lathe chuck for high-clamping force turning on conventional lathes and CNC lathes. High tensile forged steel body guarantees maximum grip rigidity and low centrifugal force loss at high RPMs.',
     price: 34500,

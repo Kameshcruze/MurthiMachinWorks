@@ -13,7 +13,10 @@ import {
   FileText,
   CheckCircle2,
   Upload,
-  AlertCircle
+  AlertCircle,
+  Tag,
+  X,
+  Sparkles
 } from 'lucide-react';
 
 interface AdminProductFormProps {
@@ -47,6 +50,12 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
     is_featured: productToEdit?.is_featured || false,
     is_active: productToEdit?.is_active ?? true,
   });
+
+  // Keywords / Search Tags
+  const [keywords, setKeywords] = useState<string[]>(
+    productToEdit?.keywords ? [...productToEdit.keywords] : []
+  );
+  const [keywordInput, setKeywordInput] = useState('');
 
   // Specifications
   const [specifications, setSpecifications] = useState<Array<{ spec_key: string; spec_value: string; unit: string }>>(
@@ -117,6 +126,31 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
     }));
   };
 
+  // Keyword handlers
+  const handleAddKeyword = (rawTag?: string) => {
+    const textToAdd = (rawTag || keywordInput).trim();
+    if (!textToAdd) return;
+
+    // Split on comma in case multiple words pasted
+    const items = textToAdd.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+    const existing = new Set(keywords.map(k => k.toLowerCase()));
+    const next = [...keywords];
+
+    for (const item of items) {
+      if (!existing.has(item)) {
+        existing.add(item);
+        next.push(item);
+      }
+    }
+
+    setKeywords(next);
+    setKeywordInput('');
+  };
+
+  const handleRemoveKeyword = (idxToRemove: number) => {
+    setKeywords(keywords.filter((_, idx) => idx !== idxToRemove));
+  };
+
   // Spec handlers
   const handleAddSpec = () => {
     setSpecifications([...specifications, { spec_key: '', spec_value: '', unit: '' }]);
@@ -170,6 +204,15 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
     try {
       const selectedCategoryObj = categories.find(c => c.id === formData.category_id);
 
+      // Collect keywords including any pending in input
+      let finalKeywords = [...keywords];
+      if (keywordInput.trim()) {
+        const pending = keywordInput.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        for (const p of pending) {
+          if (!finalKeywords.includes(p)) finalKeywords.push(p);
+        }
+      }
+
       const productPayload: Omit<Product, 'id' | 'created_at'> = {
         name: formData.name.trim(),
         slug: formData.slug.trim() || slugify(formData.name),
@@ -185,6 +228,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
         stock_status: formData.stock_status as any,
         is_featured: formData.is_featured,
         is_active: formData.is_active,
+        keywords: finalKeywords,
         images: images.map((url, idx) => ({
           id: `img-${Date.now()}-${idx}`,
           image_url: url,
@@ -369,6 +413,97 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
             placeholder="Comprehensive description of the casting quality, metallurgical hardness, headstock gear train, apron mechanism, lubrication, and metrology standards..."
             className="w-full p-3 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
           />
+        </div>
+      </div>
+
+      {/* Search Keywords & Discoverability Tags */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <Tag className="w-4 h-4 text-amber-500" />
+            <div>
+              <h3 className="font-heading font-bold text-base text-slate-900">
+                Search Keywords & Discoverability Tags (Optional)
+              </h3>
+              <p className="text-xs text-slate-500">
+                Add search keywords, common nicknames, regional terms, and machine aliases to help users find this machine across 100+ machinery models.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={keywordInput}
+              onChange={e => setKeywordInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ',') {
+                  e.preventDefault();
+                  handleAddKeyword();
+                }
+              }}
+              placeholder="Enter keyword and press Enter or comma (e.g. lathe, turning machine, kharad, coimbatore, all geared, heavy duty)..."
+              className="flex-1 p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+            />
+            <button
+              type="button"
+              onClick={() => handleAddKeyword()}
+              className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition"
+            >
+              Add Keyword
+            </button>
+          </div>
+
+          {/* Quick Suggestions */}
+          <div className="flex items-center flex-wrap gap-1.5 text-xs text-slate-500 pt-1">
+            <span className="text-[11px] font-semibold text-slate-600 flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-amber-500" /> Quick Add Suggestions:
+            </span>
+            {['Heavy Duty', 'Precision', 'All Geared', 'Lathe', 'Turning Machine', 'CNC', 'Milling', 'Radial Drill', 'Grinding', 'Coimbatore'].map(suggestion => {
+              const lower = suggestion.toLowerCase();
+              const isAdded = keywords.map(k => k.toLowerCase()).includes(lower);
+              if (isAdded) return null;
+              return (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => handleAddKeyword(lower)}
+                  className="px-2 py-0.5 text-[11px] bg-slate-100 hover:bg-amber-100 hover:text-slate-900 text-slate-700 rounded border border-slate-200 transition"
+                >
+                  + {suggestion}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Current Keyword Chips */}
+          <div className="pt-2">
+            {keywords.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {keywords.map((kw, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-300 text-slate-900 text-xs font-semibold rounded-lg shadow-2xs"
+                  >
+                    <span>{kw}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveKeyword(idx)}
+                      className="text-slate-400 hover:text-rose-600 focus:outline-none"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400 italic">
+                No keywords added yet. Keywords make it effortless for customers to search and find this machine model.
+              </p>
+            )}
+          </div>
         </div>
       </div>
 

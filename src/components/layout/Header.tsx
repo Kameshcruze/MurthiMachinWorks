@@ -21,12 +21,11 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 
 export const Header: React.FC = () => {
-  const { currentPage, navigateTo } = useNavigation();
+  const { currentPage, navigateTo, isMobileMenuOpen, setIsMobileMenuOpen } = useNavigation();
   const { totalItems, setIsCartOpen } = useCart();
   const { settings } = useSettings();
   const { isAuthenticated } = useAuth();
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchInput, setSearchInput] = useState('');
 
@@ -55,66 +54,71 @@ export const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-xs">
       {/* Top Bar / Industrial Info Strip */}
-      <div className="bg-slate-900 text-slate-300 text-xs py-2 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-6 overflow-x-auto py-0.5 scrollbar-none">
-            <span className="flex items-center gap-1.5 whitespace-nowrap text-slate-300 font-medium">
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-              ISO 9001:2015 Certified Machinery Manufacturer
+      <div className="bg-slate-900 text-slate-300 text-xs py-1.5 px-3 sm:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+          {/* Left: Cert and Phone */}
+          <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+            <span className="flex items-center gap-1.5 whitespace-nowrap text-slate-300 font-medium text-[11px] sm:text-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="truncate">ISO 9001:2015 Certified</span>
+              <span className="hidden md:inline text-slate-400 font-normal">Machinery Manufacturer</span>
             </span>
             <a
               href={`tel:${settings.phone}`}
-              className="flex items-center gap-1.5 text-slate-300 hover:text-white transition whitespace-nowrap"
+              className="flex items-center gap-1 text-slate-300 hover:text-white transition whitespace-nowrap text-[11px] sm:text-xs"
             >
-              <Phone className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-              <span>{settings.phone}</span>
+              <Phone className="w-3 h-3 text-amber-400 shrink-0" />
+              <span className="hidden xs:inline sm:inline">{settings.phone}</span>
+              <span className="xs:hidden sm:hidden">Call</span>
             </a>
             <a
               href={`mailto:${settings.email}`}
-              className="hidden md:flex items-center gap-1.5 text-slate-300 hover:text-white transition whitespace-nowrap"
+              className="hidden lg:flex items-center gap-1.5 text-slate-300 hover:text-white transition whitespace-nowrap text-xs"
             >
-              <Mail className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+              <Mail className="w-3.5 h-3.5 text-amber-400 shrink-0" />
               <span>{settings.email}</span>
             </a>
           </div>
 
-          <div className="flex items-center gap-4 ml-auto text-xs">
+          {/* Right: City & Admin */}
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0 text-[11px] sm:text-xs">
             <span className="hidden sm:inline-block text-slate-400">
               Coimbatore Works, Tamil Nadu
             </span>
             <button
               onClick={() => navigateTo(isAuthenticated ? 'admin-dashboard' : 'admin-login')}
-              className="flex items-center gap-1 text-slate-300 hover:text-amber-400 transition font-medium px-2 py-0.5 rounded hover:bg-slate-800"
+              className="flex items-center gap-1 text-slate-300 hover:text-amber-400 transition font-medium px-1.5 sm:px-2 py-0.5 rounded hover:bg-slate-800"
               title="Admin Portal"
             >
-              <Lock className="w-3 h-3 text-amber-400" />
-              <span>{isAuthenticated ? 'Admin Portal' : 'Admin Login'}</span>
+              <Lock className="w-3 h-3 text-amber-400 shrink-0" />
+              <span className="hidden xs:inline">{isAuthenticated ? 'Admin Portal' : 'Admin Login'}</span>
+              <span className="xs:hidden">Admin</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Main Navigation Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between gap-3">
         {/* Logo */}
         <button
           onClick={() => navigateTo('home')}
-          className="flex items-center gap-3 text-left group focus:outline-none"
+          className="flex items-center gap-2.5 sm:gap-3 text-left group focus:outline-none min-w-0"
           id="btn-header-logo"
         >
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-amber-400 shadow-md group-hover:scale-105 transition-transform duration-200">
-            <Cog className="w-6 h-6 animate-[spin_12s_linear_infinite]" />
+          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-amber-400 shadow-md group-hover:scale-105 transition-transform duration-200 shrink-0">
+            <Cog className="w-5 h-5 sm:w-6 sm:h-6 animate-[spin_12s_linear_infinite]" />
           </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-heading font-extrabold text-lg sm:text-xl tracking-tight text-slate-900 group-hover:text-amber-600 transition-colors">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+              <span className="font-heading font-extrabold text-base sm:text-xl tracking-tight text-slate-900 group-hover:text-amber-600 transition-colors">
                 MURTHI
               </span>
-              <span className="font-heading font-bold text-lg sm:text-xl tracking-tight text-slate-700">
+              <span className="font-heading font-bold text-base sm:text-xl tracking-tight text-slate-700">
                 MACHINE WORKS
               </span>
             </div>
-            <p className="text-[10px] uppercase font-semibold tracking-wider text-slate-500">
+            <p className="text-[9px] sm:text-[10px] uppercase font-semibold tracking-wider text-slate-500 truncate">
               Precision Engineering & Machine Tools
             </p>
           </div>
@@ -143,7 +147,7 @@ export const Header: React.FC = () => {
         </nav>
 
         {/* Right CTA Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Quick Search Button */}
           <button
             onClick={() => setSearchOpen(!searchOpen)}
@@ -184,15 +188,6 @@ export const Header: React.FC = () => {
             <MessageSquare className="w-4 h-4 fill-current" />
             <span>WhatsApp Enquiry</span>
           </a>
-
-          {/* Mobile Hamburger Toggle */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
-            aria-label="Toggle mobile menu"
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
         </div>
       </div>
 

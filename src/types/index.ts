@@ -10,6 +10,7 @@ export interface Category {
   is_active: boolean;
   sort_order?: number;
   product_count?: number;
+  keywords?: string[];
   created_at?: string;
   updated_at?: string;
 }
@@ -60,6 +61,7 @@ export interface Product {
   downloads?: ProductDownload[];
   is_featured: boolean;
   is_active: boolean;
+  keywords?: string[];
   images: ProductImage[];
   created_at: string;
   updated_at?: string;

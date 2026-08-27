@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 // Public Layout Components
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
+import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { ToastContainer } from './components/common/ToastContainer';
 import { WhatsAppFloatingButton } from './components/common/WhatsAppFloatingButton';
 import { EnquiryDrawer } from './components/cart/EnquiryDrawer';
@@ -99,7 +100,7 @@ const AppContent: React.FC = () => {
 
   // PUBLIC STOREFRONT ROUTING
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 selection:bg-amber-500 selection:text-slate-950 font-sans antialiased">
+    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 selection:bg-amber-500 selection:text-slate-950 font-sans antialiased pb-16 md:pb-0">
       <Header />
 
       <main className="flex-grow">
@@ -118,6 +119,7 @@ const AppContent: React.FC = () => {
       <Footer />
       <EnquiryDrawer />
       <WhatsAppFloatingButton />
+      <MobileBottomNav />
       <ToastContainer />
     </div>
   );

@@ -30,6 +30,8 @@ export const HomePage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryTab, setSelectedCategoryTab] = useState<string>('all');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [showAllCategoriesMobile, setShowAllCategoriesMobile] = useState<boolean>(false);
+  const [showAllProductsMobile, setShowAllProductsMobile] = useState<boolean>(false);
 
   const loadData = async (showLoading = false) => {
     if (showLoading) setIsLoading(true);
@@ -64,12 +66,14 @@ export const HomePage: React.FC = () => {
     `Hello ${settings.business_name}, I am interested in exploring your machine tools catalog and requesting technical specifications.`
   )}`;
 
+  const activeCategories = categories.filter(c => c.is_active);
+
   const filteredProducts = selectedCategoryTab === 'all'
-    ? featuredProducts.slice(0, 6)
-    : featuredProducts.filter(p => p.category_id === selectedCategoryTab || p.category_name?.toLowerCase().includes(selectedCategoryTab)).slice(0, 6);
+    ? featuredProducts
+    : featuredProducts.filter(p => p.category_id === selectedCategoryTab || p.category_name?.toLowerCase().includes(selectedCategoryTab));
 
   return (
-    <div className="space-y-16 lg:space-y-24 pb-16">
+    <div className="space-y-12 sm:space-y-16 lg:space-y-24 pb-12 sm:pb-16">
       {/* 1. HERO SECTION */}
       <section className="relative bg-slate-950 text-white overflow-hidden border-b border-slate-800">
         {/* Background Image with Deep Overlay */}
@@ -83,16 +87,16 @@ export const HomePage: React.FC = () => {
           <div className="absolute inset-0 industrial-dark-grid" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-16 sm:py-24 lg:py-32">
-          <div className="max-w-3xl space-y-6">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-10 sm:py-20 lg:py-28">
+          <div className="max-w-3xl space-y-4 sm:space-y-6">
             {/* Trust Pill */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/90 border border-slate-700 text-amber-400 text-xs font-bold tracking-wide shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/90 border border-slate-700 text-amber-400 text-[10px] sm:text-xs font-bold tracking-wide shadow-sm"
             >
-              <ShieldCheck className="w-4 h-4 text-amber-400" />
-              <span>EST. 1985 • COIMBATORE PRECISION MACHINE TOOLS</span>
+              <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
+              <span className="truncate">EST. 1985 • COIMBATORE PRECISION MACHINE TOOLS</span>
             </motion.div>
 
             {/* Main Headline */}
@@ -100,7 +104,7 @@ export const HomePage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="font-heading font-extrabold text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-[1.1]"
+              className="font-heading font-extrabold text-2xl xs:text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-[1.15]"
             >
               {settings.hero_title || 'Precision Machinery. Built for Performance.'}
             </motion.h1>
@@ -110,7 +114,7 @@ export const HomePage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal max-w-2xl"
+              className="text-xs sm:text-base text-slate-300 leading-relaxed font-normal max-w-2xl"
             >
               {settings.hero_description ||
                 'Quality machine tools and engineering solutions from Murthi Machine Works. Engineered for high-duty workshops, heavy turning, milling, drilling, and CNC machining.'}
@@ -121,11 +125,11 @@ export const HomePage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex flex-wrap items-center gap-3.5 pt-2"
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2"
             >
               <button
                 onClick={() => navigateTo('products')}
-                className="px-6 py-3.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-bold shadow-lg hover:shadow-amber-500/20 transition-all duration-200 flex items-center gap-2 group"
+                className="w-full sm:w-auto justify-center px-6 py-3.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs sm:text-sm font-bold shadow-lg hover:shadow-amber-500/20 transition-all duration-200 flex items-center gap-2 group"
                 id="btn-hero-explore"
               >
                 <span>Explore Products</span>
@@ -136,16 +140,16 @@ export const HomePage: React.FC = () => {
                 href={waHeroUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-sm font-bold shadow-lg hover:shadow-emerald-600/20 transition-all duration-200 flex items-center gap-2"
+                className="w-full sm:w-auto justify-center px-6 py-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-lg hover:shadow-emerald-600/20 transition-all duration-200 flex items-center gap-2"
                 id="btn-hero-whatsapp"
               >
-                <MessageSquare className="w-4 h-4 fill-current" />
+                <MessageSquare className="w-4 h-4 fill-current shrink-0" />
                 <span>Enquire on WhatsApp</span>
               </a>
 
               <button
                 onClick={() => navigateTo('contact')}
-                className="px-5 py-3.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-sm font-semibold border border-slate-700 transition"
+                className="w-full sm:w-auto justify-center px-5 py-3 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-semibold border border-slate-700 transition"
               >
                 Request Plant Visit
               </button>
@@ -156,23 +160,23 @@ export const HomePage: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-slate-800/80 text-left"
+              className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 pt-6 sm:pt-8 border-t border-slate-800/80 text-left"
             >
-              <div>
-                <p className="font-heading font-extrabold text-2xl sm:text-3xl text-amber-400">40+ Yrs</p>
-                <p className="text-xs text-slate-400 mt-0.5">Manufacturing Craft</p>
+              <div className="bg-slate-900/60 sm:bg-transparent p-2.5 sm:p-0 rounded-lg sm:rounded-none border border-slate-800/60 sm:border-0">
+                <p className="font-heading font-extrabold text-xl sm:text-3xl text-amber-400">40+ Yrs</p>
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">Manufacturing Craft</p>
               </div>
-              <div>
-                <p className="font-heading font-extrabold text-2xl sm:text-3xl text-amber-400">3,500+</p>
-                <p className="text-xs text-slate-400 mt-0.5">Machines Installed</p>
+              <div className="bg-slate-900/60 sm:bg-transparent p-2.5 sm:p-0 rounded-lg sm:rounded-none border border-slate-800/60 sm:border-0">
+                <p className="font-heading font-extrabold text-xl sm:text-3xl text-amber-400">3,500+</p>
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">Machines Installed</p>
               </div>
-              <div>
-                <p className="font-heading font-extrabold text-2xl sm:text-3xl text-amber-400">ISO 9001</p>
-                <p className="text-xs text-slate-400 mt-0.5">Certified Quality</p>
+              <div className="bg-slate-900/60 sm:bg-transparent p-2.5 sm:p-0 rounded-lg sm:rounded-none border border-slate-800/60 sm:border-0">
+                <p className="font-heading font-extrabold text-xl sm:text-3xl text-amber-400">ISO 9001</p>
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">Certified Quality</p>
               </div>
-              <div>
-                <p className="font-heading font-extrabold text-2xl sm:text-3xl text-amber-400">24/7</p>
-                <p className="text-xs text-slate-400 mt-0.5">Technical & Spares Support</p>
+              <div className="bg-slate-900/60 sm:bg-transparent p-2.5 sm:p-0 rounded-lg sm:rounded-none border border-slate-800/60 sm:border-0">
+                <p className="font-heading font-extrabold text-xl sm:text-3xl text-amber-400">24/7</p>
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">Spares Support</p>
               </div>
             </motion.div>
           </div>
@@ -181,31 +185,31 @@ export const HomePage: React.FC = () => {
 
       {/* 2. MACHINERY CATEGORIES SHOWCASE */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 sm:mb-8">
           <div>
-            <div className="flex items-center gap-2 text-amber-600 text-xs font-bold uppercase tracking-wider mb-1.5">
+            <div className="flex items-center gap-2 text-amber-600 text-xs font-bold uppercase tracking-wider mb-1">
               <Cog className="w-4 h-4 animate-[spin_8s_linear_infinite]" />
               <span>Engineered Solutions</span>
             </div>
-            <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900 tracking-tight">
+            <h2 className="font-heading font-extrabold text-xl sm:text-3xl text-slate-900 tracking-tight">
               Machinery Categories
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-xl">
+            <p className="text-xs sm:text-sm text-slate-600 mt-0.5 max-w-xl">
               Explore our comprehensive range of high-rigidity machine tools, lathes, milling, grinding, and CNC machining centers.
             </p>
           </div>
           <button
             onClick={() => navigateTo('categories')}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 hover:text-amber-600 transition"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 hover:text-amber-600 transition shrink-0 self-start sm:self-auto"
           >
-            <span>View All Categories</span>
+            <span>View All Categories ({activeCategories.length})</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Categories Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {categories.filter(c => c.is_active).map(cat => (
+        {/* Categories Grid (Mobile displays 4 items by default with view all option) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {(showAllCategoriesMobile ? activeCategories : activeCategories.slice(0, 4)).map(cat => (
             <div
               key={cat.id}
               onClick={() => navigateTo('products', { categorySlug: cat.slug })}
@@ -244,29 +248,48 @@ export const HomePage: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {/* Mobile View All Button for Categories */}
+        {activeCategories.length > 4 && (
+          <div className="mt-5 flex sm:hidden flex-col gap-2">
+            <button
+              onClick={() => navigateTo('categories')}
+              className="w-full py-3 bg-slate-900 text-white rounded-lg text-xs font-bold shadow-xs flex items-center justify-center gap-2 transition"
+            >
+              <span>View All {activeCategories.length} Categories</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setShowAllCategoriesMobile(!showAllCategoriesMobile)}
+              className="w-full py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-200 transition"
+            >
+              {showAllCategoriesMobile ? 'Show Less' : `Show More Categories (${activeCategories.length - 4} more)`}
+            </button>
+          </div>
+        )}
       </section>
 
       {/* 3. FEATURED PRODUCTS CATALOG */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 sm:mb-8">
           <div>
-            <div className="flex items-center gap-2 text-amber-600 text-xs font-bold uppercase tracking-wider mb-1.5">
+            <div className="flex items-center gap-2 text-amber-600 text-xs font-bold uppercase tracking-wider mb-1">
               <Award className="w-4 h-4" />
               <span>Flagship Range</span>
             </div>
-            <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900 tracking-tight">
+            <h2 className="font-heading font-extrabold text-xl sm:text-3xl text-slate-900 tracking-tight">
               {settings.featured_heading || 'Industrial Grade Machine Tools'}
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-xl">
+            <p className="text-xs sm:text-sm text-slate-600 mt-0.5 max-w-xl">
               Precision tested and quality-certified machine tools ready for immediate dispatch or custom configuration.
             </p>
           </div>
 
           <button
             onClick={() => navigateTo('products')}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold shadow transition shrink-0"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold shadow transition shrink-0 self-start sm:self-auto"
           >
-            <span>View Full Catalog</span>
+            <span>View Full Catalog ({featuredProducts.length})</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -275,19 +298,19 @@ export const HomePage: React.FC = () => {
         <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none">
           <button
             onClick={() => setSelectedCategoryTab('all')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition ${
+            className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs font-bold whitespace-nowrap transition ${
               selectedCategoryTab === 'all'
                 ? 'bg-amber-500 text-slate-950 shadow-xs'
                 : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
             }`}
           >
-            All Featured Machinery ({featuredProducts.length})
+            All Machinery ({featuredProducts.length})
           </button>
-          {categories.filter(c => c.is_active).map(cat => (
+          {activeCategories.map(cat => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategoryTab(cat.id)}
-              className={`px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
+              className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
                 selectedCategoryTab === cat.id
                   ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
                   : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -298,10 +321,10 @@ export const HomePage: React.FC = () => {
           ))}
         </div>
 
-        {/* Products Grid */}
+        {/* Products Grid (Mobile displays 4 items by default with view all action) */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map(i => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {[1, 2, 3, 4].map(i => (
               <div key={i} className="bg-white rounded-xl border border-slate-200 p-4 space-y-4 animate-pulse">
                 <div className="aspect-4/3 bg-slate-200 rounded-lg" />
                 <div className="h-4 bg-slate-200 rounded w-3/4" />
@@ -311,35 +334,56 @@ export const HomePage: React.FC = () => {
             ))}
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border border-slate-200 p-8">
+          <div className="text-center py-10 bg-white rounded-xl border border-slate-200 p-6">
             <p className="text-sm font-semibold text-slate-700">No machine models found in this category.</p>
             <button
               onClick={() => setSelectedCategoryTab('all')}
-              className="mt-3 text-xs text-amber-600 font-bold underline"
+              className="mt-2 text-xs text-amber-600 font-bold underline"
             >
               View all machines
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map(product => (
-              <ProductCard key={product.id} product={product} featuredBadge={true} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {(showAllProductsMobile ? filteredProducts : filteredProducts.slice(0, 4)).map(product => (
+                <ProductCard key={product.id} product={product} featuredBadge={true} />
+              ))}
+            </div>
+
+            {/* Mobile View All Button for Products */}
+            {filteredProducts.length > 4 && (
+              <div className="mt-5 flex sm:hidden flex-col gap-2">
+                <button
+                  onClick={() => navigateTo('products')}
+                  className="w-full py-3 bg-slate-900 text-white rounded-lg text-xs font-bold shadow-xs flex items-center justify-center gap-2 transition"
+                >
+                  <span>View All {filteredProducts.length} Machinery in Catalog</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setShowAllProductsMobile(!showAllProductsMobile)}
+                  className="w-full py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-200 transition"
+                >
+                  {showAllProductsMobile ? 'Show Less' : `Show More Products (${filteredProducts.length - 4} more)`}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
 
       {/* 4. WHY CHOOSE MURTHI MACHINE WORKS */}
-      <section className="bg-slate-900 text-white py-16 sm:py-20 border-y border-slate-800 relative overflow-hidden">
+      <section className="bg-slate-900 text-white py-12 sm:py-20 border-y border-slate-800 relative overflow-hidden">
         <div className="absolute inset-0 industrial-dark-grid opacity-50" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
             <div className="inline-flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider mb-2">
               <ShieldCheck className="w-4 h-4" />
               <span>Engineering Standard</span>
             </div>
-            <h2 className="font-heading font-extrabold text-2xl sm:text-4xl text-white tracking-tight">
+            <h2 className="font-heading font-extrabold text-xl sm:text-4xl text-white tracking-tight">
               Why Industry Leaders Choose Murthi
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 mt-2">
@@ -347,12 +391,12 @@ export const HomePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-6 space-y-3">
-              <div className="w-12 h-12 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <Layers className="w-6 h-6" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+            <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-5 sm:p-6 space-y-2.5 sm:space-y-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <Layers className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="font-heading font-bold text-lg text-white">
+              <h3 className="font-heading font-bold text-base sm:text-lg text-white">
                 Meehanite Castings & Induction Hardened Beds
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
@@ -360,11 +404,11 @@ export const HomePage: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-6 space-y-3">
-              <div className="w-12 h-12 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <Award className="w-6 h-6" />
+            <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-5 sm:p-6 space-y-2.5 sm:space-y-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <Award className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="font-heading font-bold text-lg text-white">
+              <h3 className="font-heading font-bold text-base sm:text-lg text-white">
                 ISO 9001:2015 Rigorous Metrology & QC
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
@@ -372,11 +416,11 @@ export const HomePage: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-6 space-y-3">
-              <div className="w-12 h-12 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <Wrench className="w-6 h-6" />
+            <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-5 sm:p-6 space-y-2.5 sm:space-y-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <Wrench className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="font-heading font-bold text-lg text-white">
+              <h3 className="font-heading font-bold text-base sm:text-lg text-white">
                 Pan-India Erection, Commissioning & Spares
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
@@ -389,12 +433,12 @@ export const HomePage: React.FC = () => {
 
       {/* 5. INTERACTIVE QUOTATION & CONSULTATION BANNER */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 rounded-2xl p-8 sm:p-12 text-slate-950 shadow-xl flex flex-col lg:flex-row items-center justify-between gap-8">
-          <div className="space-y-3 max-w-2xl text-center lg:text-left">
-            <span className="text-xs font-extrabold uppercase tracking-widest bg-slate-950 text-white px-3 py-1 rounded-full">
+        <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 rounded-2xl p-6 sm:p-10 text-slate-950 shadow-xl flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8">
+          <div className="space-y-2.5 sm:space-y-3 max-w-2xl text-center lg:text-left">
+            <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest bg-slate-950 text-white px-2.5 py-1 rounded-full inline-block">
               Custom Industrial Manufacturing
             </span>
-            <h2 className="font-heading font-extrabold text-2xl sm:text-4xl text-slate-950 tracking-tight leading-tight">
+            <h2 className="font-heading font-extrabold text-xl sm:text-3xl lg:text-4xl text-slate-950 tracking-tight leading-tight">
               Need a Custom Machine Specification or Turnkey Workshop Setup?
             </h2>
             <p className="text-xs sm:text-sm text-slate-900/90 font-medium leading-relaxed">
@@ -402,14 +446,14 @@ export const HomePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0 w-full sm:w-auto">
             <a
               href={waHeroUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto px-6 py-3.5 bg-slate-950 hover:bg-slate-900 text-white text-xs font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition"
             >
-              <MessageSquare className="w-4 h-4 text-emerald-400 fill-current" />
+              <MessageSquare className="w-4 h-4 text-emerald-400 fill-current shrink-0" />
               <span>WhatsApp Chief Engineer</span>
             </a>
 
@@ -417,7 +461,7 @@ export const HomePage: React.FC = () => {
               href={`tel:${settings.phone}`}
               className="w-full sm:w-auto px-5 py-3.5 bg-white/90 hover:bg-white text-slate-950 text-xs font-bold rounded-lg shadow flex items-center justify-center gap-2 transition"
             >
-              <PhoneCall className="w-4 h-4 text-slate-900" />
+              <PhoneCall className="w-4 h-4 text-slate-900 shrink-0" />
               <span>Call: {settings.phone}</span>
             </a>
           </div>
@@ -426,3 +470,4 @@ export const HomePage: React.FC = () => {
     </div>
   );
 };
+

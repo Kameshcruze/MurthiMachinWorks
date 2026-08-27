@@ -30,6 +30,9 @@ interface NavigationContextType {
   params: Record<string, string>;
   navigateTo: (page: PageRoute, params?: Record<string, string>) => void;
   goBack: () => void;
+  isMobileMenuOpen: boolean;
+  setIsMobileMenuOpen: (open: boolean) => void;
+  toggleMobileMenu: () => void;
 }
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
@@ -37,6 +40,9 @@ const NavigationContext = createContext<NavigationContextType | undefined>(undef
 export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentPage, setCurrentPage] = useState<PageRoute>('home');
   const [params, setParams] = useState<Record<string, string>>({});
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
 
   // Parse current URL path / hash on mount
   const parseLocation = useCallback(() => {
@@ -148,6 +154,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const navigateTo = (page: PageRoute, newParams: Record<string, string> = {}) => {
     setCurrentPage(page);
     setParams(newParams);
+    setIsMobileMenuOpen(false);
 
     // Update hash for bookmarkable clean URLs
     let hash = '';
@@ -192,7 +199,17 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   };
 
   return (
-    <NavigationContext.Provider value={{ currentPage, params, navigateTo, goBack }}>
+    <NavigationContext.Provider
+      value={{
+        currentPage,
+        params,
+        navigateTo,
+        goBack,
+        isMobileMenuOpen,
+        setIsMobileMenuOpen,
+        toggleMobileMenu,
+      }}
+    >
       {children}
     </NavigationContext.Provider>
   );

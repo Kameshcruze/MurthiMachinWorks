@@ -86,6 +86,16 @@ function computeProductDiff(oldProd: Product, newProd: Partial<Product>): AuditF
     }
   }
 
+  // Keywords diff
+  if (newProd.keywords && JSON.stringify(newProd.keywords) !== JSON.stringify(oldProd.keywords)) {
+    changes.push({
+      field: 'keywords',
+      field_label: 'Search Keywords / Tags',
+      old_value: oldProd.keywords ? oldProd.keywords.join(', ') : 'None',
+      new_value: newProd.keywords.join(', ')
+    });
+  }
+
   // Specifications diff
   if (newProd.specifications && JSON.stringify(newProd.specifications) !== JSON.stringify(oldProd.specifications)) {
     changes.push({
@@ -711,6 +721,7 @@ export const dataService = {
               stock_status: p.stock_status || 'in_stock',
               features: Array.isArray(p.features) ? p.features : [],
               specifications: Array.isArray(p.specifications) ? p.specifications : [],
+              keywords: Array.isArray(p.keywords) ? p.keywords : [],
               is_featured: !!p.is_featured,
               is_active: p.is_active !== false,
               created_at: p.created_at,
@@ -739,13 +750,18 @@ export const dataService = {
           }
 
           if (options?.searchQuery) {
-            const q = options.searchQuery.toLowerCase();
-            prods = prods.filter(p =>
-              p.name.toLowerCase().includes(q) ||
-              p.sku.toLowerCase().includes(q) ||
-              p.short_description?.toLowerCase().includes(q) ||
-              p.brand?.toLowerCase().includes(q)
-            );
+            const q = options.searchQuery.toLowerCase().trim();
+            const terms = q.split(/\s+/).filter(Boolean);
+            prods = prods.filter(p => {
+              const cat = categories.find(c => c.id === p.category_id || c.slug === p.category_id);
+              const pKeywords = Array.isArray(p.keywords) ? p.keywords : [];
+              const catKeywords = cat && Array.isArray(cat.keywords) ? cat.keywords : [];
+              const allKeywords = [...pKeywords, ...catKeywords].map(k => k.toLowerCase());
+
+              const searchableText = `${p.name} ${p.sku} ${p.short_description || ''} ${p.description || ''} ${p.brand || ''} ${p.category_name || ''} ${allKeywords.join(' ')}`.toLowerCase();
+
+              return terms.every(t => searchableText.includes(t));
+            });
           }
           return prods;
         }
@@ -785,14 +801,19 @@ export const dataService = {
       list = list.filter(p => p.price <= options.priceMax!);
     }
     if (options?.searchQuery) {
-      const q = options.searchQuery.toLowerCase();
-      list = list.filter(p =>
-        p.name.toLowerCase().includes(q) ||
-        p.sku.toLowerCase().includes(q) ||
-        p.short_description.toLowerCase().includes(q) ||
-        p.brand.toLowerCase().includes(q) ||
-        (p.category_name && p.category_name.toLowerCase().includes(q))
-      );
+      const q = options.searchQuery.toLowerCase().trim();
+      const terms = q.split(/\s+/).filter(Boolean);
+      const cats = getLocalCategories();
+      list = list.filter(p => {
+        const cat = cats.find(c => c.id === p.category_id || c.slug === p.category_id);
+        const pKeywords = Array.isArray(p.keywords) ? p.keywords : [];
+        const catKeywords = cat && Array.isArray(cat.keywords) ? cat.keywords : [];
+        const allKeywords = [...pKeywords, ...catKeywords].map(k => k.toLowerCase());
+
+        const searchableText = `${p.name} ${p.sku} ${p.short_description || ''} ${p.description || ''} ${p.brand || ''} ${p.category_name || ''} ${allKeywords.join(' ')}`.toLowerCase();
+
+        return terms.every(t => searchableText.includes(t));
+      });
     }
 
     return list;
@@ -816,6 +837,7 @@ export const dataService = {
             sale_price: data.sale_price !== null && data.sale_price !== undefined ? Number(data.sale_price) : null,
             features: Array.isArray(data.features) ? data.features : [],
             specifications: Array.isArray(data.specifications) ? data.specifications : [],
+            keywords: Array.isArray(data.keywords) ? data.keywords : [],
             images: rawImages
           };
         }
@@ -846,6 +868,7 @@ export const dataService = {
             sale_price: data.sale_price !== null && data.sale_price !== undefined ? Number(data.sale_price) : null,
             features: Array.isArray(data.features) ? data.features : [],
             specifications: Array.isArray(data.specifications) ? data.specifications : [],
+            keywords: Array.isArray(data.keywords) ? data.keywords : [],
             images: rawImages
           };
         }

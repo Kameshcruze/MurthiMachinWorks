@@ -21,14 +21,14 @@ export const WhatsAppFloatingButton: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end">
+    <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-35 flex flex-col items-end">
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 15, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 15, scale: 0.95 }}
-            className="mb-4 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden"
+            className="mb-3 w-[calc(100vw-32px)] max-w-sm sm:w-80 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden"
           >
             {/* Header */}
             <div className="bg-emerald-600 text-white p-4 flex items-center justify-between">

@@ -16,7 +16,8 @@ import {
   Image as ImageIcon,
   Sparkles,
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
+  Tag
 } from 'lucide-react';
 
 export const AdminProducts: React.FC = () => {
@@ -31,6 +32,7 @@ export const AdminProducts: React.FC = () => {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [keywordInput, setKeywordInput] = useState('');
 
   // Form Fields
   const [formData, setFormData] = useState<Partial<Product>>({
@@ -45,6 +47,7 @@ export const AdminProducts: React.FC = () => {
     stock_status: 'in_stock',
     short_description: '',
     description: '',
+    keywords: [],
     is_active: true,
     is_featured: false,
     specifications: [
@@ -92,6 +95,7 @@ export const AdminProducts: React.FC = () => {
 
   const openCreateModal = () => {
     setEditingProduct(null);
+    setKeywordInput('');
     setFormData({
       name: '',
       slug: '',
@@ -104,6 +108,7 @@ export const AdminProducts: React.FC = () => {
       stock_status: 'in_stock',
       short_description: '',
       description: '',
+      keywords: [],
       is_active: true,
       is_featured: false,
       specifications: [
@@ -130,13 +135,41 @@ export const AdminProducts: React.FC = () => {
 
   const openEditModal = (p: Product) => {
     setEditingProduct(p);
+    setKeywordInput('');
     setFormData({
       ...p,
+      keywords: Array.isArray(p.keywords) ? [...p.keywords] : [],
       specifications: p.specifications || [],
       features: p.features || [],
       images: p.images || []
     });
     setIsModalOpen(true);
+  };
+
+  const handleAddKeyword = (rawTag?: string) => {
+    const textToAdd = (rawTag || keywordInput).trim();
+    if (!textToAdd) return;
+
+    const items = textToAdd.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+    const existing = new Set((formData.keywords || []).map(k => k.toLowerCase()));
+    const next = [...(formData.keywords || [])];
+
+    for (const item of items) {
+      if (!existing.has(item)) {
+        existing.add(item);
+        next.push(item);
+      }
+    }
+
+    setFormData(prev => ({ ...prev, keywords: next }));
+    setKeywordInput('');
+  };
+
+  const handleRemoveKeyword = (idxToRemove: number) => {
+    setFormData(prev => ({
+      ...prev,
+      keywords: (prev.keywords || []).filter((_, idx) => idx !== idxToRemove)
+    }));
   };
 
   const handleNameChange = (name: string) => {
@@ -223,11 +256,24 @@ export const AdminProducts: React.FC = () => {
     }
 
     try {
+      let finalKeywords = [...(formData.keywords || [])];
+      if (keywordInput.trim()) {
+        const pending = keywordInput.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+        for (const p of pending) {
+          if (!finalKeywords.includes(p)) finalKeywords.push(p);
+        }
+      }
+
+      const payload = {
+        ...formData,
+        keywords: finalKeywords
+      };
+
       if (editingProduct) {
-        await dataService.updateProduct(editingProduct.id, formData);
+        await dataService.updateProduct(editingProduct.id, payload);
         showToast('Product Updated', `${formData.name} has been updated.`, 'success');
       } else {
-        await dataService.createProduct(formData as any);
+        await dataService.createProduct(payload as any);
         showToast('Product Created', `${formData.name} added to catalog.`, 'success');
       }
       setIsModalOpen(false);
@@ -264,8 +310,13 @@ export const AdminProducts: React.FC = () => {
   const filtered = products.filter(p => {
     if (selectedCatFilter && p.category_id !== selectedCatFilter) return false;
     if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      return p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q);
+      const q = searchQuery.toLowerCase().trim();
+      const terms = q.split(/\s+/).filter(Boolean);
+      const cat = categories.find(c => c.id === p.category_id);
+      const pKeywords = Array.isArray(p.keywords) ? p.keywords : [];
+      const catKeywords = cat && Array.isArray(cat.keywords) ? cat.keywords : [];
+      const combined = `${p.name} ${p.sku} ${p.brand} ${p.short_description} ${cat?.name || ''} ${pKeywords.join(' ')} ${catKeywords.join(' ')}`.toLowerCase();
+      return terms.every(t => combined.includes(t));
     }
     return true;
   });
@@ -359,6 +410,20 @@ export const AdminProducts: React.FC = () => {
                               </span>
                             )}
                           </div>
+                          {p.keywords && p.keywords.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {p.keywords.slice(0, 3).map((kw, ki) => (
+                                <span key={ki} className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium border border-slate-200">
+                                  #{kw}
+                                </span>
+                              ))}
+                              {p.keywords.length > 3 && (
+                                <span className="text-[9px] text-slate-400 font-medium">
+                                  +{p.keywords.length - 3} more
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -581,6 +646,83 @@ export const AdminProducts: React.FC = () => {
                   placeholder="Detailed specifications of bed casting, spindle assembly, gear train materials, lubrication system..."
                   className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-amber-500"
                 />
+              </div>
+
+              {/* Search Keywords & Tags */}
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-amber-500" />
+                  <label className="font-bold text-slate-800 block">
+                    Search Keywords & Synonyms (Optional)
+                  </label>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Add search terms, vernacular names, and alternative spellings so buyers can easily find this machine when searching across 100+ items.
+                </p>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={keywordInput}
+                    onChange={e => setKeywordInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === ',') {
+                        e.preventDefault();
+                        handleAddKeyword();
+                      }
+                    }}
+                    placeholder="Type keyword and press Enter (e.g. lathe, turning machine, kharad, coimbatore)..."
+                    className="flex-1 p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAddKeyword()}
+                    className="px-4 py-2 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800"
+                  >
+                    Add Tag
+                  </button>
+                </div>
+
+                {/* Quick Add Suggestions */}
+                <div className="flex items-center flex-wrap gap-1 pt-1">
+                  <span className="text-[10px] font-semibold text-slate-500 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-500" /> Quick Add:
+                  </span>
+                  {['Heavy Duty', 'Precision', 'All Geared', 'Lathe', 'Turning Machine', 'CNC', 'Milling', 'Radial Drill', 'Grinding', 'Coimbatore'].map(suggestion => {
+                    const lower = suggestion.toLowerCase();
+                    const isAdded = (formData.keywords || []).map(k => k.toLowerCase()).includes(lower);
+                    if (isAdded) return null;
+                    return (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        onClick={() => handleAddKeyword(lower)}
+                        className="px-2 py-0.5 text-[10px] bg-white hover:bg-amber-100 hover:text-slate-900 text-slate-700 rounded border border-slate-200 transition"
+                      >
+                        + {suggestion}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Current Keywords */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {(formData.keywords || []).map((kw, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 border border-amber-300 text-slate-900 text-xs font-semibold rounded-md"
+                    >
+                      <span>{kw}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveKeyword(idx)}
+                        className="text-slate-400 hover:text-rose-600"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
               </div>
 
               {/* Image Manager */}
