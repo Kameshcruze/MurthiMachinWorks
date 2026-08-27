@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
+import { useAuth } from '../../context/AuthContext';
 import { dataService } from '../../services/dataService';
 import {
   Sliders,
@@ -11,17 +12,37 @@ import {
   Save,
   RotateCcw,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  Lock
 } from 'lucide-react';
 
 export const AdminSettings: React.FC = () => {
   const { settings, updateSettings, showToast } = useSettings();
+  const { isAdmin } = useAuth();
   const [formData, setFormData] = useState({ ...settings });
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setFormData({ ...settings });
   }, [settings]);
+
+  if (!isAdmin) {
+    return (
+      <div className="max-w-2xl mx-auto my-12 bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center space-y-4">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
+          <Lock className="w-7 h-7" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="font-heading font-bold text-lg text-slate-900">
+            Website Settings Restricted
+          </h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+            Only Administrator accounts have permission to view or edit company credentials, branding, WhatsApp numbers, or system configurations.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

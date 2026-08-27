@@ -19,7 +19,8 @@ import {
   Activity,
   Users,
   Globe,
-  UserCheck
+  UserCheck,
+  Lock
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -33,7 +34,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   activeSection,
   onSelectSection
 }) => {
-  const { user, logout } = useAuth();
+  const { user, isAdmin, isSuperAdmin, logout } = useAuth();
   const { navigateTo } = useNavigation();
   const { settings } = useSettings();
   const [isMobileNavOpen, setIsMobileNavOpen] = React.useState(false);
@@ -43,16 +44,51 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     getClientIp().then(ip => setCurrentIp(ip)).catch(() => {});
   }, []);
 
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'products', label: 'Machinery Catalog (CRUD)', icon: Package },
-    { id: 'categories', label: 'Categories (CRUD)', icon: FolderTree },
-    { id: 'enquiries', label: 'Enquiries / RFQ Leads', icon: FileSpreadsheet },
-    { id: 'audit-logs', label: 'Audit Logs (IP & User)', icon: Activity, highlight: true },
-    { id: 'team', label: 'Employee Access & Roles', icon: Users },
-    { id: 'settings', label: 'Website Settings', icon: Settings },
-    { id: 'sql-setup', label: 'Supabase SQL Setup', icon: Database },
+  // Define full list of navigation items with admin-only flag
+  const allNavItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: false },
+    { id: 'products', label: 'Machinery Catalog (CRUD)', icon: Package, adminOnly: false },
+    { id: 'categories', label: 'Categories (CRUD)', icon: FolderTree, adminOnly: false },
+    { id: 'enquiries', label: 'Enquiries / RFQ Leads', icon: FileSpreadsheet, adminOnly: false },
+    { id: 'audit-logs', label: 'Audit Logs (IP & User)', icon: Activity, highlight: true, adminOnly: true },
+    { id: 'team', label: 'Employee Access & Roles', icon: Users, adminOnly: true },
+    { id: 'settings', label: 'Website Settings', icon: Settings, adminOnly: true },
+    { id: 'sql-setup', label: 'Supabase SQL Setup', icon: Database, adminOnly: true },
   ];
+
+  // Filter items: Only show admin-only tabs to admin/super_admin users
+  const navItems = allNavItems.filter(item => !item.adminOnly || isAdmin);
+
+  const isRestrictedCurrentSection = !isAdmin && (
+    activeSection === 'audit-logs' ||
+    activeSection === 'audit' ||
+    activeSection === 'team' ||
+    activeSection === 'employees' ||
+    activeSection === 'users' ||
+    activeSection === 'settings' ||
+    activeSection === 'database' ||
+    activeSection === 'sql-setup' ||
+    activeSection === 'supabase'
+  );
+
+  const getRoleBadge = (role?: string) => {
+    switch (role) {
+      case 'super_admin':
+        return { label: 'SUPER ADMIN', bg: 'bg-amber-500/20 text-amber-400 border-amber-500/40' };
+      case 'admin':
+        return { label: 'ADMIN', bg: 'bg-blue-500/20 text-blue-400 border-blue-500/40' };
+      case 'manager':
+        return { label: 'MANAGER', bg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' };
+      case 'editor':
+        return { label: 'CATALOG EDITOR', bg: 'bg-purple-500/20 text-purple-400 border-purple-500/40' };
+      case 'sales':
+        return { label: 'SALES REP', bg: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40' };
+      default:
+        return { label: 'STAFF USER', bg: 'bg-slate-700 text-slate-300 border-slate-600' };
+    }
+  };
+
+  const userRoleBadge = getRoleBadge(user?.role);
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row">
@@ -72,7 +108,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               <h2 className="font-heading font-bold text-sm tracking-tight text-white leading-none">
                 Murthi Admin
               </h2>
-              <p className="text-[10px] text-amber-400 font-mono mt-1">Multi-User Portal</p>
+              <p className="text-[10px] text-amber-400 font-mono mt-1">
+                {isAdmin ? 'Admin Console' : 'Staff Portal'}
+              </p>
             </div>
           </div>
 
@@ -122,7 +160,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
         {/* User Footer with Live Employee Profile & IP */}
         <div className="p-4 border-t border-slate-800 bg-slate-950/90 space-y-3">
-          <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1.5">
+          <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-xs font-bold font-heading">
@@ -130,7 +168,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs font-bold text-white truncate max-w-[110px]">
-                    {user?.name || 'Murthi Admin'}
+                    {user?.name || 'Murthi User'}
                   </p>
                   <p className="text-[10px] text-amber-400 font-mono truncate max-w-[110px]">
                     ID: {user?.id || 'emp-101'}
@@ -145,6 +183,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               >
                 <LogOut className="w-4 h-4" />
               </button>
+            </div>
+
+            {/* Role Badge */}
+            <div className="flex items-center justify-between">
+              <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-md border ${userRoleBadge.bg}`}>
+                {userRoleBadge.label}
+              </span>
+              <span className="text-[10px] text-slate-400 truncate max-w-[90px]">
+                {user?.department || 'Operations'}
+              </span>
             </div>
 
             <div className="pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">
@@ -204,23 +252,52 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               </span>
             </div>
 
-            <button
-              onClick={() => onSelectSection('audit-logs')}
-              className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition ${
-                activeSection === 'audit-logs'
-                  ? 'bg-amber-500 text-slate-950 border-amber-500 font-bold'
-                  : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-              }`}
-              title="View Audit Logs"
-            >
-              <Activity className="w-4 h-4 text-amber-600" />
-              <span className="hidden md:inline">Audit Logs</span>
-            </button>
+            {/* Audit Logs button visible ONLY to Admin */}
+            {isAdmin && (
+              <button
+                onClick={() => onSelectSection('audit-logs')}
+                className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition ${
+                  activeSection === 'audit-logs'
+                    ? 'bg-amber-500 text-slate-950 border-amber-500 font-bold'
+                    : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                }`}
+                title="View Audit Logs (Admin Only)"
+              >
+                <Activity className="w-4 h-4 text-amber-600" />
+                <span className="hidden md:inline">Audit Logs</span>
+              </button>
+            )}
           </div>
         </header>
 
         {/* Content Body */}
-        <main className="p-4 sm:p-8 flex-1 overflow-x-hidden">{children}</main>
+        <main className="p-4 sm:p-8 flex-1 overflow-x-hidden">
+          {isRestrictedCurrentSection ? (
+            <div className="max-w-2xl mx-auto my-12 bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center space-y-4">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
+                <Lock className="w-7 h-7" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-heading font-bold text-lg text-slate-900">
+                  Administrator Privileges Required
+                </h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                  This feature (Audit Logs, Employee Management, Website Settings, or Supabase SQL Setup) is restricted exclusively to Admin accounts. Other users do not have permissions to view or edit this section.
+                </p>
+              </div>
+              <div className="pt-2">
+                <button
+                  onClick={() => onSelectSection('dashboard')}
+                  className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-amber-400 text-xs font-bold rounded-xl transition shadow-xs"
+                >
+                  Return to Dashboard
+                </button>
+              </div>
+            </div>
+          ) : (
+            children
+          )}
+        </main>
       </div>
     </div>
   );

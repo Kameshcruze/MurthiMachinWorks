@@ -7,6 +7,8 @@ import { getClientIp } from '../utils/ipService';
 interface AuthContextType {
   user: AdminUser | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
@@ -196,11 +198,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
+  const isAdmin = user?.role === 'super_admin' || user?.role === 'admin';
+  const isSuperAdmin = user?.role === 'super_admin';
+
   return (
     <AuthContext.Provider
       value={{
         user,
         isAuthenticated: !!user,
+        isAdmin,
+        isSuperAdmin,
         isLoading,
         login,
         logout

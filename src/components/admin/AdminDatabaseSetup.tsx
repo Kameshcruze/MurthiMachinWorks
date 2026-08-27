@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { SUPABASE_SCHEMA_SQL } from '../../data/supabaseSchema';
 import { useSettings } from '../../context/SettingsContext';
+import { useAuth } from '../../context/AuthContext';
 import { getSupabaseConfig, isSupabaseConfigured, setCustomSupabaseConfig, clearCustomSupabaseConfig, getSupabaseClient } from '../../services/supabase';
 import { dataService } from '../../services/dataService';
-import { Database, Copy, Check, ShieldCheck, Terminal, ExternalLink, Key, CheckCircle2, RefreshCw, AlertCircle, ArrowRight } from 'lucide-react';
+import { Database, Copy, Check, ShieldCheck, Terminal, ExternalLink, Key, CheckCircle2, RefreshCw, AlertCircle, ArrowRight, Lock } from 'lucide-react';
 
 export const AdminDatabaseSetup: React.FC = () => {
   const { showToast } = useSettings();
+  const { isAdmin } = useAuth();
   const [copied, setCopied] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
   const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
@@ -17,6 +19,24 @@ export const AdminDatabaseSetup: React.FC = () => {
   const [supabaseKey, setSupabaseKey] = useState(currentConfig.key);
 
   const isConnected = isSupabaseConfigured();
+
+  if (!isAdmin) {
+    return (
+      <div className="max-w-2xl mx-auto my-12 bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center space-y-4">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
+          <Lock className="w-7 h-7" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="font-heading font-bold text-lg text-slate-900">
+            Database Configuration Restricted
+          </h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+            Only Administrator accounts have permission to configure Supabase cloud credentials, run database schema scripts, or trigger data synchronization.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const handleCopy = () => {
     navigator.clipboard.writeText(SUPABASE_SCHEMA_SQL);

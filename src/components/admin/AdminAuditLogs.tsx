@@ -30,12 +30,13 @@ import {
   RefreshCw,
   Eye,
   Cloud,
-  X
+  X,
+  Lock
 } from 'lucide-react';
 
 export const AdminAuditLogs: React.FC = () => {
   const { showToast } = useSettings();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -59,6 +60,10 @@ export const AdminAuditLogs: React.FC = () => {
 
   // Load Logs
   const loadLogs = async () => {
+    if (!isAdmin) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     try {
       const data = await dataService.getAuditLogs({
@@ -76,10 +81,32 @@ export const AdminAuditLogs: React.FC = () => {
   };
 
   useEffect(() => {
-    loadLogs();
-    window.addEventListener(DATA_CHANGE_EVENT, loadLogs);
-    return () => window.removeEventListener(DATA_CHANGE_EVENT, loadLogs);
-  }, [actionFilter, targetTypeFilter, userFilter, searchQuery]);
+    if (isAdmin) {
+      loadLogs();
+      window.addEventListener(DATA_CHANGE_EVENT, loadLogs);
+      return () => window.removeEventListener(DATA_CHANGE_EVENT, loadLogs);
+    } else {
+      setIsLoading(false);
+    }
+  }, [actionFilter, targetTypeFilter, userFilter, dateFilter, isAdmin]);
+
+  if (!isAdmin) {
+    return (
+      <div className="max-w-2xl mx-auto my-12 bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center space-y-4">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
+          <Lock className="w-7 h-7" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="font-heading font-bold text-lg text-slate-900">
+            Audit Logs Access Restricted
+          </h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+            Only Administrator accounts have permission to view, filter, or export IP audit trails and employee change logs.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Copy IP Helper
   const handleCopyIp = (ip: string) => {
