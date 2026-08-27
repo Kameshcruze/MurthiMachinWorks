@@ -76,28 +76,18 @@ export const AdminDatabaseSetup: React.FC = () => {
   };
 
   const handleSeedDatabase = async () => {
-    if (!isConnected) {
-      showToast('Not Connected', 'Please connect Supabase and run the schema first.', 'warning');
-      return;
-    }
-
     setIsSeeding(true);
     try {
-      const client = getSupabaseClient();
-      if (!client) throw new Error('Supabase client is not ready.');
-
-      // Check if categories already exist
-      const { data: existingCats } = await client.from('categories').select('id');
-      if (existingCats && existingCats.length > 0) {
-        const proceed = window.confirm('The database already contains data. Do you want to sync default machinery catalog?');
-        if (!proceed) {
-          setIsSeeding(false);
-          return;
-        }
+      const res = await dataService.seedSupabase(true);
+      if (res.success) {
+        showToast('Seeding Complete', res.message, 'success');
+        setTestStatus('success');
+        setTestMessage('Supabase database populated with all machine tools and categories.');
+      } else {
+        showToast('Seeding Issue', res.message, 'warning');
+        setTestStatus('error');
+        setTestMessage(res.message);
       }
-
-      dataService.resetToDemoData();
-      showToast('Seeding Complete', 'Default industrial machinery and categories seeded.', 'success');
     } catch (err: any) {
       showToast('Seeding Error', err.message || 'Failed to seed data', 'error');
     } finally {

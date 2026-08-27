@@ -95,6 +95,92 @@ function saveLocalSettings(settings: SiteSettings): void {
 // UNIFIED DATA SERVICE (Supabase + Local fallback)
 // ---------------------------------------------
 export const dataService = {
+  // Check if Supabase connection is healthy and responsive
+  async testSupabaseConnection(): Promise<{ connected: boolean; count?: number; error?: string }> {
+    const supabase = getSupabaseClient();
+    if (!supabase || !isSupabaseConfigured()) {
+      return { connected: false, error: 'Supabase credentials not configured' };
+    }
+    try {
+      const { data, error } = await supabase.from('products').select('id', { count: 'exact' }).limit(1);
+      if (error) {
+        return { connected: false, error: `${error.message} (Code: ${error.code})` };
+      }
+      return { connected: true, count: data?.length || 0 };
+    } catch (err: any) {
+      return { connected: false, error: err.message || 'Unknown network error' };
+    }
+  },
+
+  // SEED TO SUPABASE
+  async seedSupabase(force = false): Promise<{ success: boolean; message: string }> {
+    const supabase = getSupabaseClient();
+    if (!supabase || !isSupabaseConfigured()) {
+      return { success: false, message: 'Supabase is not configured yet.' };
+    }
+
+    try {
+      // 1. Seed Categories
+      for (const cat of INITIAL_CATEGORIES) {
+        await supabase.from('categories').upsert([cat], { onConflict: 'id' });
+      }
+
+      // 2. Seed Site Settings
+      await supabase.from('site_settings').upsert([INITIAL_SETTINGS], { onConflict: 'id' });
+
+      // 3. Seed Products and Images
+      for (const prod of INITIAL_PRODUCTS) {
+        const { images, category_name, ...prodData } = prod;
+        await supabase.from('products').upsert([prodData], { onConflict: 'id' });
+
+        if (images && images.length > 0) {
+          for (let idx = 0; idx < images.length; idx++) {
+            const img = images[idx];
+            await supabase.from('product_images').upsert([
+              {
+                id: img.id || `img-${prod.id}-${idx + 1}`,
+                product_id: prod.id,
+                image_url: img.image_url,
+                sort_order: img.sort_order || idx + 1,
+                is_primary: img.is_primary ?? (idx === 0),
+                caption: img.caption || ''
+              }
+            ], { onConflict: 'id' });
+          }
+        }
+      }
+
+      // 4. Seed Initial Enquiries if empty
+      const { data: existingEnqs } = await supabase.from('enquiries').select('id').limit(1);
+      if (!existingEnqs || existingEnqs.length === 0) {
+        for (const enq of INITIAL_ENQUIRIES) {
+          const { items, ...enqData } = enq;
+          await supabase.from('enquiries').upsert([enqData], { onConflict: 'id' });
+          if (items && items.length > 0) {
+            for (const it of items) {
+              await supabase.from('enquiry_items').insert([{
+                enquiry_id: enq.id,
+                product_id: it.product_id,
+                product_name: it.product_name,
+                sku: it.sku,
+                price: it.price || 0,
+                quantity: it.quantity,
+                image_url: it.image_url || '',
+                category_name: it.category_name || ''
+              }]);
+            }
+          }
+        }
+      }
+
+      notifyDataChanged('all');
+      return { success: true, message: 'Successfully populated Supabase database with machinery catalog!' };
+    } catch (err: any) {
+      console.error('Failed to seed Supabase:', err);
+      return { success: false, message: err.message || 'Error occurred while writing to Supabase.' };
+    }
+  },
+
   // PRODUCTS
   async getProducts(options?: {
     categorySlug?: string;
@@ -119,14 +205,22 @@ export const dataService = {
         }
 
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
-          // Format product images
-          return data.map((p: any) => ({
-            ...p,
-            images: p.product_images && p.product_images.length > 0
-              ? p.product_images.sort((a: any, b: any) => a.sort_order - b.sort_order)
-              : []
-          }));
+        if (!error && data) {
+          if (data.length > 0) {
+            const categories = await this.getCategories();
+            const catMap = new Map(categories.map(c => [c.id, c.name]));
+            return data.map((p: any) => ({
+              ...p,
+              category_name: catMap.get(p.category_id) || 'Machinery',
+              images: p.product_images && p.product_images.length > 0
+                ? p.product_images.sort((a: any, b: any) => a.sort_order - b.sort_order)
+                : []
+            }));
+          } else {
+            // If Supabase table exists but is currently empty, attempt seed once
+            console.log('Supabase products table is empty. Triggering auto-seed...');
+            await this.seedSupabase(false);
+          }
         }
       } catch (err) {
         console.warn('Supabase product fetch fallback to local:', err);
