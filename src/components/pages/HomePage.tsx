@@ -52,7 +52,7 @@ export const HomePage: React.FC = () => {
     return () => window.removeEventListener(DATA_CHANGE_EVENT, loadData);
   }, []);
 
-  const cleanWhatsAppNumber = (settings.whatsapp || '+91 98422 54321').replace(/[^0-9]/g, '');
+  const cleanWhatsAppNumber = (settings.whatsapp || '+91 95852 62522').replace(/[^0-9]/g, '');
   const waHeroUrl = `https://wa.me/${cleanWhatsAppNumber}?text=${encodeURIComponent(
     `Hello ${settings.business_name}, I am interested in exploring your machine tools catalog and requesting technical specifications.`
   )}`;

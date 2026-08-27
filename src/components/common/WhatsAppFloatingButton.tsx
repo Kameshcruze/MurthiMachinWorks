@@ -8,7 +8,7 @@ export const WhatsAppFloatingButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [customMsg, setCustomMsg] = useState('');
 
-  const cleanNumber = (settings.whatsapp || '+91 98422 54321').replace(/[^0-9]/g, '');
+  const cleanNumber = (settings.whatsapp || '+91 95852 62522').replace(/[^0-9]/g, '');
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();

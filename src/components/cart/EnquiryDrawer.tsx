@@ -397,7 +397,7 @@ export const EnquiryDrawer: React.FC = () => {
                               type="tel"
                               value={formData.phone}
                               onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                              placeholder="e.g. +91 98422 12345"
+                              placeholder="e.g. +91 95852 62522"
                               className={`w-full pl-8 pr-2.5 py-2 text-xs bg-slate-50 border rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                                 errors.phone ? 'border-rose-400' : 'border-slate-300'
                               }`}

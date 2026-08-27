@@ -316,7 +316,7 @@ export const CartPage: React.FC = () => {
                           required
                           value={formData.phone}
                           onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                          placeholder="e.g. +91 98422 12345"
+                          placeholder="e.g. +91 95852 62522"
                           className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
                         />
                       </div>

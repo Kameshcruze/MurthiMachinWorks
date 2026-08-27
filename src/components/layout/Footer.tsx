@@ -21,7 +21,7 @@ export const Footer: React.FC = () => {
   const { settings } = useSettings();
   const { isAuthenticated } = useAuth();
 
-  const cleanWhatsAppNumber = (settings.whatsapp || '+91 98422 54321').replace(/[^0-9]/g, '');
+  const cleanWhatsAppNumber = (settings.whatsapp || '+91 95852 62522').replace(/[^0-9]/g, '');
 
   const quickLinks = [
     { label: 'Home', page: 'home' as const },

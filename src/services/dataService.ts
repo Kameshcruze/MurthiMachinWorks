@@ -80,7 +80,20 @@ function getLocalSettings(): SiteSettings {
     return INITIAL_SETTINGS;
   }
   try {
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    let changed = false;
+    if (parsed.phone === '+91 98422 54321' || parsed.phone === '98422 54321' || !parsed.phone) {
+      parsed.phone = '+91 95852 62522';
+      changed = true;
+    }
+    if (parsed.whatsapp === '+91 98422 54321' || parsed.whatsapp === '98422 54321' || !parsed.whatsapp) {
+      parsed.whatsapp = '+91 95852 62522';
+      changed = true;
+    }
+    if (changed) {
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(parsed));
+    }
+    return parsed;
   } catch {
     return INITIAL_SETTINGS;
   }

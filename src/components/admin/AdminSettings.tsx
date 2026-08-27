@@ -135,7 +135,7 @@ export const AdminSettings: React.FC = () => {
                 type="text"
                 value={formData.whatsapp}
                 onChange={e => setFormData({ ...formData, whatsapp: e.target.value })}
-                placeholder="+91 98422 54321"
+                placeholder="+91 95852 62522"
                 className="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
                 required
               />
@@ -152,7 +152,7 @@ export const AdminSettings: React.FC = () => {
                 type="text"
                 value={formData.phone}
                 onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="+91 98422 54321"
+                placeholder="+91 95852 62522"
                 className="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
                 required
               />

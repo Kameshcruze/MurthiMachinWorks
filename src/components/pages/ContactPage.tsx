@@ -82,7 +82,7 @@ export const ContactPage: React.FC = () => {
     }
   };
 
-  const cleanWhatsAppNumber = (settings.whatsapp || '+91 98422 54321').replace(/[^0-9]/g, '');
+  const cleanWhatsAppNumber = (settings.whatsapp || '+91 95852 62522').replace(/[^0-9]/g, '');
   const waUrl = `https://wa.me/${cleanWhatsAppNumber}?text=${encodeURIComponent(
     `Hello Murthi Machine Works, I would like to schedule a consultation regarding industrial machinery tools.`
   )}`;
@@ -314,7 +314,7 @@ export const ContactPage: React.FC = () => {
                         type="tel"
                         value={formData.phone}
                         onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="e.g. +91 98422 12345"
+                        placeholder="e.g. +91 95852 62522"
                         className={`w-full pl-9 pr-3 py-2.5 text-xs bg-slate-50 border rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                           errors.phone ? 'border-rose-400' : 'border-slate-300'
                         }`}
