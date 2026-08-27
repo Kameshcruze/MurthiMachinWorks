@@ -111,19 +111,7 @@ function getLocalProducts(): Product[] {
     return INITIAL_PRODUCTS;
   }
   try {
-    const list: Product[] = JSON.parse(data);
-    let changed = false;
-    const sanitized = list.map(prod => {
-      if (prod.category_id && (prod.category_id.startsWith('cat-') || prod.category_id.startsWith('cat_'))) {
-        changed = true;
-        return { ...prod, category_id: prod.category_id.replace(/^cat[-_]/i, 'MMW-') };
-      }
-      return prod;
-    });
-    if (changed) {
-      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(sanitized));
-    }
-    return sanitized;
+    return JSON.parse(data);
   } catch {
     return INITIAL_PRODUCTS;
   }
@@ -141,19 +129,7 @@ function getLocalCategories(): Category[] {
     return INITIAL_CATEGORIES;
   }
   try {
-    const list: Category[] = JSON.parse(data);
-    let changed = false;
-    const sanitized = list.map(cat => {
-      if (cat.id && (cat.id.startsWith('cat-') || cat.id.startsWith('cat_'))) {
-        changed = true;
-        return { ...cat, id: cat.id.replace(/^cat[-_]/i, 'MMW-') };
-      }
-      return cat;
-    });
-    if (changed) {
-      localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(sanitized));
-    }
-    return sanitized;
+    return JSON.parse(data);
   } catch {
     return INITIAL_CATEGORIES;
   }
@@ -705,10 +681,54 @@ export const dataService = {
 
         const { data, error } = await query;
         if (!error && data && data.length > 0) {
-          let prods: Product[] = data.map((p: any) => ({
-            ...p,
-            images: p.product_images || []
-          }));
+          const categories = getLocalCategories();
+          let prods: Product[] = data.map((p: any) => {
+            const rawImages = p.product_images || [];
+            const sortedImages = [...rawImages].sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
+            const cat = categories.find(c => c.id === p.category_id || c.slug === p.category_id);
+
+            return {
+              id: p.id,
+              name: p.name,
+              slug: p.slug,
+              sku: p.sku,
+              category_id: p.category_id || '',
+              category_name: cat ? cat.name : (p.category_name || 'Machinery'),
+              brand: p.brand || 'Murthi Precision',
+              short_description: p.short_description || '',
+              description: p.description || '',
+              price: Number(p.price) || 0,
+              sale_price: p.sale_price !== null && p.sale_price !== undefined && !isNaN(Number(p.sale_price)) ? Number(p.sale_price) : null,
+              show_price: p.show_price !== false,
+              stock_status: p.stock_status || 'in_stock',
+              features: Array.isArray(p.features) ? p.features : [],
+              specifications: Array.isArray(p.specifications) ? p.specifications : [],
+              is_featured: !!p.is_featured,
+              is_active: p.is_active !== false,
+              created_at: p.created_at,
+              updated_at: p.updated_at,
+              images: sortedImages.map((img: any) => ({
+                id: img.id,
+                product_id: img.product_id,
+                image_url: img.image_url,
+                sort_order: img.sort_order || 1,
+                is_primary: !!img.is_primary,
+                caption: img.caption || ''
+              }))
+            };
+          });
+
+          // Sync to local storage
+          try {
+            localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(prods));
+          } catch {}
+
+          if (options?.categorySlug) {
+            const cat = categories.find(c => c.slug === options.categorySlug || c.id === options.categorySlug);
+            if (cat) {
+              prods = prods.filter(p => p.category_id === cat.id || p.category_id === cat.slug);
+            }
+          }
 
           if (options?.searchQuery) {
             const q = options.searchQuery.toLowerCase();
@@ -781,9 +801,14 @@ export const dataService = {
           .single();
 
         if (!error && data) {
+          const rawImages = data.product_images || [];
           return {
             ...data,
-            images: data.product_images || []
+            price: Number(data.price) || 0,
+            sale_price: data.sale_price !== null && data.sale_price !== undefined ? Number(data.sale_price) : null,
+            features: Array.isArray(data.features) ? data.features : [],
+            specifications: Array.isArray(data.specifications) ? data.specifications : [],
+            images: rawImages
           };
         }
       } catch (err) {
@@ -796,6 +821,31 @@ export const dataService = {
   },
 
   async getProductById(id: string): Promise<Product | null> {
+    const supabase = getSupabaseClient();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*, product_images(*)')
+          .eq('id', id)
+          .single();
+
+        if (!error && data) {
+          const rawImages = data.product_images || [];
+          return {
+            ...data,
+            price: Number(data.price) || 0,
+            sale_price: data.sale_price !== null && data.sale_price !== undefined ? Number(data.sale_price) : null,
+            features: Array.isArray(data.features) ? data.features : [],
+            specifications: Array.isArray(data.specifications) ? data.specifications : [],
+            images: rawImages
+          };
+        }
+      } catch (err) {
+        console.warn('Supabase getProductById fallback:', err);
+      }
+    }
+
     const list = getLocalProducts();
     return list.find(p => p.id === id) || null;
   },
@@ -804,15 +854,25 @@ export const dataService = {
     const newId = `prod-${Date.now()}`;
     const slug = productData.slug || slugify(productData.name);
     
-    // Find category name
+    // Find category info
     const categories = getLocalCategories();
-    const cat = categories.find(c => c.id === productData.category_id);
+    const cat = categories.find(c => c.id === productData.category_id || c.slug === productData.category_id);
 
     const newProduct: Product = {
       ...productData,
       id: newId,
       slug,
-      category_name: cat?.name || 'Machinery',
+      category_id: productData.category_id || (cat ? cat.id : ''),
+      category_name: cat?.name || (productData as any).category_name || 'Machinery',
+      price: Number(productData.price) || 0,
+      sale_price: productData.sale_price !== undefined && productData.sale_price !== null && !isNaN(Number(productData.sale_price)) ? Number(productData.sale_price) : null,
+      show_price: productData.show_price ?? true,
+      stock_status: productData.stock_status || 'in_stock',
+      brand: productData.brand || 'Murthi Precision',
+      features: productData.features || [],
+      specifications: productData.specifications || [],
+      is_active: productData.is_active ?? true,
+      is_featured: productData.is_featured ?? false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       images: productData.images || []
@@ -821,21 +881,71 @@ export const dataService = {
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
+        // 1. Ensure foreign key constraint is satisfied by verifying category in Supabase
+        let validCategoryId: string | null = null;
+        if (newProduct.category_id) {
+          const { data: dbCatById } = await supabase.from('categories').select('id').eq('id', newProduct.category_id).maybeSingle();
+          if (dbCatById && dbCatById.id) {
+            validCategoryId = dbCatById.id;
+          } else {
+            // Check by slug or name
+            const catSlug = slugify(cat?.name || newProduct.category_id);
+            const { data: dbCatBySlug } = await supabase.from('categories').select('id').eq('slug', catSlug).maybeSingle();
+            if (dbCatBySlug && dbCatBySlug.id) {
+              validCategoryId = dbCatBySlug.id;
+            } else {
+              // Create category in DB so foreign key constraint is satisfied
+              const newDbCat = {
+                id: newProduct.category_id,
+                name: cat?.name || newProduct.category_name,
+                slug: catSlug,
+                description: cat?.description || '',
+                image_url: cat?.image_url || 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80',
+                is_active: true,
+                sort_order: cat?.sort_order || 99
+              };
+              const { data: insertedCat, error: catErr } = await supabase.from('categories').insert([newDbCat]).select('id').maybeSingle();
+              if (!catErr && insertedCat) {
+                validCategoryId = insertedCat.id;
+              }
+            }
+          }
+        }
+
         const { id, images, category_name, ...dbPayload } = newProduct;
-        await supabase.from('products').insert([{ id: newId, ...dbPayload }]);
+        const insertPayload = {
+          id: newId,
+          ...dbPayload,
+          category_id: validCategoryId,
+          price: Number(dbPayload.price) || 0,
+          sale_price: dbPayload.sale_price !== null && dbPayload.sale_price !== undefined ? Number(dbPayload.sale_price) : null,
+          features: dbPayload.features || [],
+          specifications: dbPayload.specifications || []
+        };
+
+        const { error: insertErr } = await supabase.from('products').insert([insertPayload]);
+        if (insertErr) {
+          console.error('Supabase product insert error:', insertErr);
+          // If foreign key constraint failed, insert with category_id: null
+          if (insertErr.code === '23503') {
+            await supabase.from('products').insert([{ ...insertPayload, category_id: null }]);
+          }
+        }
+
+        // Insert gallery images into product_images table
         if (images && images.length > 0) {
-          await supabase.from('product_images').insert(
-            images.map((img, idx) => ({
-              product_id: newId,
-              image_url: img.image_url,
-              sort_order: idx + 1,
-              is_primary: idx === 0,
-              caption: img.caption || ''
-            }))
-          );
+          const imageRows = images.map((img, idx) => ({
+            id: img.id || `img-${newId}-${idx + 1}`,
+            product_id: newId,
+            image_url: img.image_url,
+            sort_order: img.sort_order || idx + 1,
+            is_primary: img.is_primary !== undefined ? img.is_primary : idx === 0,
+            caption: img.caption || ''
+          }));
+          await supabase.from('product_images').insert(imageRows);
         }
       } catch (err) {
-        console.warn('Supabase createProduct fallback to local:', err);
+        console.warn('Supabase createProduct error:', err);
       }
     }
 
@@ -864,32 +974,79 @@ export const dataService = {
   async updateProduct(id: string, updates: Partial<Product>): Promise<Product | null> {
     const current = getLocalProducts();
     const index = current.findIndex(p => p.id === id);
-    if (index === -1) return null;
+    const existing = index !== -1 ? current[index] : await this.getProductById(id);
+    if (!existing) return null;
 
-    const oldProduct = { ...current[index] };
+    const oldProduct = { ...existing };
     const categories = getLocalCategories();
-    const catId = updates.category_id || current[index].category_id;
-    const cat = categories.find(c => c.id === catId);
+    const catId = updates.category_id || existing.category_id;
+    const cat = categories.find(c => c.id === catId || c.slug === catId);
 
     const updated: Product = {
-      ...current[index],
+      ...existing,
       ...updates,
-      category_name: cat ? cat.name : current[index].category_name,
+      category_id: cat ? cat.id : catId,
+      category_name: cat ? cat.name : existing.category_name,
+      price: updates.price !== undefined ? Number(updates.price) : existing.price,
+      sale_price: updates.sale_price !== undefined ? (updates.sale_price !== null && !isNaN(Number(updates.sale_price)) ? Number(updates.sale_price) : null) : existing.sale_price,
       updated_at: new Date().toISOString()
     };
 
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
-        const { images, category_name, ...dbPayload } = updated;
-        await supabase.from('products').update(dbPayload).eq('id', id);
+        let validCategoryId: string | null = null;
+        if (updated.category_id) {
+          const { data: dbCat } = await supabase.from('categories').select('id').eq('id', updated.category_id).maybeSingle();
+          if (dbCat && dbCat.id) {
+            validCategoryId = dbCat.id;
+          }
+        }
+
+        const { id: _, images, category_name, ...dbPayload } = updated;
+        const updatePayload = {
+          ...dbPayload,
+          category_id: validCategoryId,
+          price: Number(dbPayload.price) || 0,
+          sale_price: dbPayload.sale_price !== null && dbPayload.sale_price !== undefined ? Number(dbPayload.sale_price) : null,
+          features: dbPayload.features || [],
+          specifications: dbPayload.specifications || []
+        };
+
+        const { error: updateErr } = await supabase.from('products').update(updatePayload).eq('id', id);
+        if (updateErr) {
+          console.warn('Supabase updateProduct error:', updateErr);
+          if (updateErr.code === '23503') {
+            await supabase.from('products').update({ ...updatePayload, category_id: null }).eq('id', id);
+          }
+        }
+
+        // Sync images in product_images table
+        if (updates.images !== undefined) {
+          await supabase.from('product_images').delete().eq('product_id', id);
+          if (updates.images.length > 0) {
+            const imageRows = updates.images.map((img, idx) => ({
+              id: img.id || `img-${id}-${Date.now()}-${idx + 1}`,
+              product_id: id,
+              image_url: img.image_url,
+              sort_order: img.sort_order || idx + 1,
+              is_primary: img.is_primary !== undefined ? img.is_primary : idx === 0,
+              caption: img.caption || ''
+            }));
+            await supabase.from('product_images').insert(imageRows);
+          }
+        }
       } catch (err) {
         console.warn('Supabase updateProduct fallback:', err);
       }
     }
 
-    current[index] = updated;
-    saveLocalProducts([...current]);
+    if (index !== -1) {
+      current[index] = updated;
+      saveLocalProducts([...current]);
+    } else {
+      saveLocalProducts([updated, ...current]);
+    }
 
     // Compute exact field diffs
     const diffs = computeProductDiff(oldProduct, updates);
@@ -984,16 +1141,12 @@ export const dataService = {
         const { data, error } = await supabase.from('categories').select('*').order('sort_order', { ascending: true });
         if (!error && data && data.length > 0) {
           const products = getLocalProducts();
-          return data.map((c: Category) => {
-            const normalizedId = c.id?.startsWith('cat-') || c.id?.startsWith('cat_')
-              ? c.id.replace(/^cat[-_]/i, 'MMW-')
-              : c.id;
-            return {
-              ...c,
-              id: normalizedId,
-              product_count: products.filter(p => p.category_id === c.id || p.category_id === normalizedId).length
-            };
-          });
+          const list = data.map((c: Category) => ({
+            ...c,
+            product_count: products.filter(p => p.category_id === c.id || p.category_id === c.slug).length
+          }));
+          saveLocalCategories(list);
+          return list;
         }
       } catch (err) {
         console.warn('Supabase getCategories fallback:', err);
