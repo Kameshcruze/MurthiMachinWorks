@@ -18,7 +18,6 @@ import {
   Bell,
   Activity,
   Users,
-  Globe,
   UserCheck,
   Lock
 } from 'lucide-react';
@@ -53,7 +52,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'audit-logs', label: 'Audit Logs (IP & User)', icon: Activity, highlight: true, adminOnly: true },
     { id: 'team', label: 'Employee Access & Roles', icon: Users, adminOnly: true },
     { id: 'settings', label: 'Website Settings', icon: Settings, adminOnly: true },
-    { id: 'sql-setup', label: 'Supabase SQL Setup', icon: Database, adminOnly: true },
   ];
 
   // Filter items: Only show admin-only tabs to admin/super_admin users
@@ -192,15 +190,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               </span>
               <span className="text-[10px] text-slate-400 truncate max-w-[90px]">
                 {user?.department || 'Operations'}
-              </span>
-            </div>
-
-            <div className="pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">
-              <span className="flex items-center gap-1">
-                <Globe className="w-3 h-3 text-emerald-400" /> IP:
-              </span>
-              <span className="font-mono text-slate-300 font-semibold truncate max-w-[110px]">
-                {currentIp}
               </span>
             </div>
           </div>

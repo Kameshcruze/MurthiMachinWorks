@@ -281,7 +281,7 @@ export const AdminAuditLogs: React.FC = () => {
               </h2>
               {isSupabaseConfigured() ? (
                 <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-                  <Cloud className="w-3 h-3" /> SUPABASE CLOUD ACTIVE
+                  <Cloud className="w-3 h-3" /> DATABASE CLOUD ACTIVE
                 </span>
               ) : (
                 <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
@@ -290,7 +290,7 @@ export const AdminAuditLogs: React.FC = () => {
               )}
             </div>
             <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-              Every newly added, updated, or deleted machinery product is permanently recorded in Supabase PostgreSQL with the employee ID, login user name, timestamp, and network IP address. All portal users can view these audit logs from any device.
+              Every newly added, updated, or deleted machinery product is permanently recorded in the database with the employee ID, login user name, timestamp, and network IP address. All portal users can view these audit logs from any device.
             </p>
           </div>
         </div>

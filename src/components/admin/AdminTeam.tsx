@@ -225,7 +225,7 @@ export const AdminTeam: React.FC = () => {
               </h2>
               {isSupabaseLive ? (
                 <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full">
-                  <Cloud className="w-3 h-3" /> SUPABASE CLOUD SYNC
+                  <Cloud className="w-3 h-3" /> DATABASE CLOUD SYNC
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
@@ -234,7 +234,7 @@ export const AdminTeam: React.FC = () => {
               )}
             </div>
             <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-              Create, update, and manage employee login accounts with custom passwords, roles, and permissions stored centrally in Supabase. Every employee can log into the portal from any device, and all actions are recorded in the shared audit logs.
+              Create, update, and manage employee login accounts with custom passwords, roles, and permissions stored centrally in the database. Every employee can log into the portal from any device, and all actions are recorded in the shared audit logs.
             </p>
           </div>
         </div>
@@ -244,10 +244,10 @@ export const AdminTeam: React.FC = () => {
             onClick={handleSyncCloud}
             disabled={isSyncing}
             className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs rounded-xl transition"
-            title="Refresh accounts from Supabase"
+            title="Refresh accounts from database"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-amber-400' : ''}`} />
-            <span>Sync Cloud</span>
+            <span>Sync Database</span>
           </button>
 
           <button
