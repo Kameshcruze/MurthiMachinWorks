@@ -19,7 +19,8 @@ import {
   Activity,
   Users,
   UserCheck,
-  Lock
+  Lock,
+  Cog
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -99,12 +100,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         {/* Brand Top */}
         <div className="p-5 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-black text-lg font-heading shadow-md">
-              M
+            <div className="w-9 h-9 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md">
+              <Cog className="w-5 h-5 animate-[spin_12s_linear_infinite]" />
             </div>
             <div>
               <h2 className="font-heading font-bold text-sm tracking-tight text-white leading-none">
-                Murthi Admin
+                MMW
               </h2>
               <p className="text-[10px] text-amber-400 font-mono mt-1">
                 {isAdmin ? 'Admin Console' : 'Staff Portal'}
