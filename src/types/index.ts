@@ -136,9 +136,51 @@ export interface AdminUser {
   id: string;
   email: string;
   name: string;
-  role: 'super_admin' | 'admin' | 'manager';
+  role: 'super_admin' | 'admin' | 'manager' | 'editor' | 'sales';
+  department?: string;
   user_metadata?: any;
   created_at?: string;
+}
+
+export type AuditActionType = 'CREATE' | 'UPDATE' | 'DELETE' | 'DUPLICATE' | 'STATUS_CHANGE';
+export type AuditTargetType = 'PRODUCT' | 'CATEGORY' | 'ENQUIRY' | 'SETTINGS' | 'USER';
+
+export interface AuditFieldChange {
+  field: string;
+  field_label?: string;
+  old_value?: any;
+  new_value?: any;
+}
+
+export interface AuditLog {
+  id: string;
+  action: AuditActionType;
+  target_type: AuditTargetType;
+  target_id: string;
+  target_name: string;
+  user_id: string;
+  user_email: string;
+  user_name: string;
+  user_role?: string;
+  ip_address: string;
+  details?: string;
+  changes?: AuditFieldChange[];
+  created_at: string;
+}
+
+export interface EmployeeUser {
+  id: string;
+  name: string;
+  email: string;
+  password?: string;
+  role: 'super_admin' | 'admin' | 'manager' | 'editor' | 'sales';
+  role_label?: string;
+  department?: string;
+  phone?: string;
+  is_active: boolean;
+  last_login?: string;
+  last_ip?: string;
+  created_at: string;
 }
 
 export interface FilterState {
@@ -150,3 +192,4 @@ export interface FilterState {
   searchQuery: string;
   sortBy: 'featured' | 'newest' | 'price_asc' | 'price_desc' | 'name_asc';
 }
+

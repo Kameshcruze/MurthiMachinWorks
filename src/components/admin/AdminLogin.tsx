@@ -114,23 +114,66 @@ export const AdminLogin: React.FC = () => {
         </form>
 
         {/* Demo Helper Box */}
-        <div className="p-3.5 bg-slate-800/80 rounded-xl border border-slate-700 text-xs text-slate-300 space-y-2">
+        <div className="p-3.5 bg-slate-800/90 rounded-xl border border-slate-700 text-xs text-slate-300 space-y-2.5">
           <div className="flex items-center justify-between">
             <span className="font-semibold text-amber-400 flex items-center gap-1">
               <KeyRound className="w-3.5 h-3.5" />
-              Demo Credentials Preset
+              Employee Login Presets
             </span>
+            <span className="text-[10px] text-slate-400">All actions logged with IP</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-1.5 pt-1">
             <button
               type="button"
-              onClick={handleFillDemo}
-              className="text-[11px] text-amber-400 hover:underline font-bold"
+              onClick={() => {
+                setEmail('admin@murthimachineworks.com');
+                setPassword('admin123');
+              }}
+              className="text-left p-2 rounded-lg bg-slate-900/90 border border-slate-700/80 hover:border-amber-500/50 hover:bg-slate-800 transition"
             >
-              Fill In
+              <p className="text-[11px] font-bold text-white leading-tight">Master Admin</p>
+              <p className="text-[10px] text-amber-400 font-mono truncate">admin@...</p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('kamesh@murthimachineworks.com');
+                setPassword('kamesh123');
+              }}
+              className="text-left p-2 rounded-lg bg-slate-900/90 border border-slate-700/80 hover:border-amber-500/50 hover:bg-slate-800 transition"
+            >
+              <p className="text-[11px] font-bold text-white leading-tight">Kamesh (Prod Head)</p>
+              <p className="text-[10px] text-emerald-400 font-mono truncate">kamesh@...</p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('editor@murthimachineworks.com');
+                setPassword('editor123');
+              }}
+              className="text-left p-2 rounded-lg bg-slate-900/90 border border-slate-700/80 hover:border-amber-500/50 hover:bg-slate-800 transition"
+            >
+              <p className="text-[11px] font-bold text-white leading-tight">Catalog Specialist</p>
+              <p className="text-[10px] text-sky-400 font-mono truncate">editor@...</p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('sales@murthimachineworks.com');
+                setPassword('sales123');
+              }}
+              className="text-left p-2 rounded-lg bg-slate-900/90 border border-slate-700/80 hover:border-amber-500/50 hover:bg-slate-800 transition"
+            >
+              <p className="text-[11px] font-bold text-white leading-tight">Sales Engineer</p>
+              <p className="text-[10px] text-purple-400 font-mono truncate">sales@...</p>
             </button>
           </div>
-          <p className="text-[11px] text-slate-400 font-mono">
-            User: admin@murthimachineworks.com<br />
-            Pass: admin123
+          <p className="text-[10px] text-slate-400 text-center">
+            Password format: <code className="text-amber-300">[name]123</code> or create custom logins in Team tab.
           </p>
         </div>
 

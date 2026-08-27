@@ -29,7 +29,7 @@ export const INITIAL_SETTINGS: SiteSettings = {
 
 export const INITIAL_CATEGORIES: Category[] = [
   {
-    id: 'cat-lathe',
+    id: 'MMW-lathe',
     name: 'Lathe Machines',
     slug: 'lathe-machines',
     description: 'Heavy duty all-geared, medium duty, and precision tool room lathe machines engineered for rigorous turning operations.',
@@ -38,7 +38,7 @@ export const INITIAL_CATEGORIES: Category[] = [
     sort_order: 1
   },
   {
-    id: 'cat-milling',
+    id: 'MMW-milling',
     name: 'Milling Machines',
     slug: 'milling-machines',
     description: 'Universal, vertical, and horizontal knee-type milling machines for precision slotting, facing, and gear cutting.',
@@ -47,7 +47,7 @@ export const INITIAL_CATEGORIES: Category[] = [
     sort_order: 2
   },
   {
-    id: 'cat-cnc',
+    id: 'MMW-cnc',
     name: 'CNC Machinery',
     slug: 'cnc-machinery',
     description: 'High-speed CNC vertical machining centers and precision turning centers with Siemens / Fanuc controllers.',
@@ -56,7 +56,7 @@ export const INITIAL_CATEGORIES: Category[] = [
     sort_order: 3
   },
   {
-    id: 'cat-drilling',
+    id: 'MMW-drilling',
     name: 'Drilling Machines',
     slug: 'drilling-machines',
     description: 'Heavy duty radial arm drills, pillar drilling machines, and multi-spindle drilling equipment for structural steel.',
@@ -65,7 +65,7 @@ export const INITIAL_CATEGORIES: Category[] = [
     sort_order: 4
   },
   {
-    id: 'cat-grinding',
+    id: 'MMW-grinding',
     name: 'Grinding Machines',
     slug: 'grinding-machines',
     description: 'Hydraulic surface grinders, universal cylindrical grinders, and tool & cutter grinders for micro-finish tolerances.',
@@ -74,7 +74,7 @@ export const INITIAL_CATEGORIES: Category[] = [
     sort_order: 5
   },
   {
-    id: 'cat-cutting',
+    id: 'MMW-cutting',
     name: 'Cutting & Sawing Machines',
     slug: 'cutting-and-sawing',
     description: 'Semi-automatic and double-column horizontal metal bandsaw cutting machines for structural steel and alloy billets.',
@@ -83,7 +83,7 @@ export const INITIAL_CATEGORIES: Category[] = [
     sort_order: 6
   },
   {
-    id: 'cat-hydraulic',
+    id: 'MMW-hydraulic',
     name: 'Hydraulic Presses',
     slug: 'hydraulic-presses',
     description: 'C-frame, H-frame, and deep-throat hydraulic pressing machines for stamping, bending, and forging.',
@@ -92,7 +92,7 @@ export const INITIAL_CATEGORIES: Category[] = [
     sort_order: 7
   },
   {
-    id: 'cat-accessories',
+    id: 'MMW-accessories',
     name: 'Tooling & Accessories',
     slug: 'tooling-and-accessories',
     description: 'Precision 3-jaw/4-jaw chucks, rotary tables, quick-change tool posts, DRO digital readout systems, and carbide tooling.',
@@ -108,7 +108,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Heavy Duty All-Geared Precision Lathe Machine',
     slug: 'heavy-duty-all-geared-precision-lathe-machine',
     sku: 'MMW-LT-450G',
-    category_id: 'cat-lathe',
+    category_id: 'MMW-lathe',
     category_name: 'Lathe Machines',
     brand: 'Murthi Precision',
     short_description: 'Induction hardened bedways, flame-treated gears, and 450mm swing over bed for heavy industrial turning.',
@@ -167,7 +167,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Universal Heavy Duty Milling Machine with DRO',
     slug: 'universal-heavy-duty-milling-machine-dro',
     sku: 'MMW-ML-3U',
-    category_id: 'cat-milling',
+    category_id: 'MMW-milling',
     category_name: 'Milling Machines',
     brand: 'Murthi Precision',
     short_description: '3-Axis motorized feed with swivel table ±45°, ISO 40/50 spindle, and precision optical DRO.',
@@ -216,7 +216,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Precision CNC Vertical Machining Center VMC-850',
     slug: 'precision-cnc-vertical-machining-center-vmc-850',
     sku: 'MMW-CNC-VMC850',
-    category_id: 'cat-cnc',
+    category_id: 'MMW-cnc',
     category_name: 'CNC Machinery',
     brand: 'Murthi Titan CNC',
     short_description: 'BT-40 10,000 RPM spindle, 24-station arm type tool changer, Fanuc 0i-MF Plus controller.',
@@ -265,7 +265,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Heavy Duty 50mm Industrial Radial Drilling Machine',
     slug: 'heavy-duty-50mm-industrial-radial-drilling-machine',
     sku: 'MMW-RD-50/1600',
-    category_id: 'cat-drilling',
+    category_id: 'MMW-drilling',
     category_name: 'Drilling Machines',
     brand: 'Murthi Precision',
     short_description: 'Hydraulic clamping, 1600mm arm radius, 50mm solid drilling capacity in steel, MT-5 spindle.',
@@ -314,7 +314,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Precision Hydraulic Surface Grinding Machine',
     slug: 'precision-hydraulic-surface-grinding-machine-4080',
     sku: 'MMW-SG-4080H',
-    category_id: 'cat-grinding',
+    category_id: 'MMW-grinding',
     category_name: 'Grinding Machines',
     brand: 'Murthi Precision',
     short_description: 'Working area 400 x 800 mm, auto cross/longitudinal feeds, electro-magnetic chuck & demagnetizer.',
@@ -357,7 +357,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Semi-Automatic Heavy Double Column Metal Bandsaw',
     slug: 'semi-automatic-double-column-metal-bandsaw-350',
     sku: 'MMW-BS-350DC',
-    category_id: 'cat-cutting',
+    category_id: 'MMW-cutting',
     category_name: 'Cutting & Sawing Machines',
     brand: 'Murthi CutMaster',
     short_description: 'Dual column linear guides, hydraulic blade tensioning, and 350mm round bar cutting capacity.',
@@ -399,7 +399,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: '100 Ton Heavy Duty C-Frame Hydraulic Power Press',
     slug: '100-ton-heavy-duty-c-frame-hydraulic-power-press',
     sku: 'MMW-HP-100T',
-    category_id: 'cat-hydraulic',
+    category_id: 'MMW-hydraulic',
     category_name: 'Hydraulic Presses',
     brand: 'Murthi HydroTech',
     short_description: '1000 kN nominal force, PLC touch screen control, light curtain safety sensors, and micro-inching stroke.',
@@ -442,7 +442,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'High Precision CNC Slant Bed Turning Center',
     slug: 'high-precision-cnc-slant-bed-turning-center-tc200',
     sku: 'MMW-CNC-TC200',
-    category_id: 'cat-cnc',
+    category_id: 'MMW-cnc',
     category_name: 'CNC Machinery',
     brand: 'Murthi Titan CNC',
     short_description: '30° true slant bed, 8-station hydraulic turret, 8-inch chuck, 4500 RPM spindle speed.',
@@ -491,7 +491,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Heavy Duty Industrial 3-Jaw Self-Centering Scroll Chuck 315mm',
     slug: 'heavy-duty-industrial-3-jaw-scroll-chuck-315mm',
     sku: 'MMW-ACC-CK315',
-    category_id: 'cat-accessories',
+    category_id: 'MMW-accessories',
     category_name: 'Tooling & Accessories',
     brand: 'Murthi Precision Tooling',
     short_description: 'Forged steel body, hardened reversible two-piece jaws, A2-8 direct mount or flat back.',
@@ -611,3 +611,138 @@ export const INITIAL_ENQUIRIES: Enquiry[] = [
     ]
   }
 ];
+
+export const INITIAL_EMPLOYEES: any[] = [
+  {
+    id: 'emp-101',
+    name: 'Murthi Admin (Master)',
+    email: 'admin@murthimachineworks.com',
+    password: 'admin123',
+    role: 'super_admin',
+    role_label: 'Super Administrator',
+    department: 'Executive Management',
+    phone: '+91 95852 62522',
+    is_active: true,
+    last_login: new Date(Date.now() - 3600000 * 2).toISOString(),
+    last_ip: '157.48.21.14',
+    created_at: new Date(Date.now() - 30 * 86400000).toISOString()
+  },
+  {
+    id: 'emp-102',
+    name: 'Kamesh R (Production Head)',
+    email: 'kamesh@murthimachineworks.com',
+    password: 'kamesh123',
+    role: 'manager',
+    role_label: 'Production Lead',
+    department: 'Machine Shop & Quality',
+    phone: '+91 95852 62522',
+    is_active: true,
+    last_login: new Date(Date.now() - 3600000 * 5).toISOString(),
+    last_ip: '49.207.202.91',
+    created_at: new Date(Date.now() - 25 * 86400000).toISOString()
+  },
+  {
+    id: 'emp-103',
+    name: 'Praveen Kumar',
+    email: 'editor@murthimachineworks.com',
+    password: 'editor123',
+    role: 'editor',
+    role_label: 'Catalog Specialist',
+    department: 'Digital Catalog & Technical Specs',
+    phone: '+91 95852 62522',
+    is_active: true,
+    last_login: new Date(Date.now() - 3600000 * 12).toISOString(),
+    last_ip: '117.203.14.88',
+    created_at: new Date(Date.now() - 15 * 86400000).toISOString()
+  },
+  {
+    id: 'emp-104',
+    name: 'Suresh Rajan',
+    email: 'sales@murthimachineworks.com',
+    password: 'sales123',
+    role: 'sales',
+    role_label: 'Senior Sales Engineer',
+    department: 'Domestic & Export Quotations',
+    phone: '+91 98433 77665',
+    is_active: true,
+    last_login: new Date(Date.now() - 3600000 * 24).toISOString(),
+    last_ip: '106.51.72.33',
+    created_at: new Date(Date.now() - 10 * 86400000).toISOString()
+  }
+];
+
+export const INITIAL_AUDIT_LOGS: any[] = [
+  {
+    id: 'log-101',
+    action: 'CREATE',
+    target_type: 'PRODUCT',
+    target_id: 'prod-3',
+    target_name: 'Precision CNC Vertical Machining Center VMC-850',
+    user_id: 'emp-102',
+    user_email: 'kamesh@murthimachineworks.com',
+    user_name: 'Kamesh R (Production Head)',
+    user_role: 'Production Lead',
+    ip_address: '49.207.202.91',
+    details: 'Added new VMC machine model with BT-40 10,000 RPM spindle specifications and technical datasheet.',
+    changes: [
+      { field: 'sku', old_value: null, new_value: 'MMW-CNC-VMC850', field_label: 'Model SKU' },
+      { field: 'price', old_value: null, new_value: 2380000, field_label: 'Unit Price' },
+      { field: 'category_id', old_value: null, new_value: 'MMW-cnc', field_label: 'Category ID' },
+      { field: 'stock_status', old_value: null, new_value: 'in_stock', field_label: 'Inventory Status' }
+    ],
+    created_at: new Date(Date.now() - 3600000 * 3).toISOString()
+  },
+  {
+    id: 'log-102',
+    action: 'UPDATE',
+    target_type: 'PRODUCT',
+    target_id: 'prod-1',
+    target_name: 'Heavy Duty All-Geared Precision Lathe Machine',
+    user_id: 'emp-101',
+    user_email: 'admin@murthimachineworks.com',
+    user_name: 'Murthi Admin (Master)',
+    user_role: 'Super Administrator',
+    ip_address: '157.48.21.14',
+    details: 'Updated base quotation price and adjusted lead-time delivery schedule.',
+    changes: [
+      { field: 'price', old_value: 420000, new_value: 450000, field_label: 'Unit Price (₹)' },
+      { field: 'stock_status', old_value: 'in_stock', new_value: 'in_stock', field_label: 'Stock Status' }
+    ],
+    created_at: new Date(Date.now() - 3600000 * 8).toISOString()
+  },
+  {
+    id: 'log-103',
+    action: 'UPDATE',
+    target_type: 'PRODUCT',
+    target_id: 'prod-4',
+    target_name: 'Heavy Duty 50mm Industrial Radial Drilling Machine',
+    user_id: 'emp-103',
+    user_email: 'editor@murthimachineworks.com',
+    user_name: 'Praveen Kumar',
+    user_role: 'Catalog Specialist',
+    ip_address: '117.203.14.88',
+    details: 'Updated ISO 9001:2015 test report specifications and spindle diameter parameters.',
+    changes: [
+      { field: 'specifications', old_value: '3 specs', new_value: '5 specs added', field_label: 'Technical Specs' }
+    ],
+    created_at: new Date(Date.now() - 3600000 * 18).toISOString()
+  },
+  {
+    id: 'log-104',
+    action: 'CREATE',
+    target_type: 'CATEGORY',
+    target_id: 'MMW-accessories',
+    target_name: 'Tooling & Accessories',
+    user_id: 'emp-101',
+    user_email: 'admin@murthimachineworks.com',
+    user_name: 'Murthi Admin (Master)',
+    user_role: 'Super Administrator',
+    ip_address: '157.48.21.14',
+    details: 'Configured new equipment category with prefix MMW-accessories.',
+    changes: [
+      { field: 'id', old_value: null, new_value: 'MMW-accessories', field_label: 'Category ID' }
+    ],
+    created_at: new Date(Date.now() - 3600000 * 36).toISOString()
+  }
+];
+

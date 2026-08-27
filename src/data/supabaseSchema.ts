@@ -12,7 +12,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 2. Create Categories Table
 CREATE TABLE IF NOT EXISTS public.categories (
-    id TEXT PRIMARY KEY DEFAULT ('cat-' || uuid_generate_v4()::text),
+    id TEXT PRIMARY KEY DEFAULT ('MMW-' || uuid_generate_v4()::text),
     name TEXT NOT NULL,
     slug TEXT NOT NULL UNIQUE,
     description TEXT,
@@ -141,14 +141,14 @@ CREATE POLICY "Public full access site_settings" ON public.site_settings FOR ALL
 -- 11. Initial Data Seeding (Categories)
 INSERT INTO public.categories (id, name, slug, description, image_url, is_active, sort_order)
 VALUES 
-('cat-lathe', 'Lathe Machines', 'lathe-machines', 'Heavy duty all-geared, medium duty, and precision tool room lathe machines.', 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80', true, 1),
-('cat-milling', 'Milling Machines', 'milling-machines', 'Universal, vertical, and horizontal knee-type milling machines.', 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80', true, 2),
-('cat-cnc', 'CNC Machinery', 'cnc-machinery', 'High-speed CNC vertical machining centers and precision turning centers.', 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80', true, 3),
-('cat-drilling', 'Drilling Machines', 'drilling-machines', 'Heavy duty radial arm drills, pillar drilling machines, and multi-spindle drilling.', 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80', true, 4),
-('cat-grinding', 'Grinding Machines', 'grinding-machines', 'Hydraulic surface grinders, universal cylindrical grinders, and tool & cutter grinders.', 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80', true, 5),
-('cat-cutting', 'Cutting & Sawing Machines', 'cutting-and-sawing', 'Semi-automatic and double-column horizontal metal bandsaw cutting machines.', 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80', true, 6),
-('cat-hydraulic', 'Hydraulic Presses', 'hydraulic-presses', 'C-frame, H-frame, and deep-throat hydraulic pressing machines for stamping & bending.', 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=800&q=80', true, 7),
-('cat-accessories', 'Tooling & Accessories', 'tooling-and-accessories', 'Precision 3-jaw/4-jaw chucks, rotary tables, quick-change tool posts, and DRO systems.', 'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&w=800&q=80', true, 8)
+('MMW-lathe', 'Lathe Machines', 'lathe-machines', 'Heavy duty all-geared, medium duty, and precision tool room lathe machines.', 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80', true, 1),
+('MMW-milling', 'Milling Machines', 'milling-machines', 'Universal, vertical, and horizontal knee-type milling machines.', 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80', true, 2),
+('MMW-cnc', 'CNC Machinery', 'cnc-machinery', 'High-speed CNC vertical machining centers and precision turning centers.', 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80', true, 3),
+('MMW-drilling', 'Drilling Machines', 'drilling-machines', 'Heavy duty radial arm drills, pillar drilling machines, and multi-spindle drilling.', 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80', true, 4),
+('MMW-grinding', 'Grinding Machines', 'grinding-machines', 'Hydraulic surface grinders, universal cylindrical grinders, and tool & cutter grinders.', 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80', true, 5),
+('MMW-cutting', 'Cutting & Sawing Machines', 'cutting-and-sawing', 'Semi-automatic and double-column horizontal metal bandsaw cutting machines.', 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80', true, 6),
+('MMW-hydraulic', 'Hydraulic Presses', 'hydraulic-presses', 'C-frame, H-frame, and deep-throat hydraulic pressing machines for stamping & bending.', 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=800&q=80', true, 7),
+('MMW-accessories', 'Tooling & Accessories', 'tooling-and-accessories', 'Precision 3-jaw/4-jaw chucks, rotary tables, quick-change tool posts, and DRO systems.', 'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&w=800&q=80', true, 8)
 ON CONFLICT (id) DO NOTHING;
 
 -- 12. Initial Site Settings
@@ -174,7 +174,7 @@ VALUES
     'Heavy Duty All-Geared Precision Lathe Machine',
     'heavy-duty-all-geared-precision-lathe-machine',
     'MMW-LT-450G',
-    'cat-lathe',
+    'MMW-lathe',
     'Murthi Precision',
     'Induction hardened bedways, flame-treated gears, and 450mm swing over bed for heavy industrial turning.',
     'The Murthi MMW-LT-450G is an industrial workhorse built for rigorous high-tolerance turning, threading, and boring applications.',
@@ -192,7 +192,7 @@ VALUES
     'Universal Heavy Duty Milling Machine with DRO',
     'universal-heavy-duty-milling-machine-dro',
     'MMW-ML-3U',
-    'cat-milling',
+    'MMW-milling',
     'Murthi Precision',
     '3-Axis motorized feed with swivel table ±45°, ISO 40/50 spindle, and precision optical DRO.',
     'Engineered for high metal removal rates and exceptional surface finishes in die making and precision milling.',
@@ -210,7 +210,7 @@ VALUES
     'Precision CNC Vertical Machining Center VMC-850',
     'precision-cnc-vertical-machining-center-vmc-850',
     'MMW-CNC-VMC850',
-    'cat-cnc',
+    'MMW-cnc',
     'Murthi Titan CNC',
     'BT-40 10,000 RPM spindle, 24-station arm type tool changer, Fanuc 0i-MF Plus controller.',
     'High-rigidity C-frame structure with precision linear roller guideways on all axes for high-speed dynamic machining.',
@@ -228,7 +228,7 @@ VALUES
     'Heavy Duty 50mm Industrial Radial Drilling Machine',
     'heavy-duty-50mm-industrial-radial-drilling-machine',
     'MMW-RD-50/1600',
-    'cat-drilling',
+    'MMW-drilling',
     'Murthi Precision',
     'Hydraulic clamping, 1600mm arm radius, 50mm solid drilling capacity in steel, MT-5 spindle.',
     'Designed for heavy engineering fabrication, pressure vessel manufacturing, and structural steel drilling.',

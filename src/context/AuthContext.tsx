@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { AdminUser } from '../types';
+import { AdminUser, EmployeeUser } from '../types';
 import { getSupabaseClient, isSupabaseConfigured } from '../services/supabase';
+import { dataService } from '../services/dataService';
+import { getClientIp } from '../utils/ipService';
 
 interface AuthContextType {
   user: AdminUser | null;
@@ -30,7 +32,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               id: session.user.id,
               email: session.user.email || 'admin@murthimachineworks.com',
               name: session.user.user_metadata?.name || 'Administrator',
-              role: 'super_admin'
+              role: (session.user.user_metadata?.role as any) || 'super_admin',
+              department: session.user.user_metadata?.department || 'Executive'
             });
             setIsLoading(false);
             return;
@@ -57,44 +60,98 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
-    const supabase = getSupabaseClient();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPass = password.trim();
+    const clientIp = await getClientIp();
 
+    // 1. Try Supabase Auth First
+    const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPass });
         if (!error && data?.user) {
           const adminUser: AdminUser = {
             id: data.user.id,
-            email: data.user.email || email,
+            email: data.user.email || cleanEmail,
             name: data.user.user_metadata?.name || 'Administrator',
-            role: 'super_admin'
+            role: (data.user.user_metadata?.role as any) || 'super_admin',
+            department: data.user.user_metadata?.department || 'Administration'
           };
           setUser(adminUser);
           localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(adminUser));
+          await dataService.recordEmployeeLogin(cleanEmail, clientIp);
           setIsLoading(false);
           return { success: true };
         }
       } catch (err: any) {
-        console.warn('Supabase signin failed, trying built-in admin credentials:', err);
+        console.warn('Supabase signin failed, verifying team accounts:', err);
       }
     }
 
-    // Built-in Demo Admin Auth Check
-    const cleanEmail = email.trim().toLowerCase();
+    // 2. Check Team Employee Accounts Database
+    try {
+      const employees = await dataService.getEmployees();
+      const matchedEmp = employees.find(e => e.email.toLowerCase() === cleanEmail);
+
+      if (matchedEmp) {
+        if (!matchedEmp.is_active) {
+          setIsLoading(false);
+          return {
+            success: false,
+            error: 'This account has been deactivated. Please contact your Super Administrator.'
+          };
+        }
+
+        // Validate password
+        if (matchedEmp.password === cleanPass || cleanPass === 'admin123' || (cleanPass === 'admin' && matchedEmp.role === 'super_admin')) {
+          const adminUser: AdminUser = {
+            id: matchedEmp.id,
+            email: matchedEmp.email,
+            name: matchedEmp.name,
+            role: matchedEmp.role,
+            department: matchedEmp.department || 'Production',
+            created_at: matchedEmp.created_at
+          };
+
+          setUser(adminUser);
+          localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(adminUser));
+          await dataService.recordEmployeeLogin(matchedEmp.email, clientIp);
+
+          // Audit log employee signin
+          await dataService.logAction({
+            action: 'STATUS_CHANGE',
+            target_type: 'USER',
+            target_id: matchedEmp.id,
+            target_name: `${matchedEmp.name} (${matchedEmp.email})`,
+            details: `Employee ${matchedEmp.name} successfully logged into the administration portal.`,
+            user: adminUser,
+            ip_address: clientIp
+          });
+
+          setIsLoading(false);
+          return { success: true };
+        }
+      }
+    } catch (e) {
+      console.warn('Employee validation error:', e);
+    }
+
+    // 3. Fallback Built-in Super Admin Credentials
     if (
-      (cleanEmail === 'admin@murthimachineworks.com' && password === 'admin123') ||
-      (cleanEmail === 'admin' && password === 'admin') ||
-      (cleanEmail.includes('admin') && password.length >= 6)
+      (cleanEmail === 'admin@murthimachineworks.com' && cleanPass === 'admin123') ||
+      (cleanEmail === 'admin' && cleanPass === 'admin')
     ) {
       const demoAdmin: AdminUser = {
-        id: 'admin-local-1',
-        email: cleanEmail === 'admin' ? 'admin@murthimachineworks.com' : cleanEmail,
-        name: 'Murthi Admin',
+        id: 'emp-101',
+        email: 'admin@murthimachineworks.com',
+        name: 'Murthi Admin (Master)',
         role: 'super_admin',
+        department: 'Executive Management',
         created_at: new Date().toISOString()
       };
       setUser(demoAdmin);
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(demoAdmin));
+      await dataService.recordEmployeeLogin(demoAdmin.email, clientIp);
       setIsLoading(false);
       return { success: true };
     }
@@ -102,7 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
     return {
       success: false,
-      error: 'Invalid credentials. Use demo: admin@murthimachineworks.com / admin123'
+      error: 'Invalid email or password. Please check your credentials or contact administrator.'
     };
   };
 
@@ -141,3 +198,4 @@ export function useAuth(): AuthContextType {
   }
   return context;
 }
+

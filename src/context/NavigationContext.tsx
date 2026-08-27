@@ -19,6 +19,8 @@ export type PageRoute =
   | 'admin-categories'
   | 'admin-enquiries'
   | 'admin-customers'
+  | 'admin-audit-logs'
+  | 'admin-team'
   | 'admin-settings'
   | 'admin-sql-setup';
 
@@ -53,6 +55,8 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       else if (sub === 'categories') setCurrentPage('admin-categories');
       else if (sub === 'enquiries') setCurrentPage('admin-enquiries');
       else if (sub === 'customers') setCurrentPage('admin-customers');
+      else if (sub === 'audit-logs' || sub === 'audit') setCurrentPage('admin-audit-logs');
+      else if (sub === 'team' || sub === 'employees' || sub === 'users') setCurrentPage('admin-team');
       else if (sub === 'settings') setCurrentPage('admin-settings');
       else if (sub === 'sql-setup') setCurrentPage('admin-sql-setup');
       else setCurrentPage('admin-dashboard');
@@ -152,6 +156,8 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     else if (page === 'admin-categories') hash = 'admin/categories';
     else if (page === 'admin-enquiries') hash = 'admin/enquiries';
     else if (page === 'admin-customers') hash = 'admin/customers';
+    else if (page === 'admin-audit-logs') hash = 'admin/audit-logs';
+    else if (page === 'admin-team') hash = 'admin/team';
     else if (page === 'admin-settings') hash = 'admin/settings';
     else if (page === 'admin-sql-setup') hash = 'admin/sql-setup';
 

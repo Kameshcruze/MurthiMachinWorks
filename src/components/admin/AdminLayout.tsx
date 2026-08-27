@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '../../context/NavigationContext';
 import { useSettings } from '../../context/SettingsContext';
+import { getClientIp } from '../../utils/ipService';
 import {
   LayoutDashboard,
   Package,
@@ -14,7 +15,11 @@ import {
   Database,
   Menu,
   X,
-  Bell
+  Bell,
+  Activity,
+  Users,
+  Globe,
+  UserCheck
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -32,12 +37,19 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const { navigateTo } = useNavigation();
   const { settings } = useSettings();
   const [isMobileNavOpen, setIsMobileNavOpen] = React.useState(false);
+  const [currentIp, setCurrentIp] = useState<string>('127.0.0.1');
+
+  useEffect(() => {
+    getClientIp().then(ip => setCurrentIp(ip)).catch(() => {});
+  }, []);
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'products', label: 'Machinery Catalog (CRUD)', icon: Package },
     { id: 'categories', label: 'Categories (CRUD)', icon: FolderTree },
     { id: 'enquiries', label: 'Enquiries / RFQ Leads', icon: FileSpreadsheet },
+    { id: 'audit-logs', label: 'Audit Logs (IP & User)', icon: Activity, highlight: true },
+    { id: 'team', label: 'Employee Access & Roles', icon: Users },
     { id: 'settings', label: 'Website Settings', icon: Settings },
     { id: 'database', label: 'Supabase SQL Setup', icon: Database },
   ];
@@ -53,14 +65,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         {/* Brand Top */}
         <div className="p-5 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-black text-lg">
+            <div className="w-9 h-9 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-black text-lg font-heading shadow-md">
               M
             </div>
             <div>
               <h2 className="font-heading font-bold text-sm tracking-tight text-white leading-none">
                 Murthi Admin
               </h2>
-              <p className="text-[10px] text-amber-400 font-mono mt-1">Management Portal</p>
+              <p className="text-[10px] text-amber-400 font-mono mt-1">Multi-User Portal</p>
             </div>
           </div>
 
@@ -84,43 +96,63 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   onSelectSection(item.id);
                   setIsMobileNavOpen(false);
                 }}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition ${
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold transition ${
                   isActive
                     ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
                     : 'text-slate-300 hover:bg-slate-900 hover:text-white'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-slate-950' : 'text-slate-400'}`} />
-                <span>{item.label}</span>
+                <div className="flex items-center gap-3">
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-slate-950' : 'text-slate-400'}`} />
+                  <span>{item.label}</span>
+                </div>
+                {item.highlight && (
+                  <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-bold ${
+                    isActive ? 'bg-slate-950 text-amber-400' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                  }`}>
+                    LIVE IP
+                  </span>
+                )}
               </button>
             );
           })}
         </nav>
 
-        {/* User Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/80 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-amber-400">
-                {user?.email?.charAt(0).toUpperCase() || 'A'}
+        {/* User Footer with Live Employee Profile & IP */}
+        <div className="p-4 border-t border-slate-800 bg-slate-950/90 space-y-3">
+          <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-xs font-bold font-heading">
+                  {user?.name?.charAt(0).toUpperCase() || 'A'}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-white truncate max-w-[110px]">
+                    {user?.name || 'Murthi Admin'}
+                  </p>
+                  <p className="text-[10px] text-amber-400 font-mono truncate max-w-[110px]">
+                    ID: {user?.id || 'emp-101'}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-white truncate max-w-[120px]">
-                  {user?.name || 'Admin Officer'}
-                </p>
-                <p className="text-[10px] text-slate-400 truncate max-w-[120px] font-mono">
-                  {user?.email}
-                </p>
-              </div>
+
+              <button
+                onClick={logout}
+                title="Logout from portal"
+                className="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
 
-            <button
-              onClick={logout}
-              title="Logout"
-              className="p-1.5 text-slate-400 hover:text-rose-400 transition"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            <div className="pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">
+              <span className="flex items-center gap-1">
+                <Globe className="w-3 h-3 text-emerald-400" /> IP:
+              </span>
+              <span className="font-mono text-slate-300 font-semibold truncate max-w-[110px]">
+                {currentIp}
+              </span>
+            </div>
           </div>
 
           <button
@@ -144,16 +176,44 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             >
               <Menu className="w-5 h-5" />
             </button>
-            <h1 className="font-heading font-bold text-base sm:text-lg text-slate-900 capitalize">
-              {activeSection.replace('-', ' ')}
-            </h1>
+            <div>
+              <h1 className="font-heading font-bold text-base sm:text-lg text-slate-900 capitalize leading-none">
+                {activeSection === 'audit-logs'
+                  ? 'Audit & Activity Logs'
+                  : activeSection === 'team'
+                  ? 'Employee Access & User Management'
+                  : activeSection.replace('-', ' ')}
+              </h1>
+              <p className="text-[11px] text-slate-500 mt-0.5 hidden sm:block">
+                Murthi Machine Works • Industrial Portal Control
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md font-medium">
+            {/* Active User IP Pill */}
+            <div className="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Engine Online • Direct DB Active
-            </span>
+              <span className="text-slate-500 font-medium">Employee IP:</span>
+              <span className="font-mono font-bold text-slate-800">{currentIp}</span>
+              <span className="text-slate-300">|</span>
+              <span className="font-semibold text-amber-600 font-mono">
+                {user?.id || 'emp-101'}
+              </span>
+            </div>
+
+            <button
+              onClick={() => onSelectSection('audit-logs')}
+              className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition ${
+                activeSection === 'audit-logs'
+                  ? 'bg-amber-500 text-slate-950 border-amber-500 font-bold'
+                  : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+              }`}
+              title="View Audit Logs"
+            >
+              <Activity className="w-4 h-4 text-amber-600" />
+              <span className="hidden md:inline">Audit Logs</span>
+            </button>
           </div>
         </header>
 
@@ -163,3 +223,4 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     </div>
   );
 };
+

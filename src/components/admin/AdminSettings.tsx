@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import { dataService } from '../../services/dataService';
 import {
@@ -18,6 +18,10 @@ export const AdminSettings: React.FC = () => {
   const { settings, updateSettings, showToast } = useSettings();
   const [formData, setFormData] = useState({ ...settings });
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    setFormData({ ...settings });
+  }, [settings]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

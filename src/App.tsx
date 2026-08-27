@@ -32,6 +32,8 @@ import { AdminCategories } from './components/admin/AdminCategories';
 import { AdminEnquiries } from './components/admin/AdminEnquiries';
 import { AdminSettings } from './components/admin/AdminSettings';
 import { AdminDatabaseSetup } from './components/admin/AdminDatabaseSetup';
+import { AdminAuditLogs } from './components/admin/AdminAuditLogs';
+import { AdminTeam } from './components/admin/AdminTeam';
 
 const AppContent: React.FC = () => {
   const { currentPage, navigateTo } = useNavigation();
@@ -74,6 +76,10 @@ const AppContent: React.FC = () => {
       AdminView = <AdminCategories />;
     } else if (activeAdminSection === 'enquiries') {
       AdminView = <AdminEnquiries />;
+    } else if (activeAdminSection === 'audit-logs' || activeAdminSection === 'audit') {
+      AdminView = <AdminAuditLogs />;
+    } else if (activeAdminSection === 'team' || activeAdminSection === 'employees' || activeAdminSection === 'users') {
+      AdminView = <AdminTeam />;
     } else if (activeAdminSection === 'settings') {
       AdminView = <AdminSettings />;
     } else if (activeAdminSection === 'database' || activeAdminSection === 'sql-setup') {
