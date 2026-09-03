@@ -33,7 +33,11 @@ import {
   Cpu,
   BadgeCheck,
   Disc,
-  ChevronRight
+  ChevronRight,
+  Factory,
+  Coins,
+  Gauge,
+  Timer
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -159,8 +163,8 @@ export const HomePage: React.FC = () => {
       title: 'New Machinery Sales',
       desc: 'Wide range of high-quality new industrial machinery.',
       icon: (
-        <div className="w-12 h-12 rounded-full border-2 border-[#C81E1E] text-[#C81E1E] flex items-center justify-center">
-          <Layers className="w-6 h-6 stroke-[1.8]" />
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#C81E1E] text-[#C81E1E] flex items-center justify-center">
+          <Layers className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
         </div>
       )
     },
@@ -168,8 +172,8 @@ export const HomePage: React.FC = () => {
       title: 'Used Machinery Sales',
       desc: 'Certified used machines at the best market price.',
       icon: (
-        <div className="w-12 h-12 rounded-full border-2 border-[#C81E1E] text-[#C81E1E] flex items-center justify-center">
-          <BadgeCheck className="w-6 h-6 stroke-[1.8]" />
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#C81E1E] text-[#C81E1E] flex items-center justify-center">
+          <BadgeCheck className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
         </div>
       )
     },
@@ -177,8 +181,8 @@ export const HomePage: React.FC = () => {
       title: 'Machine Repair Services',
       desc: 'Expert repair services for all types of industrial machines.',
       icon: (
-        <div className="w-12 h-12 rounded-full border-2 border-[#C81E1E] text-[#C81E1E] flex items-center justify-center">
-          <Wrench className="w-6 h-6 stroke-[1.8]" />
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#C81E1E] text-[#C81E1E] flex items-center justify-center">
+          <Wrench className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
         </div>
       )
     },
@@ -186,8 +190,8 @@ export const HomePage: React.FC = () => {
       title: 'Industrial Maintenance',
       desc: 'Preventive & annual maintenance for long-lasting performance.',
       icon: (
-        <div className="w-12 h-12 rounded-full border-2 border-[#C81E1E] text-[#C81E1E] flex items-center justify-center">
-          <Activity className="w-6 h-6 stroke-[1.8]" />
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#C81E1E] text-[#C81E1E] flex items-center justify-center">
+          <Activity className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
         </div>
       )
     },
@@ -195,8 +199,8 @@ export const HomePage: React.FC = () => {
       title: 'Machine Reconditioning',
       desc: 'Complete mechanical overhauling & precision accuracy restoration.',
       icon: (
-        <div className="w-12 h-12 rounded-full border-2 border-[#C81E1E] text-[#C81E1E] flex items-center justify-center">
-          <Cog className="w-6 h-6 stroke-[1.8]" />
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#C81E1E] text-[#C81E1E] flex items-center justify-center">
+          <Cog className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
         </div>
       )
     },
@@ -204,8 +208,8 @@ export const HomePage: React.FC = () => {
       title: 'Machinery Buyback & Exchange',
       desc: 'Fair market valuation & exchange options for old workshop machinery.',
       icon: (
-        <div className="w-12 h-12 rounded-full border-2 border-[#C81E1E] text-[#C81E1E] flex items-center justify-center">
-          <Sliders className="w-6 h-6 stroke-[1.8]" />
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#C81E1E] text-[#C81E1E] flex items-center justify-center">
+          <Sliders className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]" />
         </div>
       )
     }
@@ -221,86 +225,92 @@ export const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-0 pb-16 bg-white">
+    <div className="space-y-0 pb-8 bg-white">
       {/* =========================================================================
-          1. HERO SECTION (Modern Industrial Vibe + Ambient Glow + Spring CTAs)
+          1. HERO SECTION (Exact Industrial Lathe Workshop Background + Large Typography)
          ========================================================================= */}
-      <section className="relative bg-[#0A0D14] text-white overflow-hidden min-h-[520px] sm:min-h-[580px] flex items-center">
-        {/* Background Image of Lathe Machine & Machine Shop with Dark Overlay */}
+      <section className="relative bg-[#0A0D14] text-white overflow-hidden min-h-[460px] sm:min-h-[520px] md:min-h-[560px] flex items-center">
+        {/* Industrial Workshop Lathe Background (Desktop /hero-banner.png & Mobile /hero-banner-mob.png) */}
         <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1920&q=85"
-            alt="Murthi Machin Works Workshop"
-            className="w-full h-full object-cover object-center opacity-35 filter contrast-125"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0A0D14] via-[#0A0D14]/90 to-transparent" />
-          {/* Subtle Ambient Radial Lighting */}
-          <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#F5A623]/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#C81E1E]/20 rounded-full blur-3xl pointer-events-none" />
+          <picture className="w-full h-full block">
+            <source media="(max-width: 639px)" srcSet="/hero-banner-mob.png" />
+            <source media="(min-width: 640px)" srcSet={settings.hero_image || "/hero-banner.png"} />
+            <img
+              src={settings.hero_image || "/hero-banner.png"}
+              alt="Murthi Machin Works Industrial Workshop"
+              className="w-full h-full object-cover object-center sm:object-right md:object-right filter contrast-105 brightness-95"
+              referrerPolicy="no-referrer"
+            />
+          </picture>
+          {/* Precise gradient overlay matching reference: dark on left for text legibility, clear lathe on right */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0A0D14]/95 via-[#0A0D14]/85 sm:via-[#0A0D14]/65 md:via-[#0A0D14]/45 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0D14]/75 via-[#0A0D14]/35 to-transparent sm:hidden" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-16 sm:py-24 w-full">
-          <div className="max-w-2xl space-y-6">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-10 sm:py-14 md:py-16 w-full">
+          <div className="max-w-2xl sm:max-w-3xl space-y-4 sm:space-y-6">
             {/* Modern Status Badge */}
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-white"
+              transition={{ duration: 0.4 }}
+              className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-white"
             >
-              <span className="w-2 h-2 rounded-full bg-[#F5A623] animate-pulse" />
-              <span className="font-semibold tracking-wide text-slate-200">Coimbatore's Premier Machinery Hub</span>
+              <span className="w-2 h-2 rounded-full bg-[#F5A623] animate-pulse shrink-0" />
+              <span className="font-semibold tracking-wide text-slate-200 text-[11px] sm:text-xs">
+                Coimbatore's Premier Machinery Hub
+              </span>
             </motion.div>
 
-            {/* Main Headline */}
+            {/* Main Headline - Prominently Scaled Up matching reference */}
             <motion.h1
-              initial={{ opacity: 0, y: 25 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="font-heading font-black text-3.5xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-[1.12]"
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="font-heading font-black text-3xl sm:text-5xl md:text-6xl lg:text-[64px] text-white tracking-tight leading-[1.08]"
             >
               Leading Machinery<br />
               Sales & Service<br />
-              Experts in <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F5A623] via-[#ffc04d] to-[#F5A623]">Coimbatore</span>
+              Experts in <span className="text-[#F5A623]">Coimbatore</span>
             </motion.h1>
 
-            {/* Subtitle with bullet points */}
+            {/* Subtitle with bullet points - Enlarged matching reference */}
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed max-w-xl"
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-sm sm:text-base md:text-lg text-slate-100 font-medium leading-relaxed max-w-xl drop-shadow-sm"
             >
-              New Machinery • Used Machinery • Repairs •<br className="hidden sm:inline" />
-              Maintenance • Reconditioning
+              New Machinery • Used Machinery • Repairs • Maintenance • Reconditioning
             </motion.p>
 
-            {/* Two Action Buttons: GET QUOTE (Red) & CALL NOW (Yellow) with Spring Hover */}
+            {/* Action Buttons: VIEW AVAILABLE MACHINERIES & CALL NOW */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-wrap items-center gap-4 pt-2"
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex flex-wrap items-center gap-3 sm:gap-4 pt-1 sm:pt-2"
             >
               <motion.button
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.96 }}
-                onClick={handleGetQuoteScroll}
-                className="px-7 py-3.5 rounded-xl bg-gradient-to-r from-[#C81E1E] to-[#A81717] hover:from-[#B31919] hover:to-[#911313] text-white font-heading font-black text-xs sm:text-sm tracking-wider uppercase shadow-xl shadow-red-900/30 transition flex items-center gap-2.5 group"
+                onClick={() => navigateTo('products')}
+                className="px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-[#C81E1E] to-[#A81717] hover:from-[#B31919] hover:to-[#911313] text-white font-heading font-black text-xs sm:text-sm tracking-wider uppercase shadow-xl shadow-red-900/30 transition flex items-center gap-2 group"
                 id="btn-hero-get-quote"
               >
-                <Send className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                <span>GET QUOTE</span>
+                <Boxes className="w-4 h-4 text-amber-300 transition-transform group-hover:scale-110 shrink-0" />
+                <span>VIEW AVAILABLE MACHINERIES</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 shrink-0" />
               </motion.button>
 
               <motion.a
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.96 }}
                 href="tel:9842266521"
-                className="px-7 py-3.5 rounded-xl bg-gradient-to-r from-[#F5A623] to-[#e69818] hover:from-[#e69818] hover:to-[#c97e08] text-slate-950 font-heading font-black text-xs sm:text-sm tracking-wider uppercase shadow-xl shadow-amber-500/20 transition flex items-center gap-2.5"
+                className="px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-[#F5A623] hover:bg-[#e69818] text-slate-950 font-heading font-black text-xs sm:text-sm tracking-wider uppercase shadow-xl shadow-amber-500/20 transition flex items-center gap-2"
                 id="btn-hero-call-now"
               >
-                <Phone className="w-4 h-4 fill-current" />
+                <Phone className="w-4 h-4 fill-current shrink-0" />
                 <span>CALL NOW</span>
               </motion.a>
             </motion.div>
@@ -310,18 +320,18 @@ export const HomePage: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="pt-3 flex flex-wrap items-center gap-4 text-xs text-slate-400"
+              className="pt-1 sm:pt-2 flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-slate-300"
             >
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-[#F5A623]" /> 100% Tested Machinery
+              <span className="flex items-center gap-1.5 font-medium">
+                <ShieldCheck className="w-4 h-4 text-[#F5A623] shrink-0" /> 100% Tested Machinery
               </span>
-              <span className="w-1 h-1 rounded-full bg-slate-600 hidden sm:inline" />
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> On-site Commissioning
+              <span className="w-1 h-1 rounded-full bg-slate-500 hidden sm:inline" />
+              <span className="flex items-center gap-1.5 font-medium">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> On-site Commissioning
               </span>
-              <span className="w-1 h-1 rounded-full bg-slate-600 hidden sm:inline" />
-              <span className="flex items-center gap-1.5">
-                <Wrench className="w-4 h-4 text-[#F5A623]" /> 24/7 Breakdown Support
+              <span className="w-1 h-1 rounded-full bg-slate-500 hidden sm:inline" />
+              <span className="flex items-center gap-1.5 font-medium">
+                <Wrench className="w-4 h-4 text-[#F5A623] shrink-0" /> 24/7 Breakdown Support
               </span>
             </motion.div>
           </div>
@@ -394,10 +404,10 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          3. OUR SERVICES SECTION (6 Modern White Cards with Spring Hover)
+          3. OUR SERVICES SECTION (Mobile Compact Carousel / Grid + Desktop 6-Col)
          ========================================================================= */}
-      <section id="our-services-section" className="py-16 sm:py-24 px-4 sm:px-8 max-w-7xl mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-12">
+      <section id="our-services-section" className="py-6 sm:py-14 px-4 sm:px-8 max-w-7xl mx-auto">
+        <div className="text-center max-w-3xl mx-auto mb-4 sm:mb-7">
           <motion.span
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -410,43 +420,43 @@ export const HomePage: React.FC = () => {
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="font-heading font-black text-2xl sm:text-3xl lg:text-4xl text-slate-950 tracking-tight leading-tight"
+            className="font-heading font-black text-xl sm:text-3xl lg:text-4xl text-slate-950 tracking-tight leading-tight"
           >
             Complete Machinery<br className="hidden sm:inline" /> Solutions for Your Business
           </motion.h2>
-          <div className="w-16 h-1 bg-[#F5A623] mx-auto mt-3.5 rounded-full" />
+          <div className="w-12 sm:w-16 h-1 bg-[#F5A623] mx-auto mt-2 sm:mt-3 rounded-full" />
         </div>
 
-        {/* 6 Services Grid with Spring Hover Animation */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {/* Compact 2-Column Grid on Mobile, 3-Col on Tablet, 6-Col on Desktop */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
           {servicesList.map((srv, idx) => (
             <motion.div
               key={idx}
-              whileHover={{ y: -8, transition: { duration: 0.2 } }}
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
               onClick={() => {
                 setEnquiryForm(prev => ({ ...prev, service: srv.title }));
                 handleGetQuoteScroll();
               }}
-              className="bg-white rounded-2xl border border-slate-200/90 p-5 text-center flex flex-col items-center justify-between hover:shadow-xl hover:border-[#C81E1E]/50 transition-all duration-300 cursor-pointer group relative overflow-hidden"
+              className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 p-3 sm:p-5 text-center flex flex-col items-center justify-between hover:shadow-lg hover:border-[#C81E1E]/50 transition-all duration-300 cursor-pointer group relative overflow-hidden"
             >
               {/* Subtle top indicator bar on hover */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#C81E1E] to-[#F5A623] opacity-0 group-hover:opacity-100 transition-opacity" />
 
               <div className="w-full flex flex-col items-center">
-                <div className="mb-3.5 p-1 rounded-full group-hover:scale-110 group-hover:shadow-md transition-all duration-300">
+                <div className="mb-2 sm:mb-3.5 p-0.5 rounded-full group-hover:scale-105 transition-all">
                   {srv.icon}
                 </div>
-                <h3 className="font-heading font-bold text-sm text-slate-950 mb-2 leading-snug group-hover:text-[#C81E1E] transition-colors">
+                <h3 className="font-heading font-bold text-xs sm:text-sm text-slate-950 mb-1 sm:mb-2 leading-snug group-hover:text-[#C81E1E] transition-colors">
                   {srv.title}
                 </h3>
-                <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                <p className="text-[10px] sm:text-xs text-slate-600 leading-snug font-normal line-clamp-2 sm:line-clamp-none">
                   {srv.desc}
                 </p>
               </div>
 
-              <div className="mt-4 pt-2 w-full border-t border-slate-100 text-[11px] font-bold text-[#C81E1E] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+              <div className="mt-2.5 sm:mt-4 pt-1.5 sm:pt-2 w-full border-t border-slate-100 text-[10px] sm:text-[11px] font-bold text-[#C81E1E] flex items-center justify-center gap-0.5">
                 <span>Book Service</span>
-                <ChevronRight className="w-3 h-3" />
+                <ChevronRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               </div>
             </motion.div>
           ))}
@@ -456,8 +466,8 @@ export const HomePage: React.FC = () => {
       {/* =========================================================================
           4. MACHINERY CATEGORIES SECTION (6 Category Cards with Red Bottom Bars)
          ========================================================================= */}
-      <section className="py-16 sm:py-20 px-4 sm:px-8 max-w-7xl mx-auto border-t border-slate-200/60">
-        <div className="text-center max-w-3xl mx-auto mb-12">
+      <section className="py-10 sm:py-14 px-4 sm:px-8 max-w-7xl mx-auto border-t border-slate-200/60">
+        <div className="text-center max-w-3xl mx-auto mb-7">
           <motion.span
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -474,7 +484,7 @@ export const HomePage: React.FC = () => {
           >
             Explore Our Wide Range of Machinery
           </motion.h2>
-          <div className="w-16 h-1 bg-[#F5A623] mx-auto mt-3.5 rounded-full" />
+          <div className="w-16 h-1 bg-[#F5A623] mx-auto mt-3 rounded-full" />
         </div>
 
         {/* 6 Category Cards with Zoom Physics and Hover Shine */}
@@ -515,14 +525,15 @@ export const HomePage: React.FC = () => {
       {/* =========================================================================
           5. ABOUT US SECTION (Left Image + Right Story & Read More)
          ========================================================================= */}
-      <section className="py-14 sm:py-20 px-4 sm:px-8 max-w-7xl mx-auto bg-slate-50 border-y border-slate-200">
+      <section className="py-10 sm:py-14 px-4 sm:px-8 max-w-7xl mx-auto bg-white">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-          {/* Left Workshop Image */}
-          <div className="lg:col-span-6 rounded-2xl overflow-hidden shadow-lg border border-slate-200 aspect-4/3">
+          {/* Left Workshop Image matching reference photo */}
+          <div className="lg:col-span-6 rounded-2xl overflow-hidden shadow-md border border-slate-200 aspect-4/3">
             <img
-              src="https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=1000&q=80"
-              alt="Murthi Machin Works Facilities"
+              src="https://fpimages.withfloats.com/actual/69c14b2eae7bfbf2675ae84d.jpg"
+              alt="Murthi Machin Works Industrial Manufacturing Plant"
               className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
             />
           </div>
 
@@ -556,79 +567,126 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          6. WHY CHOOSE US SECTION (Modern Dark Slate + Glowing Amber Accents)
+          6. WHY CHOOSE US SECTION (Exact Match with Reference Image)
          ========================================================================= */}
-      <section className="bg-[#0A0D14] text-white py-16 sm:py-24 px-4 sm:px-8 relative overflow-hidden">
-        {/* Subtle radial ambient glows */}
-        <div className="absolute top-1/2 -left-20 w-80 h-80 bg-[#F5A623]/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/2 -right-20 w-80 h-80 bg-[#C81E1E]/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-14">
+      <section className="bg-[#121316] text-white py-12 sm:py-16 px-4 sm:px-6 relative">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
             <motion.span
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="text-[#F5A623] font-heading font-black text-xs uppercase tracking-widest block mb-1"
+              className="text-[#F5A623] font-heading font-bold text-xs tracking-widest uppercase block mb-1.5"
             >
               WHY CHOOSE US
             </motion.span>
             <motion.h2
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="font-heading font-black text-2xl sm:text-3xl lg:text-4xl text-white tracking-tight"
             >
               Delivering Excellence Every Time
             </motion.h2>
-            <div className="w-16 h-1 bg-[#F5A623] mx-auto mt-3.5 rounded-full" />
+            <div className="w-12 h-1 bg-[#F5A623] mx-auto mt-2.5 rounded-full" />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* 6 Column Row with Thin Dividers matching reference exactly */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-y md:divide-y-0 lg:divide-x divide-zinc-800/80 border-t border-b lg:border-t-0 lg:border-b-0 border-zinc-800/80">
             {[
               {
-                icon: <ShieldCheck className="w-6 h-6 text-slate-950" />,
+                icon: (
+                  <svg className="w-11 h-11 text-[#F5A623]" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="6" y="10" width="36" height="28" rx="4" />
+                    <circle cx="24" cy="24" r="7" />
+                    <path d="M24 13v4M24 31v4M13 24h4M31 24h4M16.2 16.2l2.8 2.8M29 29l2.8 2.8M16.2 31.8l2.8-2.8M29 19l2.8-2.8" />
+                  </svg>
+                ),
                 title: 'Genuine Machinery',
-                desc: 'Selling genuine and quality-assured machines with full inspection and performance certification.'
+                desc: 'Selling genuine and quality assured machines.'
               },
               {
-                icon: <Award className="w-6 h-6 text-slate-950" />,
+                icon: (
+                  <svg className="w-11 h-11 text-[#F5A623]" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="28" cy="14" r="7" />
+                    <path d="M28 11v6M26 14h4" />
+                    <path d="M10 32c3-1 6-2 10-2h8c2.5 0 4.5 1.5 5 4l1 5H6l2-6c.5-1.5 1.2-2.5 2-3z" />
+                    <path d="M18 30l-4-4c-1.5-1.5-3.5-1.5-5 0s-1.5 3.5 0 5l6 6" />
+                  </svg>
+                ),
                 title: 'Affordable Pricing',
-                desc: 'Best prices in the market with great value for both new and certified pre-owned equipment.'
+                desc: 'Best prices in the market with great value.'
               },
               {
-                icon: <Wrench className="w-6 h-6 text-slate-950" />,
+                icon: (
+                  <svg className="w-11 h-11 text-[#F5A623]" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="24" cy="14" r="5" />
+                    <path d="M16 28c0-4 3.5-7 8-7s8 3 8 7" />
+                    <circle cx="12" cy="18" r="4" />
+                    <path d="M6 31c0-3 2.5-5 6-5" />
+                    <circle cx="36" cy="18" r="4" />
+                    <path d="M42 31c0-3-2.5-5-6-5" />
+                    <circle cx="24" cy="38" r="3" />
+                    <path d="M24 33v2M24 41v2M19 38h2M27 38h2" />
+                  </svg>
+                ),
                 title: 'Expert Technicians',
-                desc: 'Skilled & experienced professionals for all repairs, overhaul, installation, and troubleshooting.'
+                desc: 'Skilled & experienced professionals for all services.'
               },
               {
-                icon: <Clock className="w-6 h-6 text-slate-950" />,
+                icon: (
+                  <svg className="w-11 h-11 text-[#F5A623]" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="24" cy="24" r="16" />
+                    <path d="M24 14v10l7 4" />
+                    <path d="M8 10l4-4M4 18h5M40 18h4M36 10l4-4" />
+                    <circle cx="24" cy="24" r="3" fill="currentColor" />
+                  </svg>
+                ),
                 title: 'Fast Service',
-                desc: 'Quick response time and punctual emergency breakdown support to minimize workshop downtime.'
+                desc: 'Quick response and timely service guaranteed.'
               },
               {
-                icon: <Users className="w-6 h-6 text-slate-950" />,
+                icon: (
+                  <svg className="w-11 h-11 text-[#F5A623]" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8 40V16l12 7V16l12 7V8h8v32H8z" />
+                    <rect x="14" y="28" width="4" height="6" />
+                    <rect x="22" y="28" width="4" height="6" />
+                    <rect x="34" y="16" width="4" height="6" />
+                    <rect x="34" y="26" width="4" height="6" />
+                  </svg>
+                ),
                 title: 'Trusted by Industries',
-                desc: 'Serving hundreds of machine shops, automotive component units, and textile manufacturers.'
+                desc: 'Serving multiple industries with trust and reliability.'
               },
               {
-                icon: <MapPin className="w-6 h-6 text-slate-950" />,
+                icon: (
+                  <svg className="w-11 h-11 text-[#F5A623]" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="8" y="10" width="32" height="24" rx="3" />
+                    <path d="M16 34v6M32 34v6M12 40h24" />
+                    <circle cx="24" cy="22" r="5" />
+                    <path d="M24 15v2M24 27v2M17 22h2M29 22h2" />
+                  </svg>
+                ),
                 title: 'On-site Support',
-                desc: 'We provide on-site inspection, machine foundations, commissioning, and preventive maintenance.'
+                desc: 'We provide on-site inspection and support.'
               }
             ].map((item, index) => (
               <motion.div
                 key={index}
-                whileHover={{ y: -6, scale: 1.01 }}
-                className="bg-slate-900/90 border border-slate-800 hover:border-[#F5A623]/60 p-6 sm:p-7 rounded-2xl space-y-3.5 shadow-lg transition-all duration-300 group relative overflow-hidden backdrop-blur-xs"
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.08 }}
+                className="px-3 sm:px-4 py-8 sm:py-9 flex flex-col items-center text-center group hover:bg-white/[0.02] transition-colors"
               >
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#F5A623] to-[#ffc566] text-slate-950 flex items-center justify-center font-bold shadow-md shadow-amber-500/20 group-hover:scale-110 transition-transform duration-300">
+                <div className="h-14 flex items-center justify-center mb-3 group-hover:scale-108 transition-transform duration-300">
                   {item.icon}
                 </div>
-                <h3 className="font-heading font-bold text-lg text-white group-hover:text-[#F5A623] transition-colors">
+                <h3 className="font-heading font-bold text-sm sm:text-[15px] text-white mb-2 leading-snug">
                   {item.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-normal">
+                <p className="text-[11px] sm:text-xs text-zinc-400 font-normal leading-relaxed max-w-[165px]">
                   {item.desc}
                 </p>
               </motion.div>
@@ -640,8 +698,8 @@ export const HomePage: React.FC = () => {
       {/* =========================================================================
           7. FEATURED MACHINERY (Our Best Selling Machines - 4 Cards)
          ========================================================================= */}
-      <section className="py-16 sm:py-24 px-4 sm:px-8 max-w-7xl mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-12">
+      <section className="py-10 sm:py-14 px-4 sm:px-8 max-w-7xl mx-auto">
+        <div className="text-center max-w-3xl mx-auto mb-7">
           <motion.span
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -658,7 +716,7 @@ export const HomePage: React.FC = () => {
           >
             Our Best Selling Machines
           </motion.h2>
-          <div className="w-16 h-1 bg-[#F5A623] mx-auto mt-3.5 rounded-full" />
+          <div className="w-16 h-1 bg-[#F5A623] mx-auto mt-3 rounded-full" />
         </div>
 
         {/* 4 Featured Products Cards */}
@@ -668,12 +726,12 @@ export const HomePage: React.FC = () => {
           ))}
         </div>
 
-        <div className="mt-12 text-center">
+        <div className="mt-8 text-center">
           <motion.button
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigateTo('products')}
-            className="px-9 py-4 bg-gradient-to-r from-[#F5A623] to-[#e69818] hover:from-[#e69818] hover:to-[#c97e08] text-slate-950 font-heading font-black text-xs sm:text-sm tracking-wider uppercase rounded-xl shadow-lg shadow-amber-500/20 transition inline-flex items-center gap-2"
+            className="px-8 py-3.5 bg-gradient-to-r from-[#F5A623] to-[#e69818] hover:from-[#e69818] hover:to-[#c97e08] text-slate-950 font-heading font-black text-xs sm:text-sm tracking-wider uppercase rounded-xl shadow-lg shadow-amber-500/20 transition inline-flex items-center gap-2"
           >
             <span>View All Machinery</span>
             <ChevronRight className="w-4 h-4" />
@@ -684,9 +742,9 @@ export const HomePage: React.FC = () => {
       {/* =========================================================================
           8. TESTIMONIALS SECTION (What Our Clients Say)
          ========================================================================= */}
-      <section className="bg-slate-50 py-16 sm:py-24 px-4 sm:px-8 border-y border-slate-200">
+      <section className="bg-slate-50 py-10 sm:py-14 px-4 sm:px-8 border-y border-slate-200">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="text-center max-w-3xl mx-auto mb-7">
             <motion.span
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -703,7 +761,7 @@ export const HomePage: React.FC = () => {
             >
               What Our Clients Say
             </motion.h2>
-            <div className="w-16 h-1 bg-[#F5A623] mx-auto mt-3.5 rounded-full" />
+            <div className="w-16 h-1 bg-[#F5A623] mx-auto mt-3 rounded-full" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -757,16 +815,16 @@ export const HomePage: React.FC = () => {
       {/* =========================================================================
           9. SERVICE AREA SECTION (Serving Across Tamil Nadu)
          ========================================================================= */}
-      <section id="service-area-section" className="bg-[#0D0F12] text-white py-14 sm:py-20 px-4 sm:px-8">
+      <section id="service-area-section" className="bg-[#0D0F12] text-white py-9 sm:py-12 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-10">
+          <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-8">
             <span className="text-[#F5A623] font-heading font-black text-xs uppercase tracking-widest block mb-1">
               SERVICE AREA
             </span>
             <h2 className="font-heading font-black text-2xl sm:text-3xl lg:text-4xl text-white tracking-tight">
               Proudly Serving Across Tamil Nadu
             </h2>
-            <div className="w-14 h-1 bg-[#F5A623] mx-auto mt-3" />
+            <div className="w-14 h-1 bg-[#F5A623] mx-auto mt-2.5" />
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
@@ -786,7 +844,7 @@ export const HomePage: React.FC = () => {
       {/* =========================================================================
           10. CONTACT US & INSTANT ENQUIRY FORM SECTION
          ========================================================================= */}
-      <section id="enquiry-form-section" className="py-14 sm:py-20 px-4 sm:px-8 max-w-7xl mx-auto">
+      <section id="enquiry-form-section" className="py-10 sm:py-14 px-4 sm:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Left: Contact Info */}
           <div className="lg:col-span-5 space-y-6">
