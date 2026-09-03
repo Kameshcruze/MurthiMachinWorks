@@ -230,13 +230,13 @@ export const HomePage: React.FC = () => {
           1. HERO SECTION (Exact Industrial Lathe Workshop Background + Large Typography)
          ========================================================================= */}
       <section className="relative bg-[#0A0D14] text-white overflow-hidden min-h-[460px] sm:min-h-[520px] md:min-h-[560px] flex items-center">
-        {/* Industrial Workshop Lathe Background (Desktop /hero-banner.png & Mobile /hero-banner-mob.png) */}
+        {/* Industrial Workshop Lathe Background (Desktop /hero-banner.webp & Mobile /hero-banner-mob.webp) */}
         <div className="absolute inset-0 z-0">
           <picture className="w-full h-full block">
-            <source media="(max-width: 639px)" srcSet="/hero-banner-mob.png" />
-            <source media="(min-width: 640px)" srcSet={settings.hero_image || "/hero-banner.png"} />
+            <source media="(max-width: 639px)" srcSet="/hero-banner-mob.webp" />
+            <source media="(min-width: 640px)" srcSet={settings.hero_image && settings.hero_image !== '/hero-banner.png' ? settings.hero_image : "/hero-banner.webp"} />
             <img
-              src={settings.hero_image || "/hero-banner.png"}
+              src={settings.hero_image && settings.hero_image !== '/hero-banner.png' ? settings.hero_image : "/hero-banner.webp"}
               alt="Murthi Machin Works Industrial Workshop"
               className="w-full h-full object-cover object-center sm:object-right md:object-right filter contrast-105 brightness-95"
               referrerPolicy="no-referrer"
@@ -504,7 +504,7 @@ export const HomePage: React.FC = () => {
                   loading="lazy"
                   referrerPolicy="no-referrer"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/hero-banner.png';
+                    (e.target as HTMLImageElement).src = '/hero-banner.webp';
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
@@ -531,12 +531,16 @@ export const HomePage: React.FC = () => {
       <section className="py-10 sm:py-14 px-4 sm:px-8 max-w-7xl mx-auto bg-white">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Workshop Image matching reference photo */}
-          <div className="lg:col-span-6 rounded-2xl overflow-hidden shadow-md border border-slate-200 aspect-4/3">
+          <div className="lg:col-span-6 rounded-2xl overflow-hidden shadow-md border border-slate-200 aspect-4/3 bg-white">
             <img
-              src="https://fpimages.withfloats.com/actual/69c14b2eae7bfbf2675ae84d.jpg"
-              alt="Murthi Machin Works Industrial Manufacturing Plant"
-              className="w-full h-full object-cover"
+              id="about-us-hero-image"
+              src="/about-us.webp"
+              alt="Murthi Machin Works Industrial Manufacturing & Sales"
+              className="w-full h-full object-cover object-center"
               referrerPolicy="no-referrer"
+              onError={(e) => {
+                e.currentTarget.src = "/about-us.webp";
+              }}
             />
           </div>
 

@@ -100,7 +100,7 @@ export const CategoriesPage: React.FC = () => {
                       loading="lazy"
                       referrerPolicy="no-referrer"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/hero-banner.png';
+                        (e.target as HTMLImageElement).src = '/hero-banner.webp';
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />

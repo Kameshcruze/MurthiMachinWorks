@@ -214,6 +214,10 @@ function getLocalSettings(): SiteSettings {
       parsed.whatsapp = '+91 95852 62522';
       changed = true;
     }
+    if (parsed.hero_image === '/hero-banner.png' || !parsed.hero_image) {
+      parsed.hero_image = '/hero-banner.webp';
+      changed = true;
+    }
     if (changed) {
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(parsed));
     }
@@ -1478,6 +1482,10 @@ export const dataService = {
           }
           if (data.whatsapp?.includes('98422') || data.whatsapp?.includes('54321') || !data.whatsapp) {
             data.whatsapp = '+91 95852 62522';
+            needsUpdate = true;
+          }
+          if (data.hero_image === '/hero-banner.png' || !data.hero_image) {
+            data.hero_image = '/hero-banner.webp';
             needsUpdate = true;
           }
           if (needsUpdate) {

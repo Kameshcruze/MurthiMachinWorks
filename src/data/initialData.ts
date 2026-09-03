@@ -12,7 +12,7 @@ export const INITIAL_SETTINGS: SiteSettings = {
   google_maps_url: 'https://maps.google.com/?q=Avarampalayam+Coimbatore',
   hero_title: 'Leading Machinery Sales & Service Experts in Coimbatore',
   hero_description: 'New Machinery • Used Machinery • Repairs • Maintenance • Reconditioning',
-  hero_image: '/hero-banner.png',
+  hero_image: '/hero-banner.webp',
   featured_heading: 'Our Best Selling Machines',
   about_content: "Murthi Machin Works is one of Coimbatore's trusted machinery sales and service providers, offering both new and used industrial machinery with complete maintenance and support. With over 15 years of experience, we have built a strong reputation for quality, reliability, and customer satisfaction. Our team of skilled technicians ensures the best service and support for all types of industrial machinery.",
   currency_symbol: '₹',
