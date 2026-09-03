@@ -138,33 +138,32 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, featuredBadge
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={handleAddToCart}
-              className={`py-2 px-3 text-xs font-bold rounded-lg border transition flex items-center justify-center gap-1.5 ${
+              className={`py-2 px-3 text-xs font-bold rounded border transition flex items-center justify-center gap-1.5 ${
                 isItemInCart
-                  ? 'bg-amber-50 border-amber-400 text-amber-800'
-                  : 'bg-white border-slate-300 hover:border-slate-400 text-slate-800 hover:bg-slate-50'
+                  ? 'bg-amber-50 border-[#F5A623] text-amber-900 font-extrabold'
+                  : 'bg-white border-slate-300 hover:border-slate-400 text-slate-900 hover:bg-slate-50'
               }`}
               title="Add to Enquiry Quotation"
             >
               {isItemInCart ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-amber-600" />
+                  <Check className="w-3.5 h-3.5 text-[#F5A623]" />
                   <span>Added</span>
                 </>
               ) : (
                 <>
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Add to RFQ</span>
+                  <span>+ RFQ</span>
                 </>
               )}
             </button>
 
             <button
               onClick={handleWhatsApp}
-              className="py-2 px-3 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-2xs hover:shadow transition flex items-center justify-center gap-1.5"
-              title="Chat on WhatsApp"
+              className="py-2 px-3 text-xs font-extrabold uppercase rounded bg-[#C81E1E] hover:bg-[#B31919] active:bg-[#991414] text-white shadow-xs hover:shadow transition flex items-center justify-center gap-1.5"
+              title="Enquire Now"
             >
-              <MessageSquare className="w-3.5 h-3.5 fill-current" />
-              <span>Enquire</span>
+              <span>Enquire Now</span>
             </button>
           </div>
         </div>

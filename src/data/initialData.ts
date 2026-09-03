@@ -2,24 +2,24 @@ import { Category, Product, SiteSettings, Enquiry } from '../types';
 
 export const INITIAL_SETTINGS: SiteSettings = {
   id: 'site_settings_1',
-  business_name: 'Murthi Machine Works',
-  tagline: 'Precision Machinery. Built for Performance.',
+  business_name: 'Murthi Machin Works',
+  tagline: 'All New and Old Machinery Sales & Service',
   logo_url: '',
-  phone: '+91 95852 62522',
-  whatsapp: '+91 95852 62522',
-  email: 'sales@murthimachineworks.com',
-  address: 'Plot No. 42-45, SIDCO Industrial Estate, Pollachi Main Road, Coimbatore, Tamil Nadu - 641021, India',
-  google_maps_url: 'https://maps.google.com/?q=Coimbatore+Industrial+Estate',
-  hero_title: 'Precision Machinery. Built for Performance.',
-  hero_description: 'Engineered for high-duty manufacturing, aerospace, automotive, and heavy fabrication workshops. Premium machine tools and custom industrial engineering solutions from Murthi Machine Works.',
+  phone: '98422 66521',
+  whatsapp: '98422 66521',
+  email: 'murthimachineworks@gmail.com',
+  address: 'No. 45, South Street No. 1, Avarampalayam, Coimbatore - 641 006, Tamil Nadu, India.',
+  google_maps_url: 'https://maps.google.com/?q=Avarampalayam+Coimbatore',
+  hero_title: 'Leading Machinery Sales & Service Experts in Coimbatore',
+  hero_description: 'New Machinery • Used Machinery • Repairs • Maintenance • Reconditioning',
   hero_image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1920&q=85',
-  featured_heading: 'Industrial Grade Machine Tools',
-  about_content: 'Established in 1985 in Coimbatore, Tamil Nadu, Murthi Machine Works is a premier manufacturer and supplier of heavy-duty machine tools, CNC machining centers, and precision industrial engineering equipment. With over 40 years of precision craftsmanship and ISO 9001:2015 certified production facilities, we empower over 3,500 workshops, automotive tiers, and aerospace vendors across India and globally.',
+  featured_heading: 'Our Best Selling Machines',
+  about_content: "Murthi Machin Works is one of Coimbatore's trusted machinery sales and service providers, offering both new and used industrial machinery with complete maintenance and support. With over 15 years of experience, we have built a strong reputation for quality, reliability, and customer satisfaction. Our team of skilled technicians ensures the best service and support for all types of industrial machinery.",
   currency_symbol: '₹',
   gstin: '33AABCM1234F1Z8',
-  established_year: '1985',
+  established_year: '2008',
   social_links: {
-    linkedin: 'https://linkedin.com/company/murthi-machine-works',
+    linkedin: 'https://linkedin.com/company/murthi-machin-works',
     youtube: 'https://youtube.com/@murthimachineworks',
     facebook: 'https://facebook.com/murthimachineworks',
     instagram: 'https://instagram.com/murthimachineworks',
@@ -36,113 +36,90 @@ export const INITIAL_CATEGORIES: Category[] = [
     image_url: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80',
     is_active: true,
     sort_order: 1,
-    keywords: ['lathe', 'turning machine', 'all geared lathe', 'tool room lathe', 'heavy duty lathe', 'spindle', 'chuck', 'facing', 'threading']
-  },
-  {
-    id: 'MMW-milling',
-    name: 'Milling Machines',
-    slug: 'milling-machines',
-    description: 'Universal, vertical, and horizontal knee-type milling machines for precision slotting, facing, and gear cutting.',
-    image_url: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80',
-    is_active: true,
-    sort_order: 2,
-    keywords: ['milling', 'universal milling', 'vertical mill', 'horizontal mill', 'knee type', 'dro milling', 'gear cutting', 'slotting']
-  },
-  {
-    id: 'MMW-cnc',
-    name: 'CNC Machinery',
-    slug: 'cnc-machinery',
-    description: 'High-speed CNC vertical machining centers and precision turning centers with Siemens / Fanuc controllers.',
-    image_url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
-    is_active: true,
-    sort_order: 3,
-    keywords: ['cnc', 'vmc', 'vertical machining center', 'turning center', 'slant bed', 'fanuc', 'siemens', 'automatic tool changer', 'bt40']
+    keywords: ['lathe', 'lathe machine', 'turning machine', 'all geared lathe', 'tool room lathe', 'heavy duty lathe', 'kharad']
   },
   {
     id: 'MMW-drilling',
     name: 'Drilling Machines',
     slug: 'drilling-machines',
-    description: 'Heavy duty radial arm drills, pillar drilling machines, and multi-spindle drilling equipment for structural steel.',
+    description: 'Heavy duty radial arm drills, pillar type drilling machines, and multi-spindle drilling equipment.',
     image_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80',
     is_active: true,
-    sort_order: 4,
-    keywords: ['drilling machine', 'radial drill', 'pillar drill', 'radial arm', 'tapping machine', 'multi spindle', 'heavy drill', 'coimbatore drill']
-  },
-  {
-    id: 'MMW-grinding',
-    name: 'Grinding Machines',
-    slug: 'grinding-machines',
-    description: 'Hydraulic surface grinders, universal cylindrical grinders, and tool & cutter grinders for micro-finish tolerances.',
-    image_url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80',
-    is_active: true,
-    sort_order: 5,
-    keywords: ['grinding machine', 'surface grinder', 'hydraulic grinder', 'cylindrical grinder', 'tool and cutter', 'magnetic chuck', 'micro finish']
-  },
-  {
-    id: 'MMW-cutting',
-    name: 'Cutting & Sawing Machines',
-    slug: 'cutting-and-sawing',
-    description: 'Semi-automatic and double-column horizontal metal bandsaw cutting machines for structural steel and alloy billets.',
-    image_url: 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80',
-    is_active: true,
-    sort_order: 6,
-    keywords: ['bandsaw', 'metal cutting', 'sawing machine', 'double column bandsaw', 'horizontal bandsaw', 'billet cutting', 'pipe cutting']
+    sort_order: 2,
+    keywords: ['drilling machine', 'pillar drill', 'radial drill', 'pillar type', 'tapping machine', 'boring']
   },
   {
     id: 'MMW-hydraulic',
-    name: 'Hydraulic Presses',
-    slug: 'hydraulic-presses',
-    description: 'C-frame, H-frame, and deep-throat hydraulic pressing machines for stamping, bending, and forging.',
+    name: 'Hydraulic Press Machines',
+    slug: 'hydraulic-press-machines',
+    description: 'H-frame, C-frame, and deep-throat hydraulic pressing and power press machines for stamping, bending, and pressing.',
     image_url: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=800&q=80',
     is_active: true,
-    sort_order: 7,
-    keywords: ['hydraulic press', 'power press', 'c frame press', 'h frame press', 'stamping press', 'deep drawing', '100 ton press']
+    sort_order: 3,
+    keywords: ['hydraulic press', 'power press', 'h frame', 'c frame', 'stamping press', '100 ton', '60 ton']
   },
   {
-    id: 'MMW-accessories',
-    name: 'Tooling & Accessories',
-    slug: 'tooling-and-accessories',
-    description: 'Precision 3-jaw/4-jaw chucks, rotary tables, quick-change tool posts, DRO digital readout systems, and carbide tooling.',
-    image_url: 'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&w=800&q=80',
+    id: 'MMW-cutting',
+    name: 'Cutting Machines',
+    slug: 'cutting-machines',
+    description: 'Horizontal metal bandsaw cutting machines, circular sawing, and profile cutting systems for alloy billets.',
+    image_url: 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80',
     is_active: true,
-    sort_order: 8,
-    keywords: ['accessories', 'lathe chuck', '3 jaw chuck', '4 jaw chuck', 'rotary table', 'dro', 'digital readout', 'tool post', 'carbide tooling']
+    sort_order: 4,
+    keywords: ['cutting machine', 'bandsaw', 'metal cutting', 'sawing', 'billet cutting', 'pipe cutting']
+  },
+  {
+    id: 'MMW-workshop',
+    name: 'Industrial Workshop Equipment',
+    slug: 'industrial-workshop-equipment',
+    description: 'Surface grinders, shaping machines, universal milling, and precision maintenance workshop machinery.',
+    image_url: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80',
+    is_active: true,
+    sort_order: 5,
+    keywords: ['workshop equipment', 'milling', 'grinding', 'shaper', 'maintenance machinery', 'industrial equipment']
+  },
+  {
+    id: 'MMW-fabrication',
+    name: 'Fabrication Machines',
+    slug: 'fabrication-machines',
+    description: 'Sheet metal shearing machines, hydraulic press brakes, rolling machines, and section bending tools.',
+    image_url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80',
+    is_active: true,
+    sort_order: 6,
+    keywords: ['fabrication', 'shearing machine', 'press brake', 'bending machine', 'plate rolling', 'sheet metal']
   }
 ];
 
 export const INITIAL_PRODUCTS: Product[] = [
   {
     id: 'prod-1',
-    name: 'Heavy Duty All-Geared Precision Lathe Machine',
-    slug: 'heavy-duty-all-geared-precision-lathe-machine',
-    sku: 'MMW-LT-450G',
+    name: 'Lathe Machine - Heavy Duty',
+    slug: 'lathe-machine-heavy-duty',
+    sku: 'MMW-LT-500HD',
     category_id: 'MMW-lathe',
     category_name: 'Lathe Machines',
-    brand: 'Murthi Precision',
-    keywords: ['lathe', 'all geared lathe', 'turning machine', 'heavy duty lathe', '450mm swing', 'threading', 'coimbatore lathe', 'center lathe', 'oil bath', 'gap bed lathe'],
-    short_description: 'Induction hardened bedways, flame-treated gears, and 450mm swing over bed for heavy industrial turning.',
-    description: 'The Murthi MMW-LT-450G is an industrial workhorse built for rigorous high-tolerance turning, threading, and boring applications. Engineered with heavy-ribbed cast iron bed, hardened & ground alloy steel gears running in enclosed oil bath, and rapid cross-feed mechanism. Designed specifically for heavy machine shops, roll-turning, and precision jobbing workshops requiring vibration-free operation.',
+    brand: 'Murthi Machin Works',
+    keywords: ['lathe', 'heavy duty', '500mm swing', '1500mm center', 'turning machine', 'all geared'],
+    short_description: 'Swing Over Bed: 500 mm • Center Distance: 1500 mm • Condition: Excellent',
+    description: 'High-rigidity all-geared heavy duty lathe machine built for industrial turning, facing, and precision threading. Features induction-hardened bedways, large spindle bore, and precision gearbox.',
     price: 485000,
     sale_price: 460000,
     show_price: true,
     stock_status: 'in_stock',
     features: [
-      'Induction hardened & ground bedways (Hardness 450-500 BHN)',
-      '12 Spindle Speeds from 35 to 1400 RPM with headstock oil pump lubrication',
-      'Universal gearbox for Metric, Whitworth, Module, and Diametral threading',
-      'Camlock D1-6 spindle nose with precision taper roller bearings',
-      'Equipped with 3-Axis Digital Readout (DRO) mounting bracket',
-      'Foot-operated mechanical emergency spindle brake'
+      'Swing Over Bed: 500 mm',
+      'Center Distance: 1500 mm',
+      'Condition: Excellent',
+      'Induction hardened & ground bedways',
+      'Universal metric and inch threading gearbox',
+      'Full oil bath lubrication system'
     ],
     specifications: [
-      { key: 'Center Height', value: '250 mm (10 inch)' },
-      { key: 'Length of Bed', value: '2500 mm (8 Feet)' },
-      { key: 'Admit Between Centers', value: '1500 mm' },
       { key: 'Swing Over Bed', value: '500 mm' },
-      { key: 'Swing in Gap', value: '750 mm' },
+      { key: 'Center Distance', value: '1500 mm' },
+      { key: 'Condition', value: 'Excellent' },
       { key: 'Spindle Bore', value: '58 mm' },
-      { key: 'Main Motor Power', value: '5.5 kW (7.5 HP) 3-Phase' },
-      { key: 'Machine Weight', value: '2,400 kg' }
+      { key: 'Motor Power', value: '7.5 HP 3-Phase' }
     ],
     is_featured: true,
     is_active: true,
@@ -152,171 +129,136 @@ export const INITIAL_PRODUCTS: Product[] = [
         image_url: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=85',
         sort_order: 1,
         is_primary: true,
-        caption: 'Front perspective view'
-      },
-      {
-        id: 'img-1-2',
-        image_url: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1200&q=85',
-        sort_order: 2,
-        is_primary: false,
-        caption: 'Headstock and carriage assembly'
-      },
-      {
-        id: 'img-1-3',
-        image_url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=85',
-        sort_order: 3,
-        is_primary: false,
-        caption: 'Heavy ribbed casting bedways'
+        caption: 'Lathe Machine - Heavy Duty'
       }
     ],
     created_at: new Date(Date.now() - 15 * 86400000).toISOString()
   },
   {
     id: 'prod-2',
-    name: 'Universal Heavy Duty Milling Machine with DRO',
-    slug: 'universal-heavy-duty-milling-machine-dro',
-    sku: 'MMW-ML-3U',
-    category_id: 'MMW-milling',
-    category_name: 'Milling Machines',
-    brand: 'Murthi Precision',
-    keywords: ['milling machine', 'universal milling', 'dro', 'digital readout', 'knee mill', 'gear cutting', 'swivel table', 'iso 50', 'vertical milling', 'slotting'],
-    short_description: '3-Axis motorized feed with swivel table ±45°, ISO 40/50 spindle, and precision optical DRO.',
-    description: 'Engineered for high metal removal rates and exceptional surface finishes. The Murthi MMW-ML-3U features an ultra-rigid column, hardened slideways with turcite-B coating, and high-torque mechanical feeds on X, Y, and Z axes. Perfect for mold & die making, precision slot milling, helical gear generation, and face milling.',
-    price: 675000,
+    name: 'Drilling Machine - Pillar Type',
+    slug: 'drilling-machine-pillar-type',
+    sku: 'MMW-DR-25P',
+    category_id: 'MMW-drilling',
+    category_name: 'Drilling Machines',
+    brand: 'Murthi Machin Works',
+    keywords: ['drilling machine', 'pillar type', '25mm drill', '1440 rpm', 'pillar drill'],
+    short_description: 'Drill Capacity: 25 mm • Spindle Speed: 1440 RPM • Condition: Very Good',
+    description: 'Robust pillar drilling machine designed for precision workshop drilling, reaming, and tapping. Features heavy ground column and multi-speed belt drive.',
+    price: 95000,
     sale_price: null,
     show_price: true,
     stock_status: 'in_stock',
     features: [
-      'Universal vertical milling head with 360-degree swiveling capability',
-      'Automatic power feeds and rapid traverse on all 3 axes (X/Y/Z)',
-      'Built-in coolant recirculating system and chip collection tray',
-      'Centralized automated lubrication pump for all guideways',
-      'Pre-installed 3-Axis high precision glass scale Digital Readout'
+      'Drill Capacity: 25 mm',
+      'Spindle Speed: 1440 RPM',
+      'Condition: Very Good',
+      'Precision machined heavy ground column',
+      'Rack and pinion table elevation mechanism',
+      'Cast iron base with T-slots'
     ],
     specifications: [
-      { key: 'Table Size', value: '1370 x 320 mm' },
-      { key: 'Longitudinal Travel (X)', value: '800 mm' },
-      { key: 'Cross Travel (Y)', value: '300 mm' },
-      { key: 'Vertical Travel (Z)', value: '450 mm' },
-      { key: 'Spindle Taper', value: 'ISO 50 / NT 50' },
-      { key: 'Spindle Speed Range', value: '30 - 1500 RPM (12 Steps)' },
-      { key: 'Table Swivel Angle', value: '± 45 Degrees' },
-      { key: 'Motor Rating', value: '7.5 kW (10 HP)' }
+      { key: 'Drill Capacity', value: '25 mm' },
+      { key: 'Spindle Speed', value: '1440 RPM' },
+      { key: 'Condition', value: 'Very Good' },
+      { key: 'Spindle Travel', value: '130 mm' },
+      { key: 'Motor Rating', value: '1.5 HP' }
     ],
     is_featured: true,
     is_active: true,
     images: [
       {
         id: 'img-2-1',
-        image_url: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1200&q=85',
+        image_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=85',
         sort_order: 1,
-        is_primary: true
-      },
-      {
-        id: 'img-2-2',
-        image_url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=85',
-        sort_order: 2,
-        is_primary: false
+        is_primary: true,
+        caption: 'Drilling Machine - Pillar Type'
       }
     ],
     created_at: new Date(Date.now() - 12 * 86400000).toISOString()
   },
   {
     id: 'prod-3',
-    name: 'Precision CNC Vertical Machining Center VMC-850',
-    slug: 'precision-cnc-vertical-machining-center-vmc-850',
-    sku: 'MMW-CNC-VMC850',
-    category_id: 'MMW-cnc',
-    category_name: 'CNC Machinery',
-    brand: 'Murthi Titan CNC',
-    keywords: ['vmc', 'cnc machine', 'vertical machining center', 'fanuc', 'siemens', 'atc', 'bt40', '10000 rpm', 'die mold', '3 axis cnc', 'aerospace machining'],
-    short_description: 'BT-40 10,000 RPM spindle, 24-station arm type tool changer, Fanuc 0i-MF Plus controller.',
-    description: 'High-rigidity C-frame structure with precision linear roller guideways on all axes for high-speed dynamic machining. Standard equipped with high-torque direct-drive spindle, telescopic way covers, and CTS (Coolant Through Spindle) preparation. Unrivaled stability for aerospace, automotive dies, and high-volume component manufacturing.',
-    price: 2450000,
-    sale_price: 2380000,
+    name: 'Hydraulic Press Machine',
+    slug: 'hydraulic-press-machine-100t',
+    sku: 'MMW-HP-100H',
+    category_id: 'MMW-hydraulic',
+    category_name: 'Hydraulic Press Machines',
+    brand: 'Murthi Machin Works',
+    keywords: ['hydraulic press', '100 ton', 'h-frame', 'h frame press', 'pressing machine'],
+    short_description: 'Capacity: 100 Ton • Type: H-Frame • Condition: Excellent',
+    description: 'Heavy duty 100-Ton H-frame hydraulic press for industrial stamping, bearing pressing, straightening, and deep drawing operations. Engineered with high-grade steel fabrication.',
+    price: 650000,
+    sale_price: 620000,
     show_price: true,
-    stock_status: 'made_to_order',
+    stock_status: 'in_stock',
     features: [
-      'Fanuc 0i-MF Plus (Package B) / Siemens 828D CNC Controller',
-      '24 Tools Twin-Arm Automatic Tool Changer (Tool change time 1.8s)',
-      'High-grade Meehanite cast iron frame with heat-treatment stress relief',
-      'High-speed 10,000 RPM belt/direct drive BT40 Spindle with chiller unit',
-      'Automatic dual screw chip conveyors with rear bucket discharge'
+      'Capacity: 100 Ton',
+      'Type: H-Frame',
+      'Condition: Excellent',
+      'Heavy duty welded steel frame with stress relief',
+      'Precision hydraulic power pack with pressure relief valve',
+      'Dual push button control for safety'
     ],
     specifications: [
-      { key: 'X/Y/Z Travel', value: '850 / 550 / 550 mm' },
-      { key: 'Table Size', value: '1000 x 500 mm' },
-      { key: 'Max Table Load', value: '650 kg' },
-      { key: 'Spindle Nose to Table', value: '120 - 670 mm' },
-      { key: 'Rapid Traverse (X/Y/Z)', value: '36 / 36 / 30 m/min' },
-      { key: 'Positioning Accuracy', value: '±0.005 mm' },
-      { key: 'Repeatability', value: '±0.003 mm' },
-      { key: 'Spindle Motor Power', value: '11/15 kW' }
+      { key: 'Capacity', value: '100 Ton' },
+      { key: 'Type', value: 'H-Frame' },
+      { key: 'Condition', value: 'Excellent' },
+      { key: 'Stroke', value: '300 mm' },
+      { key: 'Working Table', value: '750 x 500 mm' }
     ],
     is_featured: true,
     is_active: true,
     images: [
       {
         id: 'img-3-1',
-        image_url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=85',
+        image_url: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=1200&q=85',
         sort_order: 1,
-        is_primary: true
-      },
-      {
-        id: 'img-3-2',
-        image_url: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1200&q=85',
-        sort_order: 2,
-        is_primary: false
+        is_primary: true,
+        caption: 'Hydraulic Press Machine'
       }
     ],
     created_at: new Date(Date.now() - 10 * 86400000).toISOString()
   },
   {
     id: 'prod-4',
-    name: 'Heavy Duty 50mm Industrial Radial Drilling Machine',
-    slug: 'heavy-duty-50mm-industrial-radial-drilling-machine',
-    sku: 'MMW-RD-50/1600',
-    category_id: 'MMW-drilling',
-    category_name: 'Drilling Machines',
-    brand: 'Murthi Precision',
-    keywords: ['radial drill', 'drilling machine', '50mm drill', 'radial arm drill', 'hydraulic clamping', 'mt5 spindle', 'tapping', 'heavy drilling', 'coimbatore radial drill'],
-    short_description: 'Hydraulic clamping, 1600mm arm radius, 50mm solid drilling capacity in steel, MT-5 spindle.',
-    description: 'Designed for heavy engineering fabrication, pressure vessel manufacturing, and structural steel drilling. Features centralized hydraulic clamping for the column, arm, and drill head with ergonomic front controls. Multi-disc mechanical clutch ensures overload protection while auto-feed gearbox delivers dependable feed rates.',
-    price: 520000,
+    name: 'Power Press Machine',
+    slug: 'power-press-machine-60t',
+    sku: 'MMW-PP-60T',
+    category_id: 'MMW-hydraulic',
+    category_name: 'Hydraulic Press Machines',
+    brand: 'Murthi Machin Works',
+    keywords: ['power press', '60 ton', 'sheet metal press', 'stamping press', 'power press machine'],
+    short_description: 'Capacity: 60 Ton • Stroke: 110 mm • Condition: Excellent',
+    description: 'Mechanical C-frame power press machine for rapid sheet metal punching, blanking, trimming, and forming operations in automotive and electrical fabrication.',
+    price: 420000,
     sale_price: null,
     show_price: true,
     stock_status: 'in_stock',
     features: [
-      'Hydraulic pre-selection for speed and feed changes',
-      'Hardened and ground column sleeve and arm guide tracks',
-      'Spindle micro-feed mechanism for precise depth tapping and counterboring',
-      'Box table with precision T-slots included as standard equipment',
-      'Motorized arm elevation with dual mechanical safety nuts'
+      'Capacity: 60 Ton',
+      'Stroke: 110 mm',
+      'Condition: Excellent',
+      'High grade alloy steel crankshaft',
+      'Rolling key clutch with foot pedal trigger',
+      'Adjustable stroke mechanism'
     ],
     specifications: [
-      { key: 'Drilling Capacity in Steel', value: '50 mm' },
-      { key: 'Drilling Capacity in Cast Iron', value: '60 mm' },
-      { key: 'Tapping Capacity in Steel', value: 'M42' },
-      { key: 'Arm Radius (Drill Radius)', value: '1600 mm' },
-      { key: 'Spindle Travel', value: '315 mm' },
-      { key: 'Spindle Taper', value: 'MT-5' },
-      { key: 'Spindle Speeds', value: '25 - 2000 RPM (16 Steps)' },
-      { key: 'Drill Motor', value: '4.0 kW (5.5 HP)' }
+      { key: 'Capacity', value: '60 Ton' },
+      { key: 'Stroke', value: '110 mm' },
+      { key: 'Condition', value: 'Excellent' },
+      { key: 'Shut Height', value: '280 mm' },
+      { key: 'Strokes Per Minute', value: '55 SPM' }
     ],
     is_featured: true,
     is_active: true,
     images: [
       {
         id: 'img-4-1',
-        image_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=85',
-        sort_order: 1,
-        is_primary: true
-      },
-      {
-        id: 'img-4-2',
         image_url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=85',
-        sort_order: 2,
-        is_primary: false
+        sort_order: 1,
+        is_primary: true,
+        caption: 'Power Press Machine'
       }
     ],
     created_at: new Date(Date.now() - 8 * 86400000).toISOString()

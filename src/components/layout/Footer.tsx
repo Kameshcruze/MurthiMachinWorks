@@ -10,10 +10,9 @@ import {
   ShieldCheck,
   Cog,
   ArrowRight,
-  ExternalLink,
   Lock,
   Clock,
-  FileText
+  Wrench
 } from 'lucide-react';
 
 export const Footer: React.FC = () => {
@@ -27,65 +26,74 @@ export const Footer: React.FC = () => {
     { label: 'Home', page: 'home' as const },
     { label: 'All Machinery & Products', page: 'products' as const },
     { label: 'Machinery Categories', page: 'categories' as const },
-    { label: 'About Murthi Machine Works', page: 'about' as const },
-    { label: 'Contact & Factory Location', page: 'contact' as const },
-    { label: 'Enquiry / Quote Cart', page: 'cart' as const },
-    { label: 'Privacy Policy', page: 'privacy' as const },
-    { label: 'Terms & Conditions', page: 'terms' as const },
+    { label: 'Our Services', page: 'home' as const, section: 'our-services-section' },
+    { label: 'Service Coverage Area', page: 'home' as const, section: 'service-area-section' },
+    { label: 'About Murthi Machin Works', page: 'about' as const },
+    { label: 'Contact & Location', page: 'contact' as const },
+    { label: 'Enquiry / Quote RFQ', page: 'cart' as const },
   ];
 
   const featuredCategories = [
-    { label: 'Heavy Duty Lathes', slug: 'lathe-machines' },
-    { label: 'Universal Milling Machines', slug: 'milling-machines' },
-    { label: 'CNC Vertical Machining Centers', slug: 'cnc-machinery' },
-    { label: 'Radial Arm Drills', slug: 'drilling-machines' },
-    { label: 'Hydraulic Surface Grinders', slug: 'grinding-machines' },
-    { label: 'Metal Cutting Bandsaws', slug: 'cutting-and-sawing' },
-    { label: 'Industrial Hydraulic Presses', slug: 'hydraulic-presses' },
+    { label: 'Lathe Machines', slug: 'lathe-machines' },
+    { label: 'Drilling Machines', slug: 'drilling-machines' },
+    { label: 'Hydraulic Press Machines', slug: 'hydraulic-press-machines' },
+    { label: 'Cutting Machines', slug: 'cutting-machines' },
+    { label: 'Industrial Workshop Equipment', slug: 'workshop-equipment' },
+    { label: 'Fabrication Machines', slug: 'fabrication-machines' },
   ];
 
+  const handleLinkClick = (page: any, section?: string) => {
+    navigateTo(page);
+    if (section) {
+      setTimeout(() => {
+        const el = document.getElementById(section);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  };
+
   return (
-    <footer className="bg-slate-950 text-slate-300 border-t border-slate-800">
+    <footer className="bg-[#0A0A0A] text-slate-300 border-t-4 border-[#F5A623]">
       {/* Industrial Certification & Value Proposition Banner */}
-      <div className="border-b border-slate-800/80 bg-slate-900/60 py-8 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="border-b border-slate-800/80 bg-slate-950 py-8 px-4 sm:px-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+            <div className="w-12 h-12 rounded-lg bg-[#F5A623]/10 border border-[#F5A623]/30 flex items-center justify-center text-[#F5A623] shrink-0">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-heading font-bold text-white text-sm">ISO 9001:2015 Certified</h4>
-              <p className="text-xs text-slate-400">Strict zero-defect quality control protocols</p>
+              <h4 className="font-heading font-black text-white text-sm">Quality Assured</h4>
+              <p className="text-xs text-slate-400">Inspected, tested & certified machinery</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+            <div className="w-12 h-12 rounded-lg bg-[#F5A623]/10 border border-[#F5A623]/30 flex items-center justify-center text-[#F5A623] shrink-0">
               <Cog className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-heading font-bold text-white text-sm">40+ Years of Craft</h4>
-              <p className="text-xs text-slate-400">Pioneering Coimbatore machine tool maker since 1985</p>
+              <h4 className="font-heading font-black text-white text-sm">15+ Years Experience</h4>
+              <p className="text-xs text-slate-400">Trusted Coimbatore machine tool experts</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-              <Clock className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-lg bg-[#F5A623]/10 border border-[#F5A623]/30 flex items-center justify-center text-[#F5A623] shrink-0">
+              <Wrench className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-heading font-bold text-white text-sm">Pan-India Support</h4>
-              <p className="text-xs text-slate-400">On-site erection, commissioning & spares</p>
+              <h4 className="font-heading font-black text-white text-sm">Pan-India Support</h4>
+              <p className="text-xs text-slate-400">On-site erection, repairs & maintenance</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+            <div className="w-12 h-12 rounded-lg bg-[#C81E1E]/20 border border-[#C81E1E]/40 flex items-center justify-center text-[#C81E1E] shrink-0">
               <MessageSquare className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-heading font-bold text-white text-sm">Direct WhatsApp Quotes</h4>
-              <p className="text-xs text-slate-400">Rapid reply from our engineering specialists</p>
+              <h4 className="font-heading font-black text-white text-sm">Instant Quotes</h4>
+              <p className="text-xs text-slate-400">Call: 98422 66521 / WhatsApp support</p>
             </div>
           </div>
         </div>
@@ -96,67 +104,51 @@ export const Footer: React.FC = () => {
         {/* Company Info */}
         <div className="lg:col-span-4 space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-amber-400 shadow">
-              <Cog className="w-6 h-6 animate-[spin_16s_linear_infinite]" />
+            <div className="w-11 h-11 rounded-lg bg-[#F5A623] flex items-center justify-center text-slate-950 shadow-md shrink-0">
+              <Cog className="w-6 h-6" />
             </div>
             <div>
-              <span className="font-heading font-extrabold text-lg text-white tracking-tight">
-                MURTHI MACHINE WORKS
+              <span className="font-heading font-black text-lg text-white tracking-wider block">
+                MURTHI MACHIN WORKS
               </span>
-              <p className="text-[11px] text-amber-400 font-semibold tracking-wider uppercase">
-                Est. {settings.established_year || '1985'} • Coimbatore
+              <p className="text-[10px] text-[#F5A623] font-black tracking-widest uppercase">
+                MACHINERY SALES & SERVICE • COIMBATORE
               </p>
             </div>
           </div>
 
           <p className="text-xs text-slate-400 leading-relaxed">
-            {settings.about_content
-              ? settings.about_content.slice(0, 180) + '...'
-              : 'Precision engineering and manufacturing of heavy duty machine tools, all-geared lathes, milling machines, radial drills, and CNC machining centers.'}
+            Murthi Machin Works is one of Coimbatore's trusted machinery sales and service providers, offering both new and used industrial machinery with complete maintenance and support.
           </p>
 
-          <div className="pt-2 text-xs text-slate-400 space-y-1.5 border-t border-slate-800/80">
-            {settings.gstin && (
-              <p className="flex items-center gap-2">
-                <span className="text-slate-500 font-medium">GSTIN:</span>
-                <span className="font-mono text-slate-300 font-semibold">{settings.gstin}</span>
-              </p>
-            )}
-            <p className="flex items-center gap-2">
-              <span className="text-slate-500 font-medium">Manufacturing Units:</span>
-              <span className="text-slate-300">Coimbatore Industrial Belt (SIDCO)</span>
-            </p>
-          </div>
-
-          {/* Direct WhatsApp Callout */}
-          <div className="pt-3">
-            <a
-              href={`https://wa.me/${cleanWhatsAppNumber}?text=${encodeURIComponent(
-                'Hello Murthi Machine Works, I am reaching out for technical consultation and machinery quotation.'
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow transition"
+          {/* Quick Action Button */}
+          <div className="pt-2">
+            <button
+              onClick={() => {
+                const el = document.getElementById('enquiry-form-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                else navigateTo('contact');
+              }}
+              className="px-5 py-2.5 rounded bg-[#C81E1E] hover:bg-[#B31919] text-white font-heading font-black text-xs uppercase tracking-wider shadow transition"
             >
-              <MessageSquare className="w-4 h-4 fill-current" />
-              <span>Contact Senior Sales Engineer</span>
-            </a>
+              Get a Quote Today
+            </button>
           </div>
         </div>
 
         {/* Quick Links */}
         <div className="lg:col-span-2 space-y-3">
-          <h4 className="font-heading font-bold text-white text-sm uppercase tracking-wider text-amber-400">
+          <h4 className="font-heading font-black text-white text-xs sm:text-sm uppercase tracking-wider text-[#F5A623]">
             Quick Links
           </h4>
           <ul className="space-y-2 text-xs">
             {quickLinks.map((link, idx) => (
               <li key={idx}>
                 <button
-                  onClick={() => navigateTo(link.page)}
+                  onClick={() => handleLinkClick(link.page, link.section)}
                   className="text-slate-400 hover:text-white transition flex items-center gap-1.5 group"
                 >
-                  <ArrowRight className="w-3 h-3 text-slate-600 group-hover:text-amber-400 group-hover:translate-x-0.5 transition" />
+                  <ArrowRight className="w-3 h-3 text-slate-600 group-hover:text-[#F5A623] group-hover:translate-x-0.5 transition shrink-0" />
                   <span>{link.label}</span>
                 </button>
               </li>
@@ -166,7 +158,7 @@ export const Footer: React.FC = () => {
 
         {/* Popular Categories */}
         <div className="lg:col-span-3 space-y-3">
-          <h4 className="font-heading font-bold text-white text-sm uppercase tracking-wider text-amber-400">
+          <h4 className="font-heading font-black text-white text-xs sm:text-sm uppercase tracking-wider text-[#F5A623]">
             Machinery Categories
           </h4>
           <ul className="space-y-2 text-xs">
@@ -176,7 +168,7 @@ export const Footer: React.FC = () => {
                   onClick={() => navigateTo('products', { categorySlug: cat.slug })}
                   className="text-slate-400 hover:text-white transition flex items-center gap-1.5 group text-left"
                 >
-                  <ArrowRight className="w-3 h-3 text-slate-600 group-hover:text-amber-400 group-hover:translate-x-0.5 transition shrink-0" />
+                  <ArrowRight className="w-3 h-3 text-slate-600 group-hover:text-[#F5A623] group-hover:translate-x-0.5 transition shrink-0" />
                   <span>{cat.label}</span>
                 </button>
               </li>
@@ -186,42 +178,50 @@ export const Footer: React.FC = () => {
 
         {/* Plant & Contact Info */}
         <div className="lg:col-span-3 space-y-3">
-          <h4 className="font-heading font-bold text-white text-sm uppercase tracking-wider text-amber-400">
-            Works & Head Office
+          <h4 className="font-heading font-black text-white text-xs sm:text-sm uppercase tracking-wider text-[#F5A623]">
+            Works & Office
           </h4>
           
           <div className="space-y-3 text-xs text-slate-400">
             <div className="flex items-start gap-2.5">
-              <MapPin className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <span>{settings.address}</span>
+              <MapPin className="w-4 h-4 text-[#F5A623] shrink-0 mt-0.5" />
+              <span>No. 45, South Street No. 1, Avarampalayam, Coimbatore - 641 006, Tamil Nadu, India.</span>
+            </div>
+
+            <div className="flex items-start gap-2.5">
+              <Phone className="w-4 h-4 text-[#F5A623] shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <a href="tel:9842266521" className="block text-white font-bold hover:text-[#F5A623] transition">
+                  98422 66521
+                </a>
+                <a href="tel:8778384248" className="block text-white font-bold hover:text-[#F5A623] transition">
+                  87783 84248
+                </a>
+                <a href="tel:7402114228" className="block text-white font-bold hover:text-[#F5A623] transition">
+                  74021 14228
+                </a>
+              </div>
             </div>
 
             <div className="flex items-center gap-2.5">
-              <Phone className="w-4 h-4 text-amber-400 shrink-0" />
-              <a href={`tel:${settings.phone}`} className="hover:text-white transition font-medium">
-                {settings.phone}
+              <Mail className="w-4 h-4 text-[#F5A623] shrink-0" />
+              <a href="mailto:murthimachineworks@gmail.com" className="hover:text-white transition">
+                murthimachineworks@gmail.com
               </a>
             </div>
 
             <div className="flex items-center gap-2.5">
-              <Mail className="w-4 h-4 text-amber-400 shrink-0" />
-              <a href={`mailto:${settings.email}`} className="hover:text-white transition">
-                {settings.email}
-              </a>
-            </div>
-
-            <div className="flex items-center gap-2.5">
-              <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>Mon – Sat: 8:30 AM – 7:00 PM IST</span>
+              <Clock className="w-4 h-4 text-[#F5A623] shrink-0" />
+              <span>Mon – Sat: 8:30 AM – 7:30 PM IST</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Bottom Legal & Admin Strip */}
-      <div className="border-t border-slate-900 bg-slate-950 py-4 px-4 sm:px-8 text-xs text-slate-500">
+      <div className="border-t border-slate-900 bg-black py-4 px-4 sm:px-8 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>© {new Date().getFullYear()} {settings.business_name}. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Murthi Machin Works. All rights reserved.</p>
 
           <div className="flex items-center gap-4">
             <button
@@ -240,9 +240,9 @@ export const Footer: React.FC = () => {
             <span>•</span>
             <button
               onClick={() => navigateTo(isAuthenticated ? 'admin-dashboard' : 'admin-login')}
-              className="flex items-center gap-1 text-slate-400 hover:text-amber-400 transition"
+              className="flex items-center gap-1 text-slate-400 hover:text-[#F5A623] transition"
             >
-              <Lock className="w-3 h-3 text-amber-500" />
+              <Lock className="w-3 h-3 text-[#F5A623]" />
               <span>Admin Access</span>
             </button>
           </div>
@@ -251,3 +251,4 @@ export const Footer: React.FC = () => {
     </footer>
   );
 };
+
