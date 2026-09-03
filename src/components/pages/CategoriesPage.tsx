@@ -99,6 +99,9 @@ export const CategoriesPage: React.FC = () => {
                       className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500"
                       loading="lazy"
                       referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/hero-banner.png';
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white">

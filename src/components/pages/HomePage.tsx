@@ -117,13 +117,13 @@ export const HomePage: React.FC = () => {
     }
   };
 
-  // The 6 exact categories from the design
+  // The 6 exact categories from the design with verified high-resolution industrial machine imagery
   const categoryCards = [
     {
       id: 'lathe-machines',
       name: 'Lathe Machines',
       slug: 'lathe-machines',
-      image: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?auto=format&fit=crop&w=600&q=80',
     },
     {
       id: 'drilling-machines',
@@ -135,7 +135,7 @@ export const HomePage: React.FC = () => {
       id: 'hydraulic-press-machines',
       name: 'Hydraulic Press Machines',
       slug: 'hydraulic-press-machines',
-      image: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80',
     },
     {
       id: 'cutting-machines',
@@ -147,7 +147,7 @@ export const HomePage: React.FC = () => {
       id: 'industrial-workshop-equipment',
       name: 'Industrial Workshop Equipment',
       slug: 'industrial-workshop-equipment',
-      image: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1581092335878-2d9ff86ca2bf?auto=format&fit=crop&w=600&q=80',
     },
     {
       id: 'fabrication-machines',
@@ -494,7 +494,7 @@ export const HomePage: React.FC = () => {
               key={cat.id}
               whileHover={{ y: -6, transition: { duration: 0.25 } }}
               onClick={() => navigateTo('products', { categorySlug: cat.slug })}
-              className="group rounded-2xl overflow-hidden border border-slate-200/90 hover:border-[#C81E1E] shadow-sm hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col bg-white"
+              className="group rounded-2xl overflow-hidden border border-slate-200/90 hover:border-[#C81E1E] shadow-sm hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col bg-[#C81E1E]"
             >
               <div className="relative aspect-4/3 sm:aspect-square bg-slate-100 overflow-hidden">
                 <img
@@ -503,6 +503,9 @@ export const HomePage: React.FC = () => {
                   className="w-full h-full object-cover group-hover:scale-112 transition-transform duration-700 ease-out"
                   loading="lazy"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/hero-banner.png';
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
                   <span className="text-[10px] font-bold text-white bg-black/60 px-2 py-0.5 rounded-full backdrop-blur-xs">
@@ -511,9 +514,9 @@ export const HomePage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Bottom Red Name Bar */}
-              <div className="bg-[#C81E1E] group-hover:bg-[#B31919] text-white py-3 px-2 text-center transition-colors">
-                <p className="font-heading font-bold text-xs leading-snug">
+              {/* Bottom Red Name Bar (Stretches full height to eliminate bottom gaps across varying title heights) */}
+              <div className="bg-[#C81E1E] group-hover:bg-[#B31919] text-white py-3 px-2 text-center transition-colors flex-1 flex items-center justify-center w-full min-h-[48px]">
+                <p className="font-heading font-bold text-xs sm:text-xs leading-snug">
                   {cat.name}
                 </p>
               </div>

@@ -33,7 +33,7 @@ export const INITIAL_CATEGORIES: Category[] = [
     name: 'Lathe Machines',
     slug: 'lathe-machines',
     description: 'Heavy duty all-geared, medium duty, and precision tool room lathe machines engineered for rigorous turning operations.',
-    image_url: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80',
+    image_url: 'https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?auto=format&fit=crop&w=800&q=80',
     is_active: true,
     sort_order: 1,
     keywords: ['lathe', 'lathe machine', 'turning machine', 'all geared lathe', 'tool room lathe', 'heavy duty lathe', 'kharad']
@@ -53,7 +53,7 @@ export const INITIAL_CATEGORIES: Category[] = [
     name: 'Hydraulic Press Machines',
     slug: 'hydraulic-press-machines',
     description: 'H-frame, C-frame, and deep-throat hydraulic pressing and power press machines for stamping, bending, and pressing.',
-    image_url: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=800&q=80',
+    image_url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
     is_active: true,
     sort_order: 3,
     keywords: ['hydraulic press', 'power press', 'h frame', 'c frame', 'stamping press', '100 ton', '60 ton']
@@ -73,7 +73,7 @@ export const INITIAL_CATEGORIES: Category[] = [
     name: 'Industrial Workshop Equipment',
     slug: 'industrial-workshop-equipment',
     description: 'Surface grinders, shaping machines, universal milling, and precision maintenance workshop machinery.',
-    image_url: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80',
+    image_url: 'https://images.unsplash.com/photo-1581092335878-2d9ff86ca2bf?auto=format&fit=crop&w=800&q=80',
     is_active: true,
     sort_order: 5,
     keywords: ['workshop equipment', 'milling', 'grinding', 'shaper', 'maintenance machinery', 'industrial equipment']

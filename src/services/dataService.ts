@@ -147,7 +147,28 @@ function getLocalCategories(): Category[] {
     return INITIAL_CATEGORIES;
   }
   try {
-    return JSON.parse(data);
+    const cats: Category[] = JSON.parse(data);
+    // Auto-heal any broken legacy Unsplash 404 URLs
+    let modified = false;
+    const healed = cats.map(c => {
+      if (c.image_url?.includes('photo-1504917599217-d4dc5ebe6122')) {
+        modified = true;
+        return { ...c, image_url: 'https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?auto=format&fit=crop&w=800&q=80' };
+      }
+      if (c.image_url?.includes('photo-1581093458791-9f3c3900df4b')) {
+        modified = true;
+        return { ...c, image_url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80' };
+      }
+      if (c.image_url?.includes('photo-1581092335397-9583fe92d232')) {
+        modified = true;
+        return { ...c, image_url: 'https://images.unsplash.com/photo-1581092335878-2d9ff86ca2bf?auto=format&fit=crop&w=800&q=80' };
+      }
+      return c;
+    });
+    if (modified) {
+      localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(healed));
+    }
+    return healed;
   } catch {
     return INITIAL_CATEGORIES;
   }
