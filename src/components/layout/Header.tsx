@@ -123,73 +123,38 @@ export const Header: React.FC = () => {
             </span>
           </div>
 
-          {/* Right: Social Icons & Admin */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-5 h-5 rounded-full bg-black text-[#F5A623] flex items-center justify-center text-[10px] font-bold hover:opacity-80 transition"
-                title="Facebook"
-              >
-                f
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-5 h-5 rounded-full bg-black text-[#F5A623] flex items-center justify-center text-[10px] font-bold hover:opacity-80 transition"
-                title="Instagram"
-              >
-                in
-              </a>
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-5 h-5 rounded-full bg-black text-[#F5A623] flex items-center justify-center text-[10px] font-bold hover:opacity-80 transition"
-                title="YouTube"
-              >
-                ▶
-              </a>
-            </div>
-
-            <span className="text-black/30">|</span>
-
-            <button
-              onClick={() => navigateTo(isAuthenticated ? 'admin-dashboard' : 'admin-login')}
-              className="flex items-center gap-1 text-[11px] font-bold text-black hover:text-slate-900 transition"
-              title="Admin Access"
-            >
-              <Lock className="w-3 h-3 text-black" />
-              <span className="hidden xs:inline">{isAuthenticated ? 'Admin' : 'Login'}</span>
-            </button>
-          </div>
+          {/* Right: GET A QUOTE Button (Replaces marked social icons & admin link) */}
+          <button
+            onClick={handleGetQuoteClick}
+            className="px-3 sm:px-4 py-1 bg-[#C81E1E] hover:bg-[#B31919] active:bg-[#991414] text-white font-heading font-black text-[11px] sm:text-xs tracking-wider uppercase rounded shadow-xs hover:shadow transition-all whitespace-nowrap shrink-0 flex items-center gap-1"
+            id="btn-header-top-quote"
+          >
+            <span>GET A QUOTE</span>
+          </button>
         </div>
       </div>
 
       {/* 2. MAIN LOGO & CONTACT HEADER */}
-      <div className="bg-white max-w-7xl mx-auto px-4 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between gap-4">
+      <div className="bg-white max-w-7xl mx-auto px-3 sm:px-8 py-2.5 sm:py-4 flex items-center justify-between gap-2 sm:gap-4">
         {/* Logo */}
         <button
           onClick={() => navigateTo('home')}
-          className="flex items-center gap-3 text-left group focus:outline-none shrink-0"
+          className="flex items-center gap-2 sm:gap-3 text-left group focus:outline-none min-w-0"
           id="btn-header-brand-logo"
         >
           {/* Yellow Cog Emblem with stylized M */}
-          <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#F5A623] flex items-center justify-center shadow-md shrink-0 border-2 border-amber-600/30">
-            <Cog className="w-8 h-8 sm:w-9 sm:h-9 text-slate-950 animate-[spin_20s_linear_infinite]" />
-            <span className="absolute font-heading font-black text-xs sm:text-sm text-slate-950 tracking-tighter">
+          <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-[#F5A623] flex items-center justify-center shadow-md shrink-0 border-2 border-amber-600/30">
+            <Cog className="w-6 h-6 sm:w-9 sm:h-9 text-slate-950 animate-[spin_20s_linear_infinite]" />
+            <span className="absolute font-heading font-black text-[11px] sm:text-sm text-slate-950 tracking-tighter">
               M
             </span>
           </div>
 
-          <div>
-            <h1 className="font-heading font-black text-lg sm:text-2xl tracking-tight text-slate-950 leading-none group-hover:text-amber-600 transition-colors">
+          <div className="min-w-0">
+            <h1 className="font-heading font-black text-sm sm:text-xl md:text-2xl tracking-tight text-slate-950 leading-none group-hover:text-[#C81E1E] transition-colors whitespace-nowrap">
               MURTHI MACHIN WORKS
             </h1>
-            <p className="text-[10px] sm:text-[11px] font-bold text-slate-700 mt-1 tracking-tight">
+            <p className="text-[9px] sm:text-[11px] font-bold text-slate-700 mt-1 tracking-tight truncate">
               All New and Old Machinery Sales & Service
             </p>
           </div>
@@ -232,32 +197,51 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Right CTA Button (Red) */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Right CTA Button & Mobile Actions */}
+        <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+          {/* Mobile Search Button */}
+          <button
+            onClick={() => setSearchOpen(!searchOpen)}
+            className="lg:hidden p-2 text-slate-700 hover:text-[#C81E1E] hover:bg-slate-100 rounded-lg transition"
+            title="Search Machinery"
+            aria-label="Search"
+            id="btn-mobile-header-search"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+
+          {/* Mobile RFQ Cart Button with Badge */}
+          <button
+            onClick={() => setIsCartOpen(true)}
+            className="lg:hidden relative p-2 text-slate-700 hover:text-[#C81E1E] hover:bg-slate-100 rounded-lg transition"
+            title="Enquiry Cart"
+            id="btn-mobile-header-cart"
+            aria-label="Enquiry Cart"
+          >
+            <ShoppingCart className="w-5 h-5" />
+            {totalItems > 0 && (
+              <span className="absolute top-1 right-1 bg-[#C81E1E] text-white font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                {totalItems}
+              </span>
+            )}
+          </button>
+
+          {/* Desktop Quote Button */}
           <button
             onClick={handleGetQuoteClick}
-            className="px-5 sm:px-6 py-2.5 sm:py-3 bg-[#C81E1E] hover:bg-[#B31919] active:bg-[#991414] text-white font-heading font-extrabold text-xs sm:text-sm tracking-wider uppercase rounded shadow-md hover:shadow-lg transition-all"
+            className="hidden lg:inline-flex px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-[#C81E1E] to-[#A81717] hover:from-[#B31919] hover:to-[#911313] active:bg-[#991414] text-white font-heading font-black text-xs sm:text-sm tracking-wider uppercase rounded-lg shadow-md hover:shadow-lg transition-all whitespace-nowrap"
             id="btn-header-get-quote"
           >
             GET A QUOTE
           </button>
-
-          {/* Mobile Hamburger Toggle */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 text-slate-800 hover:bg-slate-100 rounded-md transition"
-            aria-label="Toggle menu"
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
         </div>
       </div>
 
-      {/* 3. SOLID BLACK NAVBAR */}
-      <div className="bg-[#0A0A0A] text-white border-t border-slate-900">
+      {/* 3. SOLID BLACK NAVBAR (Desktop Only) */}
+      <div className="hidden lg:block bg-[#0A0A0A] text-white border-t border-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between">
           {/* Desktop Nav Items */}
-          <nav className="hidden lg:flex items-center">
+          <nav className="flex items-center">
             {navItems.map(item => {
               const isHomeActive = item.page === 'home' && currentPage === 'home';
               const isOtherActive =
@@ -330,8 +314,8 @@ export const Header: React.FC = () => {
             })}
           </nav>
 
-          {/* Quick Right Utilities (Search & Enquiry RFQ Cart) */}
-          <div className="flex items-center gap-2 py-1.5 ml-auto lg:ml-0">
+          {/* Quick Right Utilities (Search & Enquiry RFQ Cart for Desktop) */}
+          <div className="flex items-center gap-2 py-1.5">
             {/* Search Button */}
             <button
               onClick={() => setSearchOpen(!searchOpen)}
@@ -449,7 +433,7 @@ export const Header: React.FC = () => {
             <div className="pt-3 border-t border-slate-800 space-y-2">
               <a
                 href="tel:9842266521"
-                className="w-full py-2.5 px-3 bg-[#F5A623] text-slate-950 font-bold text-xs rounded flex items-center justify-center gap-2"
+                className="w-full py-2.5 px-3 bg-[#F5A623] hover:bg-[#e09612] text-slate-950 font-heading font-black text-xs rounded-lg flex items-center justify-center gap-2 transition"
               >
                 <Phone className="w-3.5 h-3.5 fill-current" />
                 <span>Call: 98422 66521</span>
@@ -463,6 +447,17 @@ export const Header: React.FC = () => {
                 className="w-full py-2.5 px-3 bg-[#C81E1E] text-white font-bold text-xs rounded flex items-center justify-center gap-2 uppercase tracking-wider"
               >
                 <span>GET A QUOTE</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  navigateTo(isAuthenticated ? 'admin-dashboard' : 'admin-login');
+                }}
+                className="w-full py-2 px-3 text-slate-400 hover:text-[#F5A623] text-xs flex items-center justify-center gap-1.5 transition pt-2"
+              >
+                <Lock className="w-3.5 h-3.5 text-[#F5A623]" />
+                <span>{isAuthenticated ? 'Admin Dashboard' : 'Admin Portal Login'}</span>
               </button>
             </div>
           </motion.div>
