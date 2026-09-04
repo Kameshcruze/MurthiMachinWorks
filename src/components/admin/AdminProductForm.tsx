@@ -3,6 +3,7 @@ import { Product, Category, ProductSpecification, ProductImage, ProductDownload 
 import { dataService } from '../../services/dataService';
 import { useSettings } from '../../context/SettingsContext';
 import { slugify, formatImageUrl } from '../../utils/helpers';
+import { ProductImageManager } from './ProductImageManager';
 import {
   ArrowLeft,
   Save,
@@ -83,13 +84,32 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
   );
   const [newFeatureText, setNewFeatureText] = useState('');
 
-  // Image URLs
-  const [images, setImages] = useState<string[]>(
-    productToEdit?.images?.map(i => i.image_url) || [
-      'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=85'
-    ]
+  // Image Gallery
+  const [productImages, setProductImages] = useState<Array<{
+    id: string;
+    image_url: string;
+    is_primary: boolean;
+    sort_order: number;
+    caption?: string;
+  }>>(
+    productToEdit?.images && productToEdit.images.length > 0
+      ? productToEdit.images.map((img, idx) => ({
+          id: img.id || `img-${idx}-${Date.now()}`,
+          image_url: img.image_url,
+          is_primary: img.is_primary ?? idx === 0,
+          sort_order: img.sort_order ?? idx + 1,
+          caption: img.caption || ''
+        }))
+      : [
+          {
+            id: 'img-1',
+            image_url: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=85',
+            is_primary: true,
+            sort_order: 1,
+            caption: 'Primary Machinery Photo'
+          }
+        ]
   );
-  const [newImageUrl, setNewImageUrl] = useState('');
 
   // Downloads
   const [downloads, setDownloads] = useState<Array<{ title: string; file_url: string; file_type: string }>>(
@@ -177,17 +197,6 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
     setFeatures(features.filter((_, i) => i !== idx));
   };
 
-  // Image handlers
-  const handleAddImage = () => {
-    if (!newImageUrl.trim()) return;
-    setImages([...images, newImageUrl.trim()]);
-    setNewImageUrl('');
-  };
-
-  const handleRemoveImage = (idx: number) => {
-    setImages(images.filter((_, i) => i !== idx));
-  };
-
   // Submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -229,11 +238,12 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
         is_featured: formData.is_featured,
         is_active: formData.is_active,
         keywords: finalKeywords,
-        images: images.map((url, idx) => ({
-          id: `img-${Date.now()}-${idx}`,
-          image_url: url,
+        images: productImages.map((img, idx) => ({
+          id: img.id || `img-${Date.now()}-${idx}`,
+          image_url: img.image_url,
           sort_order: idx + 1,
-          is_primary: idx === 0
+          is_primary: img.is_primary ?? idx === 0,
+          caption: img.caption || ''
         })),
         specifications: specifications
           .filter(s => s.spec_key.trim())
@@ -590,52 +600,27 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
         </div>
       </div>
 
-      {/* 3. Product Images Gallery */}
+      {/* 3. Product Images Gallery with Device Upload, WebP Conversion (<500KB) & Supabase Storage */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-4">
-        <h3 className="font-heading font-bold text-base text-slate-900 pb-2 border-b border-slate-100 flex items-center gap-2">
-          <ImageIcon className="w-4 h-4 text-amber-500" />
-          High-Resolution Machine Photos
-        </h3>
-
-        <div className="flex items-center gap-2">
-          <input
-            type="url"
-            value={newImageUrl}
-            onChange={e => setNewImageUrl(e.target.value)}
-            placeholder="Paste image URL (Unsplash or direct image URL)..."
-            className="flex-1 p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
-          />
-          <button
-            type="button"
-            onClick={handleAddImage}
-            className="px-4 py-2.5 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition"
-          >
-            Add Image
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
-          {images.map((url, idx) => (
-            <div key={idx} className="relative group rounded-lg overflow-hidden border border-slate-200 aspect-4/3 bg-slate-100">
-              <img src={formatImageUrl(url)} alt={`Product ${idx}`} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleRemoveImage(idx)}
-                  className="p-1.5 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition"
-                  title="Remove Image"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-              {idx === 0 && (
-                <span className="absolute bottom-1 left-1 bg-amber-500 text-slate-950 text-[10px] font-bold px-1.5 py-0.5 rounded">
-                  Primary
-                </span>
-              )}
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <ImageIcon className="w-5 h-5 text-amber-500" />
+            <div>
+              <h3 className="font-heading font-bold text-base text-slate-900">
+                High-Resolution Machine Photos
+              </h3>
+              <p className="text-xs text-slate-500">
+                Upload photos from your system or device.
+              </p>
             </div>
-          ))}
+          </div>
         </div>
+
+        <ProductImageManager
+          images={productImages}
+          onChange={(updated) => setProductImages(updated)}
+          maxImages={10}
+        />
       </div>
 
       {/* 4. Technical Specifications Table Builder */}

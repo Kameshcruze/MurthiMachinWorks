@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigation } from '../../context/NavigationContext';
 import { useCart } from '../../context/CartContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -26,6 +26,32 @@ export const Header: React.FC = () => {
   const { totalItems, setIsCartOpen } = useCart();
   const { settings } = useSettings();
   const { isAuthenticated } = useAuth();
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        const height = headerRef.current.getBoundingClientRect().height;
+        if (height > 0) {
+          document.documentElement.style.setProperty('--header-height', `${height}px`);
+        }
+      }
+    };
+
+    updateHeaderHeight();
+    window.addEventListener('resize', updateHeaderHeight);
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && headerRef.current) {
+      ro = new ResizeObserver(() => updateHeaderHeight());
+      ro.observe(headerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateHeaderHeight);
+      if (ro) ro.disconnect();
+    };
+  }, []);
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchInput, setSearchInput] = useState('');
@@ -112,7 +138,7 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white shadow-md">
+    <header ref={headerRef} className="sticky top-0 z-40 bg-white shadow-md">
       {/* 1. TOP YELLOW BAR */}
       <div className="w-full bg-[#F5A623] text-black text-xs font-semibold py-1.5 border-b border-[#E09612]">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between gap-4">

@@ -229,16 +229,22 @@ export const HomePage: React.FC = () => {
       {/* =========================================================================
           1. HERO SECTION (Exact Industrial Lathe Workshop Background + Large Typography)
          ========================================================================= */}
-      <section className="relative bg-[#0A0D14] text-white overflow-hidden min-h-[460px] sm:min-h-[520px] md:min-h-[560px] flex items-center">
+      <section 
+        className="hero-mobile-viewport relative bg-[#0A0D14] text-white overflow-hidden flex items-center"
+      >
         {/* Industrial Workshop Lathe Background (Desktop /hero-banner.webp & Mobile /hero-banner-mob.webp) */}
-        <div className="absolute inset-0 z-0">
+        <div 
+          className="absolute inset-0 z-0 overflow-hidden"
+          style={{ backgroundSize: 'cover', backgroundPosition: 'center' }}
+        >
           <picture className="w-full h-full block">
             <source media="(max-width: 639px)" srcSet="/hero-banner-mob.webp" />
             <source media="(min-width: 640px)" srcSet={settings.hero_image && settings.hero_image !== '/hero-banner.png' ? settings.hero_image : "/hero-banner.webp"} />
             <img
               src={settings.hero_image && settings.hero_image !== '/hero-banner.png' ? settings.hero_image : "/hero-banner.webp"}
               alt="Murthi Machin Works Industrial Workshop"
-              className="w-full h-full object-cover object-center sm:object-right md:object-right filter contrast-105 brightness-95"
+              className="w-full h-full object-cover object-center filter contrast-105 brightness-95"
+              style={{ objectFit: 'cover', objectPosition: 'center' }}
               referrerPolicy="no-referrer"
             />
           </picture>
@@ -247,8 +253,8 @@ export const HomePage: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-[#0A0D14]/75 via-[#0A0D14]/35 to-transparent sm:hidden" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-10 sm:py-14 md:py-16 w-full">
-          <div className="max-w-2xl sm:max-w-3xl space-y-4 sm:space-y-6">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-4 sm:py-14 md:py-16 w-full h-full flex flex-col justify-center">
+          <div className="max-w-2xl sm:max-w-3xl space-y-3 sm:space-y-6">
             {/* Modern Status Badge */}
             <motion.div
               initial={{ opacity: 0, y: -8 }}
@@ -267,7 +273,7 @@ export const HomePage: React.FC = () => {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="font-heading font-black text-3xl sm:text-5xl md:text-6xl lg:text-[64px] text-white tracking-tight leading-[1.08]"
+              className="font-heading font-black text-[clamp(1.75rem,7vw,2.15rem)] sm:text-5xl md:text-6xl lg:text-[64px] text-white tracking-tight leading-[1.08]"
             >
               Leading Machinery<br />
               Sales & Service<br />
@@ -279,7 +285,7 @@ export const HomePage: React.FC = () => {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-sm sm:text-base md:text-lg text-slate-100 font-medium leading-relaxed max-w-xl drop-shadow-sm"
+              className="text-xs sm:text-base md:text-lg text-slate-100 font-medium leading-relaxed max-w-xl drop-shadow-sm"
             >
               New Machinery • Used Machinery • Repairs • Maintenance • Reconditioning
             </motion.p>
@@ -289,13 +295,13 @@ export const HomePage: React.FC = () => {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-wrap items-center gap-3 sm:gap-4 pt-1 sm:pt-2"
+              className="flex flex-wrap items-center gap-2.5 sm:gap-4 pt-0.5 sm:pt-2"
             >
               <motion.button
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => navigateTo('products')}
-                className="px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-[#C81E1E] to-[#A81717] hover:from-[#B31919] hover:to-[#911313] text-white font-heading font-black text-xs sm:text-sm tracking-wider uppercase shadow-xl shadow-red-900/30 transition flex items-center gap-2 group"
+                className="px-5 sm:px-8 py-3 sm:py-4 rounded-xl bg-gradient-to-r from-[#C81E1E] to-[#A81717] hover:from-[#B31919] hover:to-[#911313] text-white font-heading font-black text-xs sm:text-sm tracking-wider uppercase shadow-xl shadow-red-900/30 transition flex items-center gap-2 group whitespace-nowrap"
                 id="btn-hero-get-quote"
               >
                 <Boxes className="w-4 h-4 text-amber-300 transition-transform group-hover:scale-110 shrink-0" />
@@ -307,7 +313,7 @@ export const HomePage: React.FC = () => {
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.96 }}
                 href="tel:9842266521"
-                className="px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-[#F5A623] hover:bg-[#e69818] text-slate-950 font-heading font-black text-xs sm:text-sm tracking-wider uppercase shadow-xl shadow-amber-500/20 transition flex items-center gap-2"
+                className="px-5 sm:px-8 py-3 sm:py-4 rounded-xl bg-[#F5A623] hover:bg-[#e69818] text-slate-950 font-heading font-black text-xs sm:text-sm tracking-wider uppercase shadow-xl shadow-amber-500/20 transition flex items-center gap-2 whitespace-nowrap"
                 id="btn-hero-call-now"
               >
                 <Phone className="w-4 h-4 fill-current shrink-0" />
@@ -320,18 +326,18 @@ export const HomePage: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="pt-1 sm:pt-2 flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-slate-300"
+              className="pt-0.5 sm:pt-2 flex flex-wrap items-center gap-x-3 gap-y-1 sm:gap-4 text-[11px] sm:text-sm text-slate-300"
             >
-              <span className="flex items-center gap-1.5 font-medium">
-                <ShieldCheck className="w-4 h-4 text-[#F5A623] shrink-0" /> 100% Tested Machinery
+              <span className="flex items-center gap-1.5 font-medium whitespace-nowrap">
+                <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#F5A623] shrink-0" /> 100% Tested Machinery
               </span>
               <span className="w-1 h-1 rounded-full bg-slate-500 hidden sm:inline" />
-              <span className="flex items-center gap-1.5 font-medium">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> On-site Commissioning
+              <span className="flex items-center gap-1.5 font-medium whitespace-nowrap">
+                <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" /> On-site Commissioning
               </span>
               <span className="w-1 h-1 rounded-full bg-slate-500 hidden sm:inline" />
-              <span className="flex items-center gap-1.5 font-medium">
-                <Wrench className="w-4 h-4 text-[#F5A623] shrink-0" /> 24/7 Breakdown Support
+              <span className="flex items-center gap-1.5 font-medium whitespace-nowrap">
+                <Wrench className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#F5A623] shrink-0" /> 24/7 Breakdown Support
               </span>
             </motion.div>
           </div>

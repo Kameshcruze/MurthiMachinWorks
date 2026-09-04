@@ -13,7 +13,8 @@ import {
   Layers,
   Sparkles,
   Tag,
-  HelpCircle
+  HelpCircle,
+  Upload
 } from 'lucide-react';
 
 export const AdminCategories: React.FC = () => {
@@ -231,14 +232,45 @@ export const AdminCategories: React.FC = () => {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-800 block mb-1">Category Image URL</label>
-            <input
-              type="url"
-              value={formData.image_url}
-              onChange={e => setFormData({ ...formData, image_url: e.target.value })}
-              placeholder="https://images.unsplash.com/photo-..."
-              className="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900"
-            />
+            <label className="text-xs font-semibold text-slate-800 block mb-1">Category Image</label>
+            <div className="flex gap-2 items-center">
+              <input
+                type="url"
+                value={formData.image_url}
+                onChange={e => setFormData({ ...formData, image_url: e.target.value })}
+                placeholder="https://... or upload image file"
+                className="flex-1 p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900"
+              />
+              <label className="cursor-pointer px-3 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1.5 transition shrink-0">
+                <Upload className="w-3.5 h-3.5" />
+                <span>Upload from Device</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      showToast('Uploading', 'Uploading image...', 'info');
+                      const res = await dataService.uploadProductImage(file);
+                      setFormData(prev => ({ ...prev, image_url: res.url }));
+                      showToast('Image Uploaded', 'Image uploaded successfully.', 'success');
+                    } catch (err: any) {
+                      showToast('Upload Failed', err?.message || 'Failed to process image', 'error');
+                    }
+                  }}
+                />
+              </label>
+            </div>
+            {formData.image_url && (
+              <div className="mt-2 flex items-center gap-3">
+                <div className="w-16 h-12 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                  <img src={formatImageUrl(formData.image_url)} alt="Category Preview" className="w-full h-full object-cover" />
+                </div>
+                <span className="text-[11px] text-slate-500">Image ready for catalog showcase</span>
+              </div>
+            )}
           </div>
 
           <div>

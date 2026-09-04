@@ -3,6 +3,7 @@ import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_ENQUIRIES, INITIAL_SETTIN
 import { getSupabaseClient, isSupabaseConfigured } from './supabase';
 import { slugify } from '../utils/helpers';
 import { getClientIp, getCachedIpSync } from '../utils/ipService';
+import { convertAndCompressToWebP, formatBytes, ProcessedImageResult } from '../utils/imageUtils';
 
 const STORAGE_KEYS = {
   PRODUCTS: 'mmw_db_products_v2',
@@ -1528,37 +1529,126 @@ export const dataService = {
     return updated;
   },
 
-  // IMAGE UPLOAD
-  async uploadImage(file: File): Promise<string> {
+  // IMAGE UPLOAD & CONVERSION TO WEBP (GUARANTEED < 500 KB)
+  async uploadProductImage(file: File): Promise<{
+    url: string;
+    fileName: string;
+    storagePath?: string;
+    size: number;
+    sizeFormatted: string;
+    originalSize: number;
+    originalSizeFormatted: string;
+    format: string;
+    isSupabase: boolean;
+    warning?: string;
+  }> {
+    // 1. Convert image to WebP and compress under 500 KB client-side
+    let processed: ProcessedImageResult;
+    try {
+      processed = await convertAndCompressToWebP(file, {
+        maxSizeBytes: 500 * 1024, // 500 KB = 512,000 bytes
+        maxWidth: 1920,
+        maxHeight: 1920,
+      });
+    } catch (err: any) {
+      console.error('Image compression error:', err);
+      throw new Error(`Failed to process image: ${err?.message || 'Unknown error'}`);
+    }
+
     const supabase = getSupabaseClient();
+    const cleanBaseName = file.name
+      .replace(/\.[^/.]+$/, '')
+      .replace(/[^a-zA-Z0-9_-]/g, '-')
+      .toLowerCase()
+      .substring(0, 32);
+    const datePrefix = new Date().toISOString().slice(0, 7); // YYYY-MM
+    const uniqueId = Math.random().toString(36).substring(2, 8);
+    const storageFileName = `${cleanBaseName}-${Date.now()}-${uniqueId}.webp`;
+    const filePath = `products/${datePrefix}/${storageFileName}`;
+
+    // 2. Upload to Supabase Storage if configured (with 3.5s timeout guarantee)
     if (supabase && isSupabaseConfigured()) {
       try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-        const filePath = `products/${fileName}`;
+        const timeoutPromise = new Promise<{ data: any; error: any }>((resolve) =>
+          setTimeout(() => resolve({ data: null, error: { message: 'Supabase storage request timed out' } }), 3500)
+        );
 
-        const { error: uploadError } = await supabase.storage
+        const uploadPromise = supabase.storage
           .from('product-images')
-          .upload(filePath, file);
+          .upload(filePath, processed.blob, {
+            contentType: 'image/webp',
+            cacheControl: '31536000', // 1 year cache
+            upsert: true,
+          });
+
+        const { error: uploadError } = await Promise.race([uploadPromise, timeoutPromise]);
 
         if (!uploadError) {
-          const { data } = supabase.storage.from('product-images').getPublicUrl(filePath);
-          if (data?.publicUrl) {
-            return data.publicUrl;
+          const { data: urlData } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(filePath);
+
+          if (urlData?.publicUrl) {
+            return {
+              url: urlData.publicUrl,
+              fileName: storageFileName,
+              storagePath: filePath,
+              size: processed.compressedSizeBytes,
+              sizeFormatted: processed.compressedSizeFormatted,
+              originalSize: processed.originalSizeBytes,
+              originalSizeFormatted: processed.originalSizeFormatted,
+              format: 'image/webp',
+              isSupabase: true,
+            };
           }
+        } else {
+          console.warn('Supabase storage upload notice:', uploadError.message);
+          return {
+            url: processed.dataUrl,
+            fileName: storageFileName,
+            size: processed.compressedSizeBytes,
+            sizeFormatted: processed.compressedSizeFormatted,
+            originalSize: processed.originalSizeBytes,
+            originalSizeFormatted: processed.originalSizeFormatted,
+            format: 'image/webp',
+            isSupabase: false,
+            warning: `Supabase Storage: ${uploadError.message}. Image saved in WebP format.`,
+          };
         }
-      } catch (err) {
-        console.warn('Supabase image upload failed, falling back to base64:', err);
+      } catch (err: any) {
+        console.warn('Supabase image upload failed with exception, using base64 WebP:', err);
+        return {
+          url: processed.dataUrl,
+          fileName: storageFileName,
+          size: processed.compressedSizeBytes,
+          sizeFormatted: processed.compressedSizeFormatted,
+          originalSize: processed.originalSizeBytes,
+          originalSizeFormatted: processed.originalSizeFormatted,
+          format: 'image/webp',
+          isSupabase: false,
+          warning: `Supabase storage not accessible (${err?.message || 'network error'}). Saved locally as WebP.`,
+        };
       }
     }
 
-    // Fallback: Convert to Base64 Data URL
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+    // 3. Fallback when Supabase is not configured: return high-efficiency WebP Data URL
+    return {
+      url: processed.dataUrl,
+      fileName: storageFileName,
+      size: processed.compressedSizeBytes,
+      sizeFormatted: processed.compressedSizeFormatted,
+      originalSize: processed.originalSizeBytes,
+      originalSizeFormatted: processed.originalSizeFormatted,
+      format: 'image/webp',
+      isSupabase: false,
+      warning: 'Supabase credentials not configured. Image converted to WebP and saved locally in browser database.',
+    };
+  },
+
+  // Legacy string-only method maintained for backward compatibility
+  async uploadImage(file: File): Promise<string> {
+    const result = await this.uploadProductImage(file);
+    return result.url;
   },
 
   // SEARCH PRODUCTS

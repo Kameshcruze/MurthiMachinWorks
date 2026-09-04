@@ -3,6 +3,7 @@ import { Product, Category, ProductSpecification, ProductImage } from '../../typ
 import { dataService, DATA_CHANGE_EVENT } from '../../services/dataService';
 import { useSettings } from '../../context/SettingsContext';
 import { formatImageUrl, formatPrice, slugify, getStockStatusBadge } from '../../utils/helpers';
+import { ProductImageManager } from './ProductImageManager';
 import {
   Plus,
   Search,
@@ -725,57 +726,25 @@ export const AdminProducts: React.FC = () => {
                 </div>
               </div>
 
-              {/* Image Manager */}
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                <label className="font-bold text-slate-800 block">Machinery Images & Gallery</label>
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={newImageUrl}
-                    onChange={e => setNewImageUrl(e.target.value)}
-                    placeholder="Paste image URL (Unsplash, CDN, or Cloud Storage)..."
-                    className="flex-1 p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddImage}
-                    className="px-4 py-2 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800"
-                  >
-                    Add Image
-                  </button>
+              {/* Image Manager with Device Upload, WebP Conversion (<500KB) & Supabase Storage */}
+              <div className="p-5 bg-white rounded-xl border border-slate-200 shadow-xs space-y-3">
+                <div>
+                  <label className="font-bold text-slate-800 text-sm block">Machinery Photos & Gallery</label>
+                  <p className="text-xs text-slate-500">
+                    Upload photos directly from your system or device.
+                  </p>
                 </div>
 
-                {/* Images List */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                  {formData.images?.map((img, idx) => (
-                    <div key={idx} className="relative aspect-4/3 rounded-lg overflow-hidden border-2 border-slate-200 group bg-slate-100">
-                      <img
-                        src={formatImageUrl(img.image_url)}
-                        alt={`Photo ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                      <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleSetPrimaryImage(idx)}
-                          className={`text-[10px] font-bold px-2 py-1 rounded ${
-                            img.is_primary ? 'bg-amber-500 text-slate-950' : 'bg-white text-slate-900'
-                          }`}
-                        >
-                          {img.is_primary ? 'Primary' : 'Set Primary'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(idx)}
-                          className="p-1 bg-rose-600 text-white rounded hover:bg-rose-700"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <ProductImageManager
+                  images={formData.images || []}
+                  onChange={(newImages) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      images: newImages
+                    }));
+                  }}
+                  maxImages={10}
+                />
               </div>
 
               {/* Dynamic Technical Specifications Table Builder */}

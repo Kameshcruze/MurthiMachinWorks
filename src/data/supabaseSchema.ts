@@ -391,6 +391,77 @@ VALUES
     NOW() - INTERVAL '5 hours'
 )
 ON CONFLICT (id) DO NOTHING;
+
+-- ==============================================================================
+-- 10. SUPABASE STORAGE BUCKET: product-images (PUBLIC CATALOG PHOTOS)
+-- ==============================================================================
+
+-- Create the public bucket 'product-images' if it does not exist
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+    'product-images',
+    'product-images',
+    true,
+    10485760, -- 10MB upload ceiling (app enforces < 500 KB WebP)
+    ARRAY['image/webp', 'image/jpeg', 'image/png', 'image/jpg', 'image/avif']
+)
+ON CONFLICT (id) DO UPDATE SET 
+    public = true,
+    file_size_limit = 10485760;
+
+-- Storage Policy: Allow public read access so machine photos render across the website
+DROP POLICY IF EXISTS "Public Read Product Images" ON storage.objects;
+CREATE POLICY "Public Read Product Images"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'product-images');
+
+-- Storage Policy: Allow upload access for product catalog photos
+DROP POLICY IF EXISTS "Allow Upload Product Images" ON storage.objects;
+CREATE POLICY "Allow Upload Product Images"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'product-images');
+
+-- Storage Policy: Allow update access
+DROP POLICY IF EXISTS "Allow Update Product Images" ON storage.objects;
+CREATE POLICY "Allow Update Product Images"
+ON storage.objects FOR UPDATE
+USING (bucket_id = 'product-images');
+
+-- Storage Policy: Allow delete access
+DROP POLICY IF EXISTS "Allow Delete Product Images" ON storage.objects;
+CREATE POLICY "Allow Delete Product Images"
+ON storage.objects FOR DELETE
+USING (bucket_id = 'product-images');
+`;
+
+export const SUPABASE_STORAGE_SETUP_SQL = `-- Run this in Supabase Dashboard -> SQL Editor to create and configure the product-images bucket:
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+    'product-images',
+    'product-images',
+    true,
+    10485760,
+    ARRAY['image/webp', 'image/jpeg', 'image/png', 'image/jpg', 'image/avif']
+)
+ON CONFLICT (id) DO UPDATE SET 
+    public = true,
+    file_size_limit = 10485760;
+
+DROP POLICY IF EXISTS "Public Read Product Images" ON storage.objects;
+CREATE POLICY "Public Read Product Images"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'product-images');
+
+DROP POLICY IF EXISTS "Allow Upload Product Images" ON storage.objects;
+CREATE POLICY "Allow Upload Product Images"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'product-images');
+
+DROP POLICY IF EXISTS "Allow Delete Product Images" ON storage.objects;
+CREATE POLICY "Allow Delete Product Images"
+ON storage.objects FOR DELETE
+USING (bucket_id = 'product-images');
 `;
 
 export const SUPABASE_SCHEMA_SQL = SUPABASE_SQL_SCHEMA;
