@@ -86,7 +86,8 @@ export const AdminProducts: React.FC = () => {
     loadData();
     const handleDataChange = (e: any) => {
       const entity = e.detail?.entity;
-      if (!entity || entity === 'products' || entity === 'categories' || entity === 'all') {
+      const entities: string[] = e.detail?.entities || (entity ? [entity] : []);
+      if (!entity || entities.includes('products') || entities.includes('categories') || entities.includes('all') || entity === 'products' || entity === 'categories' || entity === 'all') {
         loadData();
       }
     };
@@ -270,18 +271,23 @@ export const AdminProducts: React.FC = () => {
         keywords: finalKeywords
       };
 
+      setIsModalOpen(false);
       if (editingProduct) {
+        setProducts(prev => prev.map(p => p.id === editingProduct.id ? ({ ...p, ...payload, id: editingProduct.id } as Product) : p));
         await dataService.updateProduct(editingProduct.id, payload);
         showToast('Product Updated', `${formData.name} has been updated.`, 'success');
       } else {
-        await dataService.createProduct(payload as any);
+        const created = await dataService.createProduct(payload as any);
+        if (created) {
+          setProducts(prev => [created, ...prev]);
+        }
         showToast('Product Created', `${formData.name} added to catalog.`, 'success');
       }
-      setIsModalOpen(false);
-      loadData();
+      await loadData();
     } catch (err) {
       console.error(err);
       showToast('Save Failed', 'Failed to save product changes.', 'error');
+      await loadData();
     }
   };
 
@@ -289,22 +295,29 @@ export const AdminProducts: React.FC = () => {
     if (!window.confirm(`Are you sure you want to permanently delete "${name}" from the machinery catalog?`)) {
       return;
     }
+    // Optimistically remove from state immediately
+    setProducts(prev => prev.filter(p => p.id !== id));
     try {
       await dataService.deleteProduct(id);
       showToast('Product Deleted', `${name} was removed.`, 'info');
-      loadData();
+      await loadData();
     } catch (e) {
       showToast('Error', 'Failed to delete product', 'error');
+      await loadData();
     }
   };
 
   const handleToggleActive = async (p: Product) => {
+    const nextActive = !p.is_active;
+    // Optimistically update status in state immediately
+    setProducts(prev => prev.map(prod => prod.id === p.id ? { ...prod, is_active: nextActive } : prod));
     try {
-      await dataService.updateProduct(p.id, { is_active: !p.is_active });
+      await dataService.updateProduct(p.id, { is_active: nextActive });
       showToast('Status Toggled', `${p.name} visibility updated.`, 'info');
-      loadData();
+      await loadData();
     } catch (e) {
       showToast('Error', 'Failed to toggle status', 'error');
+      await loadData();
     }
   };
 

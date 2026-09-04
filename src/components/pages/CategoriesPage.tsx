@@ -31,7 +31,8 @@ export const CategoriesPage: React.FC = () => {
     loadData(true);
     const handleDataChange = (e: any) => {
       const entity = e.detail?.entity;
-      if (!entity || entity === 'categories' || entity === 'products' || entity === 'all') {
+      const entities: string[] = e.detail?.entities || (entity ? [entity] : []);
+      if (!entity || entities.includes('categories') || entities.includes('products') || entities.includes('all') || entity === 'categories' || entity === 'products' || entity === 'all') {
         loadData(false);
       }
     };

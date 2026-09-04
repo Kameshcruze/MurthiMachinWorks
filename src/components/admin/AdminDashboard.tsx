@@ -75,7 +75,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
     return () => window.removeEventListener(DATA_CHANGE_EVENT, handleDataChange);
   }, []);
 
-  const pendingEnquiries = enquiries.filter(e => e.status === 'new' || e.status === 'in_review');
+  const pendingEnquiries = enquiries.filter(e => e.status === 'new' || e.status === 'in_review' || e.status === 'contacted');
 
   const handleStatusChange = async (enquiryId: string, newStatus: any) => {
     try {

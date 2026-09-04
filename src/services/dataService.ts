@@ -1,4 +1,4 @@
-import { Category, Product, SiteSettings, Enquiry, EnquiryItem, AuditLog, AuditFieldChange, EmployeeUser } from '../types';
+import { Category, Product, SiteSettings, Enquiry, EnquiryItem, EnquiryStatus, AuditLog, AuditFieldChange, EmployeeUser } from '../types';
 import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_ENQUIRIES, INITIAL_SETTINGS, INITIAL_EMPLOYEES, INITIAL_AUDIT_LOGS } from '../data/initialData';
 import { getSupabaseClient, isSupabaseConfigured } from './supabase';
 import { slugify } from '../utils/helpers';
@@ -17,17 +17,15 @@ const STORAGE_KEYS = {
 // Event bus for live synchronization across components
 export const DATA_CHANGE_EVENT = 'mmw_data_changed';
 let notifyTimer: any = null;
-const pendingChangedEntities = new Set<string>();
-
 export function notifyDataChanged(entity: string) {
   if (typeof window === 'undefined') return;
-  pendingChangedEntities.add(entity);
-  if (notifyTimer) clearTimeout(notifyTimer);
-  notifyTimer = setTimeout(() => {
-    const list = Array.from(pendingChangedEntities);
-    pendingChangedEntities.clear();
-    window.dispatchEvent(new CustomEvent(DATA_CHANGE_EVENT, { detail: { entity, entities: list } }));
-  }, 60);
+  // Dispatch immediately so notifications are never cancelled or overwritten by subsequent calls
+  window.dispatchEvent(new CustomEvent(DATA_CHANGE_EVENT, { 
+    detail: { 
+      entity, 
+      entities: [entity, 'all'] 
+    } 
+  }));
 }
 
 // ---------------------------------------------
@@ -1131,7 +1129,13 @@ export const dataService = {
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('products').delete().eq('id', id);
+        // Unlink images & enquiry items first so foreign key constraints never block deletion
+        await supabase.from('product_images').delete().eq('product_id', id);
+        await supabase.from('enquiry_items').update({ product_id: null }).eq('product_id', id);
+        const { error } = await supabase.from('products').delete().eq('id', id);
+        if (error) {
+          console.warn('Supabase product delete error:', error.message);
+        }
       } catch (err) {
         console.warn('Supabase delete fallback:', err);
       }
@@ -1196,7 +1200,7 @@ export const dataService = {
     if (supabase && isSupabaseConfigured()) {
       try {
         const { data, error } = await supabase.from('categories').select('*').order('sort_order', { ascending: true });
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           const products = getLocalProducts();
           const list = data.map((c: Category) => ({
             ...c,
@@ -1214,7 +1218,7 @@ export const dataService = {
     const products = getLocalProducts();
     return cats.map(c => ({
       ...c,
-      product_count: products.filter(p => p.category_id === c.id).length
+      product_count: products.filter(p => p.category_id === c.id || p.category_id === c.slug).length
     }));
   },
 
@@ -1302,13 +1306,38 @@ export const dataService = {
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('categories').delete().eq('id', id);
+        // 1. Unassign referencing products in Supabase first so foreign key constraints never block category deletion
+        await supabase.from('products').update({ category_id: null }).eq('category_id', id);
+        if (target?.slug) {
+          await supabase.from('products').update({ category_id: null }).eq('category_id', target.slug);
+        }
+        // 2. Delete the category from Supabase
+        const { error } = await supabase.from('categories').delete().eq('id', id);
+        if (error && target?.slug) {
+          await supabase.from('categories').delete().eq('slug', target.slug);
+        }
       } catch (err) {
         console.warn('Supabase deleteCategory fallback:', err);
       }
     }
 
-    saveLocalCategories(current.filter(c => c.id !== id));
+    // 3. Remove from local categories
+    const filteredCats = current.filter(c => c.id !== id && (target?.slug ? c.slug !== target.slug : true));
+    saveLocalCategories(filteredCats);
+
+    // 4. Also unassign in local products
+    const localProds = getLocalProducts();
+    let prodsChanged = false;
+    const updatedProds = localProds.map(p => {
+      if (p.category_id === id || (target?.slug && p.category_id === target.slug)) {
+        prodsChanged = true;
+        return { ...p, category_id: '', category_name: 'Unassigned' };
+      }
+      return p;
+    });
+    if (prodsChanged) {
+      saveLocalProducts(updatedProds, true);
+    }
 
     if (target) {
       await this.logAction({
@@ -1327,6 +1356,7 @@ export const dataService = {
   // ENQUIRIES & RFQ
   // ---------------------------------------------
   async getEnquiries(): Promise<Enquiry[]> {
+    const local = getLocalEnquiries();
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
@@ -1335,17 +1365,57 @@ export const dataService = {
           .select('*, enquiry_items(*)')
           .order('created_at', { ascending: false });
 
-        if (!error && data && data.length > 0) {
-          return data.map((e: any) => ({
-            ...e,
-            items: e.enquiry_items || []
+        if (!error && data) {
+          const supabaseEnquiries: Enquiry[] = data.map((e: any) => ({
+            id: e.id,
+            customer_name: e.customer_name || 'Anonymous Buyer',
+            phone: e.phone || '',
+            whatsapp: e.whatsapp || e.phone || '',
+            email: e.email || '',
+            company: e.company || 'Direct Buyer',
+            location: e.location || 'Coimbatore / India',
+            message: e.message || '',
+            status: e.status || 'new',
+            notes: e.notes || '',
+            admin_notes: e.notes || '',
+            created_at: e.created_at || new Date().toISOString(),
+            updated_at: e.updated_at || e.created_at || new Date().toISOString(),
+            items: (e.enquiry_items || []).map((it: any) => ({
+              product_id: it.product_id,
+              product_name: it.product_name,
+              sku: it.sku,
+              quantity: it.quantity || 1,
+              price: Number(it.price) || 0,
+              image_url: it.image_url,
+              category_name: it.category_name
+            }))
           }));
+
+          // Merge Supabase enquiries with any local-only enquiries (e.g. freshly submitted offline/preview leads)
+          const mergedMap = new Map<string, Enquiry>();
+          supabaseEnquiries.forEach(e => mergedMap.set(e.id, e));
+          local.forEach(e => {
+            if (!mergedMap.has(e.id)) {
+              mergedMap.set(e.id, e);
+            }
+          });
+
+          const mergedList = Array.from(mergedMap.values()).sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+
+          // Silently cache merged list locally without triggering redundant notification loops
+          try {
+            saveLocalEnquiries(mergedList, false);
+          } catch {}
+
+          return mergedList;
         }
       } catch (err) {
         console.warn('Supabase getEnquiries fallback:', err);
       }
     }
-    return getLocalEnquiries();
+    return local;
   },
 
   async createEnquiry(
@@ -1353,42 +1423,102 @@ export const dataService = {
     itemsParam?: EnquiryItem[]
   ): Promise<Enquiry> {
     const newId = `enq-${Date.now()}`;
-    const resolvedItems = itemsParam || enquiryData.items || [];
+    const resolvedItems: EnquiryItem[] = itemsParam || enquiryData.items || [];
+
+    // Normalize field variations from different forms across the application
+    const customer_name = (enquiryData.customer_name || enquiryData.name || 'Direct Buyer').trim();
+    const phone = (enquiryData.phone || enquiryData.customer_phone || enquiryData.whatsapp || '').trim();
+    const whatsapp = (enquiryData.whatsapp || enquiryData.phone || enquiryData.customer_phone || '').trim();
+    const email = (enquiryData.email || enquiryData.customer_email || '').trim();
+    const company = (enquiryData.company || enquiryData.company_name || 'Direct Buyer').trim();
+    const location = (enquiryData.location || 'Coimbatore / India').trim();
+    const message = (
+      enquiryData.message || 
+      enquiryData.notes || 
+      (enquiryData.service ? `Requirement: ${enquiryData.service}` : '') || 
+      'Commercial quotation request'
+    ).trim();
+    
+    // Validate status against valid values
+    let status: EnquiryStatus = (enquiryData.status || 'new') as EnquiryStatus;
+    if (status === 'in_review' as any) status = 'contacted';
+    if (status === 'quoted' as any) status = 'quotation_sent';
+    if (!['new', 'contacted', 'quotation_sent', 'converted', 'closed'].includes(status)) {
+      status = 'new';
+    }
+
+    const notes = (enquiryData.admin_notes || enquiryData.notes || (enquiryData.service ? `Selected Service: ${enquiryData.service}` : '')).trim();
+    const timestamp = new Date().toISOString();
+
     const newEnquiry: Enquiry = {
-      ...enquiryData,
       id: newId,
-      status: 'new',
-      created_at: new Date().toISOString(),
+      customer_name,
+      phone,
+      whatsapp,
+      email,
+      company,
+      location,
+      message,
+      status,
+      notes,
+      admin_notes: notes,
+      created_at: timestamp,
+      updated_at: timestamp,
       items: resolvedItems
     };
 
+    // 1. Immediately save to LocalStorage so Admin Dashboard & Enquiries instantly show it
+    const current = getLocalEnquiries();
+    saveLocalEnquiries([newEnquiry, ...current]);
+
+    // 2. Persist to Supabase if configured with strictly sanitized columns
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
-        const { items, ...dbPayload } = newEnquiry;
-        await supabase.from('enquiries').insert([{ id: newId, ...dbPayload }]);
+        const dbPayload = {
+          id: newId,
+          customer_name: newEnquiry.customer_name,
+          phone: newEnquiry.phone,
+          whatsapp: newEnquiry.whatsapp || null,
+          email: newEnquiry.email || null,
+          company: newEnquiry.company || null,
+          location: newEnquiry.location || null,
+          message: newEnquiry.message || null,
+          status: newEnquiry.status,
+          notes: newEnquiry.notes || null,
+          created_at: newEnquiry.created_at,
+          updated_at: newEnquiry.updated_at
+        };
 
-        if (items && items.length > 0) {
-          await supabase.from('enquiry_items').insert(
-            items.map(it => ({
-              enquiry_id: newId,
-              product_id: it.product_id,
-              product_name: it.product_name,
-              sku: it.sku,
-              quantity: it.quantity || 1,
-              price: it.price || 0
-            }))
-          );
+        const { error: enqError } = await supabase.from('enquiries').insert([dbPayload]);
+        if (enqError) {
+          console.warn('Supabase createEnquiry insert error:', enqError.message);
+        } else if (resolvedItems && resolvedItems.length > 0) {
+          // Attempt inserting enquiry items with safety fallback for product_id foreign key
+          const itemPayloads = resolvedItems.map((it: any) => ({
+            id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+            enquiry_id: newId,
+            product_id: (it.product_id && !it.product_id.startsWith('temp_')) ? it.product_id : null,
+            product_name: it.product_name || 'Machine Tool',
+            sku: it.sku || 'MMW-TOOL',
+            quantity: Number(it.quantity) || 1,
+            price: Number(it.price) || 0
+          }));
+
+          const { error: itemsError } = await supabase.from('enquiry_items').insert(itemPayloads);
+          if (itemsError) {
+            console.warn('Supabase enquiry_items insert retry without product foreign key:', itemsError.message);
+            // Retry with product_id set to null to avoid foreign key violations
+            const safePayloads = itemPayloads.map(it => ({ ...it, product_id: null }));
+            await supabase.from('enquiry_items').insert(safePayloads);
+          }
         }
       } catch (err) {
         console.warn('Supabase createEnquiry fallback:', err);
       }
     }
 
-    const current = getLocalEnquiries();
-    saveLocalEnquiries([newEnquiry, ...current]);
-
-    // Client IP for enquiry
+    // Client IP for enquiry audit log
     getClientIp().then(ip => {
       this.logAction({
         action: 'CREATE',
@@ -1409,26 +1539,42 @@ export const dataService = {
     if (index === -1) return false;
 
     const old = current[index];
+    const timestamp = new Date().toISOString();
+    
+    // Normalize status mapping
+    let mappedStatus = updates.status;
+    if (mappedStatus === 'in_review' as any) mappedStatus = 'contacted';
+    if (mappedStatus === 'quoted' as any) mappedStatus = 'quotation_sent';
+
     current[index] = {
       ...old,
       ...updates,
-      updated_at: new Date().toISOString()
+      status: (mappedStatus || old.status) as EnquiryStatus,
+      updated_at: timestamp
     };
+
+    saveLocalEnquiries([...current]);
 
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
-        const { items: _, ...dbUpdates } = updates;
-        await supabase.from('enquiries').update({
-          ...dbUpdates,
-          updated_at: new Date().toISOString()
-        }).eq('id', id);
+        const dbUpdates: Record<string, any> = {
+          updated_at: timestamp
+        };
+        if (mappedStatus) dbUpdates.status = mappedStatus;
+        if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
+        if (updates.customer_name !== undefined) dbUpdates.customer_name = updates.customer_name;
+        if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
+        if (updates.email !== undefined) dbUpdates.email = updates.email;
+        if (updates.company !== undefined) dbUpdates.company = updates.company;
+        if (updates.location !== undefined) dbUpdates.location = updates.location;
+        if (updates.message !== undefined) dbUpdates.message = updates.message;
+
+        await supabase.from('enquiries').update(dbUpdates).eq('id', id);
       } catch (err) {
         console.warn('Supabase update enquiry error:', err);
       }
     }
-
-    saveLocalEnquiries([...current]);
 
     if (updates.status && updates.status !== old.status) {
       await this.logAction({
@@ -1454,6 +1600,16 @@ export const dataService = {
     const current = getLocalEnquiries();
     const target = current.find(e => e.id === id);
     saveLocalEnquiries(current.filter(e => e.id !== id));
+
+    const supabase = getSupabaseClient();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('enquiry_items').delete().eq('enquiry_id', id);
+        await supabase.from('enquiries').delete().eq('id', id);
+      } catch (err) {
+        console.warn('Supabase delete enquiry error:', err);
+      }
+    }
 
     if (target) {
       await this.logAction({

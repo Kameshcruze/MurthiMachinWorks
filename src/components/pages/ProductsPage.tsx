@@ -65,7 +65,8 @@ export const ProductsPage: React.FC = () => {
     loadData(true);
     const handleDataChange = (e: any) => {
       const entity = e.detail?.entity;
-      if (!entity || entity === 'products' || entity === 'categories' || entity === 'all') {
+      const entities: string[] = e.detail?.entities || (entity ? [entity] : []);
+      if (!entity || entities.includes('products') || entities.includes('categories') || entities.includes('all') || entity === 'products' || entity === 'categories' || entity === 'all') {
         loadData(false);
       }
     };

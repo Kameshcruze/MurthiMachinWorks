@@ -102,7 +102,8 @@ export const AdminCategories: React.FC = () => {
     loadData(true);
     const handleDataChange = (e: any) => {
       const entity = e.detail?.entity;
-      if (!entity || entity === 'categories' || entity === 'products' || entity === 'all') {
+      const entities: string[] = e.detail?.entities || (entity ? [entity] : []);
+      if (!entity || entities.includes('categories') || entities.includes('products') || entities.includes('all') || entity === 'categories' || entity === 'products' || entity === 'all') {
         loadData(false);
       }
     };
@@ -196,26 +197,34 @@ export const AdminCategories: React.FC = () => {
         sort_order: categories.length + 1
       };
 
+      setIsEditing(false);
       if (editingCatId) {
+        setCategories(prev => prev.map(c => c.id === editingCatId ? { ...c, ...payload, id: editingCatId } : c));
         await dataService.updateCategory(editingCatId, payload);
         showToast('Category Updated', `${formData.name} updated.`, 'success');
       } else {
-        await dataService.createCategory(payload);
+        const created = await dataService.createCategory(payload);
+        setCategories(prev => [...prev, created]);
         showToast('Category Created', `${formData.name} added.`, 'success');
       }
-      setIsEditing(false);
+      await loadData(false);
     } catch (err) {
       showToast('Error', 'Failed to save category.', 'error');
+      await loadData(false);
     }
   };
 
   const handleDelete = async (catId: string, name: string) => {
     if (window.confirm(`Delete category "${name}"? Products in this category will become unassigned.`)) {
+      // Optimistically remove from state immediately
+      setCategories(prev => prev.filter(c => c.id !== catId));
       try {
         await dataService.deleteCategory(catId);
         showToast('Category Deleted', `${name} deleted.`, 'success');
+        await loadData(false);
       } catch (err) {
         showToast('Error', 'Failed to delete category.', 'error');
+        await loadData(false);
       }
     }
   };

@@ -80,7 +80,8 @@ export const HomePage: React.FC = () => {
     loadData(true);
     const handleDataChange = (e: any) => {
       const entity = e.detail?.entity;
-      if (!entity || entity === 'products' || entity === 'categories' || entity === 'all') {
+      const entities: string[] = e.detail?.entities || (entity ? [entity] : []);
+      if (!entity || entities.includes('products') || entities.includes('categories') || entities.includes('all') || entity === 'products' || entity === 'categories' || entity === 'all') {
         loadData(false);
       }
     };
@@ -98,20 +99,22 @@ export const HomePage: React.FC = () => {
     setFormSubmitting(true);
     try {
       await dataService.createEnquiry({
-        customer_name: enquiryForm.name,
-        customer_phone: enquiryForm.phone,
-        customer_email: enquiryForm.email || undefined,
-        company_name: '',
+        customer_name: enquiryForm.name.trim(),
+        phone: enquiryForm.phone.trim(),
+        whatsapp: enquiryForm.phone.trim(),
+        email: (enquiryForm.email || '').trim(),
+        company: 'Direct Customer / Website Lead',
+        location: 'Coimbatore / India',
+        message: `Service / Machine Requested: ${enquiryForm.service}\nRequirements: ${enquiryForm.message.trim() || 'Customer requested quotation, pricing, and machine availability.'}`,
         status: 'new',
-        priority: 'high',
-        notes: `Service/Machine Requested: ${enquiryForm.service}\nMessage: ${enquiryForm.message || 'General Quote Request'}`
+        notes: `Selected Service: ${enquiryForm.service}`
       });
       setFormSuccess(true);
-      showToast('Enquiry Sent', 'Thank you! We will contact you with quote details shortly.', 'success');
+      showToast('Enquiry Sent Successfully', 'Thank you! Our sales engineering team will contact you with quote details shortly.', 'success');
       setEnquiryForm({ name: '', phone: '', email: '', service: 'New Machinery Sales', message: '' });
       setTimeout(() => setFormSuccess(false), 5000);
     } catch (err) {
-      showToast('Failed to send enquiry', 'Please call us directly at 98422 66521.', 'error');
+      showToast('Failed to send enquiry', 'Please call us directly at 98422 66521 or reach out on WhatsApp.', 'error');
     } finally {
       setFormSubmitting(false);
     }

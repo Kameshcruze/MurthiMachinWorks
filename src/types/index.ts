@@ -1,5 +1,5 @@
 export type StockStatus = 'in_stock' | 'made_to_order' | 'low_stock' | 'out_of_stock';
-export type EnquiryStatus = 'new' | 'contacted' | 'quotation_sent' | 'converted' | 'closed';
+export type EnquiryStatus = 'new' | 'contacted' | 'quotation_sent' | 'converted' | 'closed' | 'in_review' | 'quoted';
 
 export interface Category {
   id: string;

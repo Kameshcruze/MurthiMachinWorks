@@ -117,8 +117,10 @@ export function getEnquiryStatusBadge(status: string): { label: string; bg: stri
   switch (status) {
     case 'new':
       return { label: 'New Enquiry', bg: 'bg-blue-100 text-blue-800', text: 'text-blue-800' };
+    case 'in_review':
     case 'contacted':
-      return { label: 'Customer Contacted', bg: 'bg-amber-100 text-amber-800', text: 'text-amber-800' };
+      return { label: 'In Review / Contacted', bg: 'bg-amber-100 text-amber-800', text: 'text-amber-800' };
+    case 'quoted':
     case 'quotation_sent':
       return { label: 'Quote Sent', bg: 'bg-purple-100 text-purple-800', text: 'text-purple-800' };
     case 'converted':
@@ -126,6 +128,6 @@ export function getEnquiryStatusBadge(status: string): { label: string; bg: stri
     case 'closed':
       return { label: 'Closed / Archived', bg: 'bg-slate-100 text-slate-700', text: 'text-slate-700' };
     default:
-      return { label: status, bg: 'bg-slate-100 text-slate-700', text: 'text-slate-700' };
+      return { label: status || 'New', bg: 'bg-slate-100 text-slate-700', text: 'text-slate-700' };
   }
 }

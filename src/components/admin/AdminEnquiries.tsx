@@ -41,7 +41,8 @@ export const AdminEnquiries: React.FC = () => {
     loadData();
     const handleDataChange = (e: any) => {
       const entity = e.detail?.entity;
-      if (!entity || entity === 'enquiries' || entity === 'all') {
+      const entities = e.detail?.entities || [];
+      if (!entity || entity === 'enquiries' || entity === 'all' || entities.includes('enquiries') || entities.includes('all')) {
         loadData();
       }
     };
@@ -88,18 +89,30 @@ export const AdminEnquiries: React.FC = () => {
 
   const openDetails = (enq: Enquiry) => {
     setSelectedEnquiry(enq);
-    setAdminNotes(enq.admin_notes || '');
+    setAdminNotes(enq.admin_notes || enq.notes || '');
   };
 
   const filtered = enquiries.filter(enq => {
-    if (statusFilter && enq.status !== statusFilter) return false;
+    if (statusFilter && enq.status !== statusFilter) {
+      if (statusFilter === 'contacted' && enq.status === 'in_review') {
+        // match legacy status
+      } else if (statusFilter === 'quotation_sent' && enq.status === 'quoted') {
+        // match legacy status
+      } else {
+        return false;
+      }
+    }
     if (searchQuery) {
-      const q = searchQuery.toLowerCase();
+      const q = searchQuery.toLowerCase().trim();
       return (
-        enq.customer_name.toLowerCase().includes(q) ||
-        (enq.company && enq.company.toLowerCase().includes(q)) ||
-        enq.phone.toLowerCase().includes(q) ||
-        (enq.email && enq.email.toLowerCase().includes(q))
+        (enq.customer_name || '').toLowerCase().includes(q) ||
+        (enq.company || '').toLowerCase().includes(q) ||
+        (enq.phone || '').toLowerCase().includes(q) ||
+        (enq.whatsapp || '').toLowerCase().includes(q) ||
+        (enq.email || '').toLowerCase().includes(q) ||
+        (enq.location || '').toLowerCase().includes(q) ||
+        (enq.message || '').toLowerCase().includes(q) ||
+        (enq.notes || '').toLowerCase().includes(q)
       );
     }
     return true;
@@ -137,10 +150,11 @@ export const AdminEnquiries: React.FC = () => {
             className="w-full sm:w-auto py-2 px-3 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
           >
             <option value="">All Statuses</option>
-            <option value="new">New</option>
-            <option value="in_review">In Review</option>
-            <option value="quoted">Quoted</option>
-            <option value="closed">Closed / Won</option>
+            <option value="new">New Enquiry</option>
+            <option value="contacted">Customer Contacted / In Review</option>
+            <option value="quotation_sent">Quotation Sent</option>
+            <option value="converted">Order Converted</option>
+            <option value="closed">Closed / Archived</option>
           </select>
         </div>
       </div>
@@ -195,9 +209,10 @@ export const AdminEnquiries: React.FC = () => {
                         className={`text-[11px] font-bold px-2 py-1 rounded border ${badge.bg}`}
                       >
                         <option value="new">New</option>
-                        <option value="in_review">In Review</option>
-                        <option value="quoted">Quoted</option>
-                        <option value="closed">Closed</option>
+                        <option value="contacted">In Review / Contacted</option>
+                        <option value="quotation_sent">Quote Sent</option>
+                        <option value="converted">Order Converted</option>
+                        <option value="closed">Closed / Archived</option>
                       </select>
                     </td>
                     <td className="py-3.5 px-4 text-slate-500">
@@ -361,9 +376,10 @@ export const AdminEnquiries: React.FC = () => {
                   className="text-xs font-bold p-1.5 bg-white border border-slate-300 rounded-lg"
                 >
                   <option value="new">New</option>
-                  <option value="in_review">In Review</option>
-                  <option value="quoted">Quoted</option>
-                  <option value="closed">Closed</option>
+                  <option value="contacted">In Review / Contacted</option>
+                  <option value="quotation_sent">Quote Sent</option>
+                  <option value="converted">Order Converted</option>
+                  <option value="closed">Closed / Archived</option>
                 </select>
               </div>
 
