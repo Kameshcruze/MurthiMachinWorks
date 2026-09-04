@@ -76,7 +76,11 @@ export const AdminEnquiries: React.FC = () => {
   const handleSaveNotes = async () => {
     if (!selectedEnquiry) return;
     try {
-      await dataService.updateEnquiryStatus(selectedEnquiry.id, selectedEnquiry.status, adminNotes);
+      await dataService.updateEnquiry(selectedEnquiry.id, {
+        notes: adminNotes,
+        admin_notes: adminNotes,
+        machine_photos: selectedEnquiry.machine_photos || []
+      });
       showToast('Notes Saved', 'Internal quotation notes updated.', 'success');
       setSelectedEnquiry(prev => (prev ? { ...prev, notes: adminNotes, admin_notes: adminNotes } : null));
       loadData();
@@ -99,7 +103,10 @@ export const AdminEnquiries: React.FC = () => {
 
   const openDetails = (enq: Enquiry) => {
     setSelectedEnquiry(enq);
-    setAdminNotes(enq.admin_notes || enq.notes || '');
+    const cleanNotes = (enq.admin_notes || enq.notes || '')
+      .replace(/\[MACHINE_PHOTOS(?:_JSON)?:\s*\[.*?\]\]/g, '')
+      .trim();
+    setAdminNotes(cleanNotes);
   };
 
   const handleDownloadPhoto = async (photoUrl: string, index: number) => {

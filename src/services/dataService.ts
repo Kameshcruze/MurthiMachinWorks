@@ -1369,12 +1369,24 @@ export const dataService = {
           const supabaseEnquiries: Enquiry[] = data.map((e: any) => {
             let extractedUserType: any = e.user_type;
             if (!extractedUserType) {
-              if (e.notes?.includes('[Role: SELLER]')) extractedUserType = 'seller';
-              else if (e.notes?.includes('[Role: MEDIATOR]')) extractedUserType = 'mediator';
+              const notesText = `${e.notes || ''} ${e.message || ''}`;
+              if (/\[Role:\s*SELLER\]/i.test(notesText) || e.company === 'Machine Seller') extractedUserType = 'seller';
+              else if (/\[Role:\s*MEDIATOR\]/i.test(notesText) || e.company === 'Machine Mediator') extractedUserType = 'mediator';
               else extractedUserType = 'buyer';
             }
 
+            let extractedAddress = e.address;
+            if (!extractedAddress) {
+              const addrMatch = (e.notes || '').match(/\[Address:\s*([^\]]+)\]/);
+              if (addrMatch && addrMatch[1]) {
+                extractedAddress = addrMatch[1].trim();
+              } else {
+                extractedAddress = e.location || '';
+              }
+            }
+
             let extractedPhotos: string[] = [];
+            // 1. Column in Supabase (if table has machine_photos column)
             if (Array.isArray(e.machine_photos)) {
               extractedPhotos = e.machine_photos.filter((p: any) => typeof p === 'string' && p.trim().length > 0);
             } else if (typeof e.machine_photos === 'string' && e.machine_photos.trim()) {
@@ -1392,7 +1404,39 @@ export const dataService = {
               }
             }
 
-            // Restore from local backup cache if Supabase didn't store or return machine_photos
+            // 2. Extract from [MACHINE_PHOTOS: [...]] or [MACHINE_PHOTOS_JSON: [...]] in notes or message
+            if (extractedPhotos.length === 0) {
+              const combinedText = `${e.notes || ''} ${e.admin_notes || ''} ${e.message || ''}`;
+              const jsonMatch = combinedText.match(/\[MACHINE_PHOTOS(?:_JSON)?:\s*(\[[^\]]*\])\]/);
+              if (jsonMatch && jsonMatch[1]) {
+                try {
+                  const parsed = JSON.parse(jsonMatch[1]);
+                  if (Array.isArray(parsed)) {
+                    extractedPhotos = parsed.filter((p: any) => typeof p === 'string' && p.trim().length > 0);
+                  }
+                } catch {}
+              }
+            }
+
+            // 3. Extract any image URLs in notes or message (e.g. Supabase storage bucket URLs or WebP data URLs)
+            if (extractedPhotos.length === 0) {
+              const combinedText = `${e.notes || ''} ${e.admin_notes || ''} ${e.message || ''}`;
+              const urlMatches = combinedText.match(/https:\/\/[^\s"',]+(?:product-images|seller-machines)[^\s"',)\]]+/gi);
+              if (urlMatches && urlMatches.length > 0) {
+                extractedPhotos = Array.from(new Set(urlMatches));
+              }
+            }
+
+            // 4. Extract any generic image URLs
+            if (extractedPhotos.length === 0) {
+              const combinedText = `${e.notes || ''} ${e.admin_notes || ''} ${e.message || ''}`;
+              const urlMatches = combinedText.match(/https:\/\/[^\s"',]+\.(?:webp|jpg|jpeg|png|avif)/gi);
+              if (urlMatches && urlMatches.length > 0) {
+                extractedPhotos = Array.from(new Set(urlMatches));
+              }
+            }
+
+            // 5. Restore from local backup cache
             if (extractedPhotos.length === 0) {
               try {
                 const cached = localStorage.getItem(`mmw_enq_photos_${e.id}`);
@@ -1413,7 +1457,7 @@ export const dataService = {
               email: e.email || '',
               company: e.company || '',
               location: e.location || '',
-              address: e.address || e.location || '',
+              address: extractedAddress,
               user_type: extractedUserType,
               machine_photos: extractedPhotos,
               message: e.message || '',
@@ -1510,7 +1554,8 @@ export const dataService = {
       status = 'new';
     }
 
-    const notePrefix = `[Role: ${user_type.toUpperCase()}]${address ? ` [Address: ${address}]` : ''}${machine_photos.length > 0 ? ` [${machine_photos.length} Machine Photo(s) Attached]` : ''}`;
+    const photoTag = machine_photos.length > 0 ? ` [MACHINE_PHOTOS_JSON: ${JSON.stringify(machine_photos)}]` : '';
+    const notePrefix = `[Role: ${user_type.toUpperCase()}]${address ? ` [Address: ${address}]` : ''}${machine_photos.length > 0 ? ` [${machine_photos.length} Machine Photo(s) Attached]` : ''}${photoTag}`;
     const rawNotes = (enquiryData.admin_notes || enquiryData.notes || (enquiryData.service ? `Selected Service: ${enquiryData.service}` : '')).trim();
     const combinedNotes = rawNotes ? `${notePrefix} ${rawNotes}` : notePrefix;
     const timestamp = new Date().toISOString();
@@ -1661,11 +1706,18 @@ export const dataService = {
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
+        const activePhotos = updates.machine_photos !== undefined ? updates.machine_photos : old.machine_photos;
+        let notesWithPhotos = updates.notes !== undefined ? updates.notes : (old.notes || '');
+        if (activePhotos && activePhotos.length > 0) {
+          const stripped = notesWithPhotos.replace(/\[MACHINE_PHOTOS(?:_JSON)?:\s*\[.*?\]\]/g, '').trim();
+          notesWithPhotos = `${stripped} [MACHINE_PHOTOS_JSON: ${JSON.stringify(activePhotos)}]`.trim();
+        }
+
         const dbUpdates: Record<string, any> = {
           updated_at: timestamp
         };
         if (mappedStatus) dbUpdates.status = mappedStatus;
-        if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
+        if (notesWithPhotos !== undefined) dbUpdates.notes = notesWithPhotos;
         if (updates.customer_name !== undefined) dbUpdates.customer_name = updates.customer_name;
         if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
         if (updates.email !== undefined) dbUpdates.email = updates.email;
@@ -1676,7 +1728,22 @@ export const dataService = {
         if (updates.machine_photos !== undefined) dbUpdates.machine_photos = updates.machine_photos;
         if (updates.message !== undefined) dbUpdates.message = updates.message;
 
-        await supabase.from('enquiries').update(dbUpdates).eq('id', id);
+        const { error: updateError } = await supabase.from('enquiries').update(dbUpdates).eq('id', id);
+        if (updateError) {
+          console.warn('Supabase update enquiry retry without unmigrated columns:', updateError.message);
+          const safeUpdates: Record<string, any> = {
+            updated_at: timestamp,
+            status: mappedStatus || old.status,
+            notes: notesWithPhotos
+          };
+          if (updates.customer_name !== undefined) safeUpdates.customer_name = updates.customer_name;
+          if (updates.phone !== undefined) safeUpdates.phone = updates.phone;
+          if (updates.email !== undefined) safeUpdates.email = updates.email;
+          if (updates.company !== undefined) safeUpdates.company = updates.company;
+          if (updates.location !== undefined) safeUpdates.location = updates.location;
+          if (updates.message !== undefined) safeUpdates.message = updates.message;
+          await supabase.from('enquiries').update(safeUpdates).eq('id', id);
+        }
       } catch (err) {
         console.warn('Supabase update enquiry error:', err);
       }
@@ -1828,11 +1895,11 @@ export const dataService = {
     const storageFileName = `${cleanBaseName}-${Date.now()}-${uniqueId}.webp`;
     const filePath = `${folder}/${datePrefix}/${storageFileName}`;
 
-    // 2. Upload to Supabase Storage if configured (with 3.5s timeout guarantee)
+    // 2. Upload to Supabase Storage if configured (with 10s network guarantee)
     if (supabase && isSupabaseConfigured()) {
       try {
         const timeoutPromise = new Promise<{ data: any; error: any }>((resolve) =>
-          setTimeout(() => resolve({ data: null, error: { message: 'Supabase storage request timed out' } }), 3500)
+          setTimeout(() => resolve({ data: null, error: { message: 'Supabase storage request timed out' } }), 10000)
         );
 
         const uploadPromise = supabase.storage
