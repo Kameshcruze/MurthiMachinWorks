@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigation } from '../../context/NavigationContext';
 import { useSettings } from '../../context/SettingsContext';
 import { dataService } from '../../services/dataService';
+import { UserEnquiryRole } from '../../types';
+import { convertAndCompressToWebP } from '../../utils/imageUtils';
 import {
   ChevronRight,
   Phone,
@@ -15,7 +17,14 @@ import {
   ShieldCheck,
   CheckCircle2,
   PhoneCall,
-  Sparkles
+  Sparkles,
+  ShoppingBag,
+  Tag,
+  Handshake,
+  Camera,
+  Upload,
+  Trash2,
+  X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -24,24 +33,72 @@ export const ContactPage: React.FC = () => {
   const { settings, showToast } = useSettings();
 
   const [formData, setFormData] = useState({
+    user_type: 'buyer' as UserEnquiryRole,
     name: '',
     phone: '',
     email: '',
     company: '',
     location: '',
+    address: '',
     subject: 'General Machinery Enquiry',
-    message: ''
+    message: '',
+    machine_photos: [] as string[]
   });
 
+  const [isCompressingPhoto, setIsCompressingPhoto] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsCompressingPhoto(true);
+    try {
+      const remainingSlots = 3 - formData.machine_photos.length;
+      const filesToProcess = (Array.from(files) as File[]).slice(0, remainingSlots);
+      const newUrls: string[] = [];
+
+      for (const file of filesToProcess) {
+        try {
+          const res = await convertAndCompressToWebP(file, { maxSizeBytes: 350 * 1024, maxWidth: 1200 });
+          newUrls.push(res.dataUrl);
+        } catch {
+          const dataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+          });
+          newUrls.push(dataUrl);
+        }
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        machine_photos: [...prev.machine_photos, ...newUrls]
+      }));
+      showToast('Photo Attached', `${newUrls.length} machine photo(s) attached.`, 'success');
+    } catch (err) {
+      showToast('Upload Error', 'Could not process image.', 'error');
+    } finally {
+      setIsCompressingPhoto(false);
+      e.target.value = '';
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      machine_photos: prev.machine_photos.filter((_, i) => i !== index)
+    }));
+  };
 
   const validate = () => {
     const errs: Record<string, string> = {};
     if (!formData.name.trim()) errs.name = 'Full name is required';
     if (!formData.phone.trim()) errs.phone = 'Phone number is required';
-    if (!formData.company.trim()) errs.company = 'Company name is required';
+    // Company and Address are explicitly optional as requested
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errs.email = 'Valid email is required';
     }
@@ -62,8 +119,11 @@ export const ContactPage: React.FC = () => {
           whatsapp: formData.phone.trim(),
           email: formData.email.trim() || 'sales@murthimachineworks.com',
           company: formData.company.trim(),
-          location: formData.location.trim() || 'Coimbatore / India',
-          message: `[${formData.subject}] ${formData.message.trim()}`
+          location: (formData.address.trim() || formData.location.trim() || 'Coimbatore / India'),
+          address: (formData.address.trim() || formData.location.trim()),
+          user_type: formData.user_type,
+          machine_photos: formData.user_type === 'seller' ? formData.machine_photos : [],
+          message: `[${formData.subject}] ${formData.message.trim() || (formData.user_type === 'seller' ? 'Seller offered machine for inspection & sale.' : 'Customer requested machinery information.')}`
         },
         []
       );
@@ -256,12 +316,109 @@ export const ContactPage: React.FC = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="border-b border-slate-100 pb-3">
                   <h3 className="font-heading font-bold text-lg text-slate-900">
-                    Request Machinery Quotation / Factory Plant Visit
+                    Machinery Enquiry & Valuation Desk
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Fill out your requirements below and our technical sales engineer will get back to you.
+                    Select your role, enter your requirements or machine details, and our engineering team will get back to you.
                   </p>
                 </div>
+
+                {/* 1. Choose Buyer, Seller, or Mediator */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-800 block mb-1.5">
+                    I am a *
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, user_type: 'buyer' })}
+                      className={`p-2.5 rounded-xl border text-center transition cursor-pointer flex flex-col items-center justify-center ${
+                        formData.user_type === 'buyer'
+                          ? 'bg-amber-500/10 border-amber-500 text-amber-950 font-bold ring-2 ring-amber-500/30'
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-white'
+                      }`}
+                    >
+                      <ShoppingBag className={`w-4 h-4 mb-0.5 ${formData.user_type === 'buyer' ? 'text-amber-600' : 'text-slate-400'}`} />
+                      <span className="text-xs font-bold">Buyer</span>
+                      <span className="text-[10px] text-slate-500 font-normal">Buy Machines</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, user_type: 'seller' })}
+                      className={`p-2.5 rounded-xl border text-center transition cursor-pointer flex flex-col items-center justify-center ${
+                        formData.user_type === 'seller'
+                          ? 'bg-rose-500/10 border-[#C81E1E] text-rose-950 font-bold ring-2 ring-rose-500/30'
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-white'
+                      }`}
+                    >
+                      <Tag className={`w-4 h-4 mb-0.5 ${formData.user_type === 'seller' ? 'text-[#C81E1E]' : 'text-slate-400'}`} />
+                      <span className="text-xs font-bold">Seller</span>
+                      <span className="text-[10px] text-slate-500 font-normal">Sell Machine</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, user_type: 'mediator' })}
+                      className={`p-2.5 rounded-xl border text-center transition cursor-pointer flex flex-col items-center justify-center ${
+                        formData.user_type === 'mediator'
+                          ? 'bg-indigo-500/10 border-indigo-500 text-indigo-950 font-bold ring-2 ring-indigo-500/30'
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-white'
+                      }`}
+                    >
+                      <Handshake className={`w-4 h-4 mb-0.5 ${formData.user_type === 'mediator' ? 'text-indigo-600' : 'text-slate-400'}`} />
+                      <span className="text-xs font-bold">Mediator</span>
+                      <span className="text-[10px] text-slate-500 font-normal">Agent / Broker</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Seller Machine Photos Upload */}
+                {formData.user_type === 'seller' && (
+                  <div className="p-3.5 bg-amber-50/70 border border-amber-300 rounded-xl space-y-2">
+                    <label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <Camera className="w-4 h-4 text-[#C81E1E]" />
+                      <span>Machine Photo(s) You Are Selling</span>
+                      <span className="text-[10px] text-slate-500 font-normal">(Attach Photos)</span>
+                    </label>
+                    <p className="text-[11px] text-slate-600">
+                      Upload clear pictures of the machine, nameplate, or condition (Max 3 photos).
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      {formData.machine_photos.map((p, idx) => (
+                        <div key={idx} className="relative w-18 h-18 rounded-lg overflow-hidden border border-slate-300 bg-slate-100">
+                          <img src={p} alt={`Selling machine ${idx + 1}`} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => removePhoto(idx)}
+                            className="absolute top-1 right-1 p-1 bg-rose-600 text-white rounded-full hover:bg-rose-700"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
+                      ))}
+                      {formData.machine_photos.length < 3 && (
+                        <label className="w-18 h-18 border-2 border-dashed border-amber-400 hover:border-[#C81E1E] bg-white rounded-lg flex flex-col items-center justify-center cursor-pointer transition text-slate-500 hover:text-[#C81E1E] p-1 text-center">
+                          <Upload className="w-4 h-4 mb-0.5" />
+                          <span className="text-[10px] font-bold">Add Photo</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handlePhotoUpload}
+                            className="hidden"
+                            disabled={isCompressingPhoto}
+                          />
+                        </label>
+                      )}
+                    </div>
+                    {isCompressingPhoto && (
+                      <p className="text-[11px] text-amber-800 font-medium animate-pulse">
+                        Compressing and attaching machine photo...
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -285,7 +442,7 @@ export const ContactPage: React.FC = () => {
 
                   <div>
                     <label className="text-xs font-semibold text-slate-800 block mb-1">
-                      Company / Workshop Name *
+                      Company / Workshop Name <span className="text-slate-400 font-normal">(Optional)</span>
                     </label>
                     <div className="relative">
                       <Building className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -293,13 +450,10 @@ export const ContactPage: React.FC = () => {
                         type="text"
                         value={formData.company}
                         onChange={e => setFormData({ ...formData, company: e.target.value })}
-                        placeholder="e.g. Precision Engineering Ltd"
-                        className={`w-full pl-9 pr-3 py-2.5 text-xs bg-slate-50 border rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 ${
-                          errors.company ? 'border-rose-400' : 'border-slate-300'
-                        }`}
+                        placeholder="e.g. Precision Engineering Ltd (Optional)"
+                        className="w-full pl-9 pr-3 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
                       />
                     </div>
-                    {errors.company && <p className="text-[10px] text-rose-600 mt-1">{errors.company}</p>}
                   </div>
                 </div>
 
@@ -325,7 +479,25 @@ export const ContactPage: React.FC = () => {
 
                   <div>
                     <label className="text-xs font-semibold text-slate-800 block mb-1">
-                      Email Address (Optional)
+                      Address / Location <span className="text-slate-400 font-normal">(Optional)</span>
+                    </label>
+                    <div className="relative">
+                      <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={formData.location}
+                        onChange={e => setFormData({ ...formData, location: e.target.value, address: e.target.value })}
+                        placeholder="e.g. Chennai, Tamil Nadu (Optional)"
+                        className="w-full pl-9 pr-3 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-800 block mb-1">
+                      Email Address <span className="text-slate-400 font-normal">(Optional)</span>
                     </label>
                     <div className="relative">
                       <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -338,28 +510,10 @@ export const ContactPage: React.FC = () => {
                       />
                     </div>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-semibold text-slate-800 block mb-1">
-                      City / State / Location
-                    </label>
-                    <div className="relative">
-                      <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        value={formData.location}
-                        onChange={e => setFormData({ ...formData, location: e.target.value })}
-                        placeholder="e.g. Chennai, Tamil Nadu"
-                        className="w-full pl-9 pr-3 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
-                      />
-                    </div>
-                  </div>
 
                   <div>
                     <label className="text-xs font-semibold text-slate-800 block mb-1">
-                      Inquiry Category
+                      {formData.user_type === 'seller' ? 'Machinery Type for Sale' : 'Inquiry Category'}
                     </label>
                     <select
                       value={formData.subject}
@@ -367,6 +521,7 @@ export const ContactPage: React.FC = () => {
                       className="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
                     >
                       <option value="New Machine Tool Quotation">New Machine Tool Quotation</option>
+                      <option value="Used Machinery Sale / Valuation">Used Machinery Sale / Valuation</option>
                       <option value="Custom Built Machinery Specification">Custom Built Machinery Specification</option>
                       <option value="Replacement Parts & Tooling Spares">Replacement Parts & Tooling Spares</option>
                       <option value="Plant Visit & Inspection Request">Plant Visit & Inspection Request</option>
@@ -377,24 +532,38 @@ export const ContactPage: React.FC = () => {
 
                 <div>
                   <label className="text-xs font-semibold text-slate-800 block mb-1">
-                    Machinery Requirements & Technical Details
+                    {formData.user_type === 'seller'
+                      ? 'Machine Details (Make, Model, Year, Condition, Asking Price)'
+                      : 'Machinery Requirements & Technical Details'}
                   </label>
                   <textarea
                     rows={4}
                     value={formData.message}
                     onChange={e => setFormData({ ...formData, message: e.target.value })}
-                    placeholder="Specify workpiece dimensions, bed length, swing diameter, spindle bore, power requirements, or target delivery timeline..."
+                    placeholder={
+                      formData.user_type === 'seller'
+                        ? 'Describe the machine model, manufacturer year, current operational condition, attached accessories, and expected price...'
+                        : 'Specify workpiece dimensions, bed length, swing diameter, spindle bore, power requirements, or target delivery timeline...'
+                    }
                     className="w-full p-3 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-3.5 px-6 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 disabled:bg-slate-600 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2"
+                  disabled={isSubmitting || isCompressingPhoto}
+                  className="w-full py-3.5 px-6 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 disabled:bg-slate-600 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Send className="w-4 h-4 text-amber-400" />
-                  <span>{isSubmitting ? 'Sending Enquiry...' : 'Submit Inquiry to Sales Desk'}</span>
+                  <span>
+                    {isSubmitting
+                      ? 'Sending Enquiry...'
+                      : formData.user_type === 'seller'
+                      ? 'Submit Machine for Sale & Valuation'
+                      : formData.user_type === 'mediator'
+                      ? 'Submit Mediator / Dealer Inquiry'
+                      : 'Submit Inquiry to Sales Desk'}
+                  </span>
                 </button>
               </form>
             )}

@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { SUPABASE_SCHEMA_SQL, SUPABASE_STORAGE_SETUP_SQL } from '../../data/supabaseSchema';
+import { SUPABASE_SCHEMA_SQL, SUPABASE_STORAGE_SETUP_SQL, SUPABASE_ENQUIRIES_MIGRATION_SQL } from '../../data/supabaseSchema';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
 import { getSupabaseConfig, isSupabaseConfigured, setCustomSupabaseConfig, clearCustomSupabaseConfig, getSupabaseClient } from '../../services/supabase';
 import { dataService } from '../../services/dataService';
-import { Database, Copy, Check, ShieldCheck, Terminal, ExternalLink, Key, CheckCircle2, RefreshCw, AlertCircle, ArrowRight, Lock, Image as ImageIcon, FolderArchive } from 'lucide-react';
+import { Database, Copy, Check, ShieldCheck, Terminal, ExternalLink, Key, CheckCircle2, RefreshCw, AlertCircle, ArrowRight, Lock, Image as ImageIcon, FolderArchive, Layers } from 'lucide-react';
 
 export const AdminDatabaseSetup: React.FC = () => {
   const { showToast } = useSettings();
   const { isAdmin } = useAuth();
   const [copied, setCopied] = useState(false);
   const [storageCopied, setStorageCopied] = useState(false);
+  const [migrationCopied, setMigrationCopied] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
   const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [testMessage, setTestMessage] = useState('');
@@ -351,6 +352,43 @@ export const AdminDatabaseSetup: React.FC = () => {
         {/* SQL Preview Snippet */}
         <div className="bg-slate-950 rounded-lg p-3 text-[11px] font-mono text-slate-300 overflow-x-auto">
           <pre>{SUPABASE_STORAGE_SETUP_SQL.trim()}</pre>
+        </div>
+      </div>
+
+      {/* Incremental Upgrade Migration Card (Buyer/Seller/Mediator + Machine Photos) */}
+      <div className="bg-white rounded-xl border border-indigo-200 p-6 shadow-sm space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200 flex items-center justify-center shrink-0">
+              <Layers className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-heading font-bold text-base text-slate-900 flex items-center gap-2">
+                <span>Existing Database Upgrade: Enquiries Table (Role, Address & Machine Photos)</span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                If you already have the Supabase database created, run this short query in your Supabase SQL Editor to save Buyer/Seller/Mediator roles, address, and seller photo attachments.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard.writeText(SUPABASE_ENQUIRIES_MIGRATION_SQL);
+              setMigrationCopied(true);
+              showToast('Migration SQL Copied', 'Copied enquiries upgrade SQL to clipboard.', 'success');
+              setTimeout(() => setMigrationCopied(false), 3000);
+            }}
+            className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-xs transition flex items-center gap-1.5 shrink-0 cursor-pointer"
+          >
+            {migrationCopied ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{migrationCopied ? 'Copied SQL' : 'Copy Upgrade SQL'}</span>
+          </button>
+        </div>
+
+        <div className="bg-slate-950 rounded-lg p-3 text-[11px] font-mono text-indigo-200 overflow-x-auto">
+          <pre>{SUPABASE_ENQUIRIES_MIGRATION_SQL.trim()}</pre>
         </div>
       </div>
 

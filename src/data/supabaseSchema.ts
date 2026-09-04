@@ -65,6 +65,9 @@ CREATE TABLE IF NOT EXISTS public.enquiries (
     email TEXT,
     company TEXT,
     location TEXT,
+    address TEXT,
+    user_type TEXT DEFAULT 'buyer' CHECK (user_type IN ('buyer', 'seller', 'mediator')),
+    machine_photos JSONB DEFAULT '[]'::jsonb,
     message TEXT,
     status TEXT DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'quotation_sent', 'converted', 'closed')),
     notes TEXT,
@@ -465,4 +468,16 @@ USING (bucket_id = 'product-images');
 `;
 
 export const SUPABASE_SCHEMA_SQL = SUPABASE_SQL_SCHEMA;
+
+export const SUPABASE_ENQUIRIES_MIGRATION_SQL = `-- ==============================================================================
+-- RUN THIS IN SUPABASE SQL EDITOR TO UPGRADE YOUR EXISTING ENQUIRIES TABLE
+-- Adds Buyer/Seller/Mediator user_type, address, and machine_photos JSONB
+-- ==============================================================================
+
+ALTER TABLE public.enquiries 
+ADD COLUMN IF NOT EXISTS user_type TEXT DEFAULT 'buyer',
+ADD COLUMN IF NOT EXISTS address TEXT,
+ADD COLUMN IF NOT EXISTS machine_photos JSONB DEFAULT '[]'::jsonb;
+`;
+
 

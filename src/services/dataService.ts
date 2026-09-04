@@ -1366,30 +1366,51 @@ export const dataService = {
           .order('created_at', { ascending: false });
 
         if (!error && data) {
-          const supabaseEnquiries: Enquiry[] = data.map((e: any) => ({
-            id: e.id,
-            customer_name: e.customer_name || 'Anonymous Buyer',
-            phone: e.phone || '',
-            whatsapp: e.whatsapp || e.phone || '',
-            email: e.email || '',
-            company: e.company || 'Direct Buyer',
-            location: e.location || 'Coimbatore / India',
-            message: e.message || '',
-            status: e.status || 'new',
-            notes: e.notes || '',
-            admin_notes: e.notes || '',
-            created_at: e.created_at || new Date().toISOString(),
-            updated_at: e.updated_at || e.created_at || new Date().toISOString(),
-            items: (e.enquiry_items || []).map((it: any) => ({
-              product_id: it.product_id,
-              product_name: it.product_name,
-              sku: it.sku,
-              quantity: it.quantity || 1,
-              price: Number(it.price) || 0,
-              image_url: it.image_url,
-              category_name: it.category_name
-            }))
-          }));
+          const supabaseEnquiries: Enquiry[] = data.map((e: any) => {
+            let extractedUserType: any = e.user_type;
+            if (!extractedUserType) {
+              if (e.notes?.includes('[Role: SELLER]')) extractedUserType = 'seller';
+              else if (e.notes?.includes('[Role: MEDIATOR]')) extractedUserType = 'mediator';
+              else extractedUserType = 'buyer';
+            }
+
+            let extractedPhotos: string[] = [];
+            if (Array.isArray(e.machine_photos)) {
+              extractedPhotos = e.machine_photos;
+            } else if (typeof e.machine_photos === 'string') {
+              try {
+                extractedPhotos = JSON.parse(e.machine_photos);
+              } catch {}
+            }
+
+            return {
+              id: e.id,
+              customer_name: e.customer_name || 'Anonymous Buyer',
+              phone: e.phone || '',
+              whatsapp: e.whatsapp || e.phone || '',
+              email: e.email || '',
+              company: e.company || '',
+              location: e.location || '',
+              address: e.address || e.location || '',
+              user_type: extractedUserType,
+              machine_photos: extractedPhotos,
+              message: e.message || '',
+              status: e.status || 'new',
+              notes: e.notes || '',
+              admin_notes: e.notes || '',
+              created_at: e.created_at || new Date().toISOString(),
+              updated_at: e.updated_at || e.created_at || new Date().toISOString(),
+              items: (e.enquiry_items || []).map((it: any) => ({
+                product_id: it.product_id,
+                product_name: it.product_name,
+                sku: it.sku,
+                quantity: it.quantity || 1,
+                price: Number(it.price) || 0,
+                image_url: it.image_url,
+                category_name: it.category_name
+              }))
+            };
+          });
 
           // Merge Supabase enquiries with any local-only enquiries (e.g. freshly submitted offline/preview leads)
           const mergedMap = new Map<string, Enquiry>();
@@ -1430,8 +1451,12 @@ export const dataService = {
     const phone = (enquiryData.phone || enquiryData.customer_phone || enquiryData.whatsapp || '').trim();
     const whatsapp = (enquiryData.whatsapp || enquiryData.phone || enquiryData.customer_phone || '').trim();
     const email = (enquiryData.email || enquiryData.customer_email || '').trim();
-    const company = (enquiryData.company || enquiryData.company_name || 'Direct Buyer').trim();
-    const location = (enquiryData.location || 'Coimbatore / India').trim();
+    const company = (enquiryData.company || enquiryData.company_name || '').trim();
+    const address = (enquiryData.address || enquiryData.location || '').trim();
+    const location = (enquiryData.location || address || '').trim();
+    const user_type: any = (enquiryData.user_type === 'seller' || enquiryData.user_type === 'mediator') ? enquiryData.user_type : 'buyer';
+    const machine_photos: string[] = Array.isArray(enquiryData.machine_photos) ? enquiryData.machine_photos : [];
+
     const message = (
       enquiryData.message || 
       enquiryData.notes || 
@@ -1447,7 +1472,9 @@ export const dataService = {
       status = 'new';
     }
 
-    const notes = (enquiryData.admin_notes || enquiryData.notes || (enquiryData.service ? `Selected Service: ${enquiryData.service}` : '')).trim();
+    const notePrefix = `[Role: ${user_type.toUpperCase()}]${address ? ` [Address: ${address}]` : ''}${machine_photos.length > 0 ? ` [${machine_photos.length} Machine Photo(s) Attached]` : ''}`;
+    const rawNotes = (enquiryData.admin_notes || enquiryData.notes || (enquiryData.service ? `Selected Service: ${enquiryData.service}` : '')).trim();
+    const combinedNotes = rawNotes ? `${notePrefix} ${rawNotes}` : notePrefix;
     const timestamp = new Date().toISOString();
 
     const newEnquiry: Enquiry = {
@@ -1456,12 +1483,15 @@ export const dataService = {
       phone,
       whatsapp,
       email,
-      company,
-      location,
+      company: company || (user_type === 'seller' ? 'Machine Seller' : user_type === 'mediator' ? 'Machine Mediator' : 'Direct Buyer'),
+      location: location || 'Coimbatore / India',
+      address,
+      user_type,
+      machine_photos,
       message,
       status,
-      notes,
-      admin_notes: notes,
+      notes: combinedNotes,
+      admin_notes: combinedNotes,
       created_at: timestamp,
       updated_at: timestamp,
       items: resolvedItems
@@ -1475,7 +1505,7 @@ export const dataService = {
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
-        const dbPayload = {
+        const fullDbPayload: any = {
           id: newId,
           customer_name: newEnquiry.customer_name,
           phone: newEnquiry.phone,
@@ -1483,6 +1513,9 @@ export const dataService = {
           email: newEnquiry.email || null,
           company: newEnquiry.company || null,
           location: newEnquiry.location || null,
+          address: newEnquiry.address || null,
+          user_type: newEnquiry.user_type || 'buyer',
+          machine_photos: newEnquiry.machine_photos || [],
           message: newEnquiry.message || null,
           status: newEnquiry.status,
           notes: newEnquiry.notes || null,
@@ -1490,9 +1523,28 @@ export const dataService = {
           updated_at: newEnquiry.updated_at
         };
 
-        const { error: enqError } = await supabase.from('enquiries').insert([dbPayload]);
+        const { error: enqError } = await supabase.from('enquiries').insert([fullDbPayload]);
         if (enqError) {
-          console.warn('Supabase createEnquiry insert error:', enqError.message);
+          console.warn('Supabase createEnquiry with new columns failed, retrying base payload:', enqError.message);
+          // Fallback without user_type/address/machine_photos if user hasn't run the ALTER TABLE migration yet
+          const basePayload = {
+            id: newId,
+            customer_name: newEnquiry.customer_name,
+            phone: newEnquiry.phone,
+            whatsapp: newEnquiry.whatsapp || null,
+            email: newEnquiry.email || null,
+            company: newEnquiry.company || null,
+            location: newEnquiry.location || null,
+            message: newEnquiry.message || null,
+            status: newEnquiry.status,
+            notes: newEnquiry.notes || null,
+            created_at: newEnquiry.created_at,
+            updated_at: newEnquiry.updated_at
+          };
+          const { error: fallbackError } = await supabase.from('enquiries').insert([basePayload]);
+          if (fallbackError) {
+            console.warn('Supabase createEnquiry base fallback insert error:', fallbackError.message);
+          }
         } else if (resolvedItems && resolvedItems.length > 0) {
           // Attempt inserting enquiry items with safety fallback for product_id foreign key
           const itemPayloads = resolvedItems.map((it: any) => ({
@@ -1568,6 +1620,9 @@ export const dataService = {
         if (updates.email !== undefined) dbUpdates.email = updates.email;
         if (updates.company !== undefined) dbUpdates.company = updates.company;
         if (updates.location !== undefined) dbUpdates.location = updates.location;
+        if (updates.address !== undefined) dbUpdates.address = updates.address;
+        if (updates.user_type !== undefined) dbUpdates.user_type = updates.user_type;
+        if (updates.machine_photos !== undefined) dbUpdates.machine_photos = updates.machine_photos;
         if (updates.message !== undefined) dbUpdates.message = updates.message;
 
         await supabase.from('enquiries').update(dbUpdates).eq('id', id);

@@ -85,14 +85,19 @@ export interface ProductDownload {
   file_size?: string;
 }
 
+export type UserEnquiryRole = 'buyer' | 'seller' | 'mediator';
+
 export interface Enquiry {
   id: string;
   customer_name: string;
   phone: string;
   whatsapp: string;
   email: string;
-  company: string;
-  location: string;
+  company?: string;
+  location?: string;
+  address?: string;
+  user_type?: UserEnquiryRole;
+  machine_photos?: string[];
   message: string;
   status: EnquiryStatus;
   notes?: string;

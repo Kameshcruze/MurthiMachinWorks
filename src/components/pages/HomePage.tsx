@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '../../context/NavigationContext';
 import { useSettings } from '../../context/SettingsContext';
-import { Product, Category } from '../../types';
+import { Product, Category, UserEnquiryRole } from '../../types';
 import { dataService, DATA_CHANGE_EVENT } from '../../services/dataService';
 import { ProductCard } from '../products/ProductCard';
 import { formatImageUrl } from '../../utils/helpers';
+import { convertAndCompressToWebP } from '../../utils/imageUtils';
 import {
   ArrowRight,
   MessageSquare,
@@ -37,7 +38,14 @@ import {
   Factory,
   Coins,
   Gauge,
-  Timer
+  Timer,
+  ShoppingBag,
+  Tag,
+  Handshake,
+  Camera,
+  Upload,
+  Trash2,
+  Building
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -51,14 +59,63 @@ export const HomePage: React.FC = () => {
 
   // Quick Enquiry Form state
   const [enquiryForm, setEnquiryForm] = useState({
+    user_type: 'buyer' as UserEnquiryRole,
     name: '',
     phone: '',
     email: '',
+    company: '',
+    address: '',
     service: 'New Machinery Sales',
-    message: ''
+    message: '',
+    machine_photos: [] as string[]
   });
+  const [isCompressingPhoto, setIsCompressingPhoto] = useState(false);
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formSuccess, setFormSuccess] = useState(false);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsCompressingPhoto(true);
+    try {
+      const remainingSlots = 3 - enquiryForm.machine_photos.length;
+      const filesToProcess = (Array.from(files) as File[]).slice(0, remainingSlots);
+      const newUrls: string[] = [];
+
+      for (const file of filesToProcess) {
+        try {
+          const res = await convertAndCompressToWebP(file, { maxSizeBytes: 350 * 1024, maxWidth: 1200 });
+          newUrls.push(res.dataUrl);
+        } catch {
+          const dataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+          });
+          newUrls.push(dataUrl);
+        }
+      }
+
+      setEnquiryForm(prev => ({
+        ...prev,
+        machine_photos: [...prev.machine_photos, ...newUrls]
+      }));
+      showToast('Photo Attached', `${newUrls.length} machine photo(s) added successfully.`, 'success');
+    } catch (err) {
+      showToast('Upload Error', 'Could not process image. Please try another picture.', 'error');
+    } finally {
+      setIsCompressingPhoto(false);
+      e.target.value = '';
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    setEnquiryForm(prev => ({
+      ...prev,
+      machine_photos: prev.machine_photos.filter((_, i) => i !== index)
+    }));
+  };
 
   const loadData = async (showLoading = false) => {
     if (showLoading) setIsLoading(true);
@@ -103,15 +160,28 @@ export const HomePage: React.FC = () => {
         phone: enquiryForm.phone.trim(),
         whatsapp: enquiryForm.phone.trim(),
         email: (enquiryForm.email || '').trim(),
-        company: 'Direct Customer / Website Lead',
-        location: 'Coimbatore / India',
-        message: `Service / Machine Requested: ${enquiryForm.service}\nRequirements: ${enquiryForm.message.trim() || 'Customer requested quotation, pricing, and machine availability.'}`,
+        company: (enquiryForm.company || '').trim(),
+        address: (enquiryForm.address || '').trim(),
+        location: (enquiryForm.address || 'Coimbatore / India').trim(),
+        user_type: enquiryForm.user_type,
+        machine_photos: enquiryForm.user_type === 'seller' ? enquiryForm.machine_photos : [],
+        message: `Service / Machine Requested: ${enquiryForm.service}\nRequirements: ${enquiryForm.message.trim() || (enquiryForm.user_type === 'seller' ? 'Seller has machine available for inspection and sale.' : 'Customer requested quotation, pricing, and machine availability.')}`,
         status: 'new',
         notes: `Selected Service: ${enquiryForm.service}`
       });
       setFormSuccess(true);
       showToast('Enquiry Sent Successfully', 'Thank you! Our sales engineering team will contact you with quote details shortly.', 'success');
-      setEnquiryForm({ name: '', phone: '', email: '', service: 'New Machinery Sales', message: '' });
+      setEnquiryForm({
+        user_type: 'buyer',
+        name: '',
+        phone: '',
+        email: '',
+        company: '',
+        address: '',
+        service: 'New Machinery Sales',
+        message: '',
+        machine_photos: []
+      });
       setTimeout(() => setFormSuccess(false), 5000);
     } catch (err) {
       showToast('Failed to send enquiry', 'Please call us directly at 98422 66521 or reach out on WhatsApp.', 'error');
@@ -933,10 +1003,118 @@ export const HomePage: React.FC = () => {
               <div className="p-6 bg-emerald-50 border border-emerald-300 rounded-xl text-center space-y-2 text-emerald-800 text-xs">
                 <Check className="w-8 h-8 mx-auto text-emerald-600" />
                 <p className="font-bold text-sm">Thank You for Your Enquiry!</p>
-                <p>Our sales team will contact you shortly.</p>
+                <p>Our sales and machinery engineering team will contact you shortly.</p>
               </div>
             ) : (
               <form onSubmit={handleEnquirySubmit} className="space-y-4">
+                {/* 1. Choose whether Buyer, Seller, or Mediator */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-2">
+                    I am a *
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEnquiryForm({ ...enquiryForm, user_type: 'buyer' })}
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition cursor-pointer ${
+                        enquiryForm.user_type === 'buyer'
+                          ? 'bg-amber-500/10 border-amber-500 text-amber-950 font-bold ring-2 ring-amber-500/30'
+                          : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      <ShoppingBag className={`w-5 h-5 mb-1 ${enquiryForm.user_type === 'buyer' ? 'text-amber-600' : 'text-slate-400'}`} />
+                      <span className="text-xs font-bold">Buyer</span>
+                      <span className="text-[10px] text-slate-500 font-normal">Buy Machinery</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setEnquiryForm({ ...enquiryForm, user_type: 'seller' })}
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition cursor-pointer ${
+                        enquiryForm.user_type === 'seller'
+                          ? 'bg-rose-500/10 border-[#C81E1E] text-rose-950 font-bold ring-2 ring-rose-500/30'
+                          : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      <Tag className={`w-5 h-5 mb-1 ${enquiryForm.user_type === 'seller' ? 'text-[#C81E1E]' : 'text-slate-400'}`} />
+                      <span className="text-xs font-bold">Seller</span>
+                      <span className="text-[10px] text-slate-500 font-normal">Sell Machine</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setEnquiryForm({ ...enquiryForm, user_type: 'mediator' })}
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition cursor-pointer ${
+                        enquiryForm.user_type === 'mediator'
+                          ? 'bg-indigo-500/10 border-indigo-500 text-indigo-950 font-bold ring-2 ring-indigo-500/30'
+                          : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      <Handshake className={`w-5 h-5 mb-1 ${enquiryForm.user_type === 'mediator' ? 'text-indigo-600' : 'text-slate-400'}`} />
+                      <span className="text-xs font-bold">Mediator</span>
+                      <span className="text-[10px] text-slate-500 font-normal">Agent / Broker</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Seller Machine Photo Upload Section */}
+                {enquiryForm.user_type === 'seller' && (
+                  <div className="p-4 bg-amber-50/70 border border-amber-300/80 rounded-xl space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                          <Camera className="w-4 h-4 text-[#C81E1E]" />
+                          <span>Machine Photo(s) You Are Selling</span>
+                          <span className="text-[10px] text-slate-500 font-normal">(Attach Photos)</span>
+                        </label>
+                        <p className="text-[11px] text-slate-600 mt-0.5">
+                          Upload clear pictures of the machine, nameplate, chuck, bed, or overall condition (Max 3 photos).
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                      {enquiryForm.machine_photos.map((photo, index) => (
+                        <div key={index} className="relative group w-20 h-20 rounded-lg overflow-hidden border border-slate-300 shadow-xs bg-slate-100">
+                          <img src={photo} alt={`Machine ${index + 1}`} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => removePhoto(index)}
+                            className="absolute top-1 right-1 p-1 bg-rose-600 hover:bg-rose-700 text-white rounded-full shadow transition cursor-pointer"
+                            title="Remove photo"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+
+                      {enquiryForm.machine_photos.length < 3 && (
+                        <label className="w-20 h-20 border-2 border-dashed border-amber-400 hover:border-[#C81E1E] bg-white rounded-lg flex flex-col items-center justify-center cursor-pointer transition text-slate-500 hover:text-[#C81E1E] p-1 text-center">
+                          <Upload className="w-4 h-4 mb-0.5" />
+                          <span className="text-[10px] font-bold leading-tight">Add Photo</span>
+                          <span className="text-[8px] text-slate-400">JPG/PNG/WebP</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handlePhotoUpload}
+                            className="hidden"
+                            disabled={isCompressingPhoto}
+                          />
+                        </label>
+                      )}
+                    </div>
+
+                    {isCompressingPhoto && (
+                      <p className="text-[11px] text-amber-800 font-medium animate-pulse flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-amber-600 animate-ping" />
+                        Processing & optimizing machine image...
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Primary Contact Details */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Your Name *</label>
@@ -962,9 +1140,39 @@ export const HomePage: React.FC = () => {
                   </div>
                 </div>
 
+                {/* 3. Company Name and Address (NOT mandatory) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Company / Works Name <span className="text-slate-400 font-normal">(Optional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={enquiryForm.company}
+                      onChange={e => setEnquiryForm({ ...enquiryForm, company: e.target.value })}
+                      placeholder="e.g. Apex Auto Parts (Optional)"
+                      className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-[#C81E1E]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Address / Location <span className="text-slate-400 font-normal">(Optional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={enquiryForm.address}
+                      onChange={e => setEnquiryForm({ ...enquiryForm, address: e.target.value })}
+                      placeholder="e.g. SIDCO Industrial Estate, Coimbatore (Optional)"
+                      className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-[#C81E1E]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Email Address <span className="text-slate-400 font-normal">(Optional)</span>
+                    </label>
                     <input
                       type="email"
                       value={enquiryForm.email}
@@ -974,7 +1182,9 @@ export const HomePage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Select Service / Machinery</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      {enquiryForm.user_type === 'seller' ? 'Machinery Category to Sell' : 'Select Service / Machinery'}
+                    </label>
                     <select
                       value={enquiryForm.service}
                       onChange={e => setEnquiryForm({ ...enquiryForm, service: e.target.value })}
@@ -990,28 +1200,46 @@ export const HomePage: React.FC = () => {
                       <option value="Drilling Machines">Drilling Machines</option>
                       <option value="Hydraulic Press Machines">Hydraulic Press Machines</option>
                       <option value="Power Press Machines">Power Press Machines</option>
+                      <option value="Milling & Shaping Machines">Milling & Shaping Machines</option>
+                      <option value="Other Industrial Machinery">Other Industrial Machinery</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Your Message / Requirements</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    {enquiryForm.user_type === 'seller' 
+                      ? 'Machine Details (Make, Model, Year, Condition, Expected Price)' 
+                      : 'Your Message / Requirements'}
+                  </label>
                   <textarea
                     rows={3}
                     value={enquiryForm.message}
                     onChange={e => setEnquiryForm({ ...enquiryForm, message: e.target.value })}
-                    placeholder="Tell us about your machine specifications or repair requirements..."
+                    placeholder={
+                      enquiryForm.user_type === 'seller'
+                        ? 'e.g. HMT LB-17 Lathe Machine, 1998 make, working condition in Coimbatore factory, expected ₹2,75,000...'
+                        : 'Tell us about your machine specifications or repair requirements...'
+                    }
                     className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-[#C81E1E]"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={formSubmitting}
-                  className="w-full py-3 bg-[#C81E1E] hover:bg-[#B31919] text-white font-heading font-black text-xs sm:text-sm tracking-wider uppercase rounded-lg shadow-md transition flex items-center justify-center gap-2"
+                  disabled={formSubmitting || isCompressingPhoto}
+                  className="w-full py-3 bg-[#C81E1E] hover:bg-[#B31919] text-white font-heading font-black text-xs sm:text-sm tracking-wider uppercase rounded-lg shadow-md transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
-                  <span>{formSubmitting ? 'Sending...' : 'SEND MESSAGE'}</span>
+                  <span>
+                    {formSubmitting
+                      ? 'Sending...'
+                      : enquiryForm.user_type === 'seller'
+                      ? 'SUBMIT MACHINE FOR SALE / VALUATION'
+                      : enquiryForm.user_type === 'mediator'
+                      ? 'SUBMIT DEAL / MEDIATOR ENQUIRY'
+                      : 'REQUEST MACHINERY QUOTE'}
+                  </span>
                 </button>
               </form>
             )}

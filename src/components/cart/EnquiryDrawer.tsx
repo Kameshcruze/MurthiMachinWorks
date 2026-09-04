@@ -4,6 +4,8 @@ import { useSettings } from '../../context/SettingsContext';
 import { useNavigation } from '../../context/NavigationContext';
 import { dataService } from '../../services/dataService';
 import { formatImageUrl, formatPrice, generateWhatsAppCartLink } from '../../utils/helpers';
+import { UserEnquiryRole } from '../../types';
+import { convertAndCompressToWebP } from '../../utils/imageUtils';
 import {
   X,
   Trash2,
@@ -20,7 +22,12 @@ import {
   CheckCircle2,
   ShoppingCart,
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  ShoppingBag,
+  Tag,
+  Handshake,
+  Camera,
+  Upload
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
@@ -34,14 +41,18 @@ export const EnquiryDrawer: React.FC = () => {
   const [submittedEnquiryId, setSubmittedEnquiryId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
+    user_type: 'buyer' as UserEnquiryRole,
     customer_name: '',
     phone: '',
     whatsapp: '',
     email: '',
     company: '',
     location: '',
-    message: ''
+    address: '',
+    message: '',
+    machine_photos: [] as string[]
   });
+  const [isCompressingPhoto, setIsCompressingPhoto] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -49,7 +60,7 @@ export const EnquiryDrawer: React.FC = () => {
     const errs: Record<string, string> = {};
     if (!formData.customer_name.trim()) errs.customer_name = 'Full name is required';
     if (!formData.phone.trim()) errs.phone = 'Phone number is required';
-    if (!formData.company.trim()) errs.company = 'Company name is required';
+    // Note: Company and Address are explicitly NOT mandatory as requested
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errs.email = 'Valid email is required';
     }
@@ -57,10 +68,54 @@ export const EnquiryDrawer: React.FC = () => {
     return Object.keys(errs).length === 0;
   };
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsCompressingPhoto(true);
+    try {
+      const remainingSlots = 3 - formData.machine_photos.length;
+      const filesToProcess = (Array.from(files) as File[]).slice(0, remainingSlots);
+      const newUrls: string[] = [];
+
+      for (const file of filesToProcess) {
+        try {
+          const res = await convertAndCompressToWebP(file, { maxSizeBytes: 350 * 1024, maxWidth: 1200 });
+          newUrls.push(res.dataUrl);
+        } catch {
+          const dataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+          });
+          newUrls.push(dataUrl);
+        }
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        machine_photos: [...prev.machine_photos, ...newUrls]
+      }));
+      showToast('Photo Attached', `${newUrls.length} photo(s) added successfully.`, 'success');
+    } catch (err) {
+      showToast('Upload Error', 'Could not process image.', 'error');
+    } finally {
+      setIsCompressingPhoto(false);
+      e.target.value = '';
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      machine_photos: prev.machine_photos.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    if (items.length === 0) {
+    if (items.length === 0 && formData.user_type !== 'seller') {
       showToast('Enquiry List Empty', 'Please add at least one machine tool to your enquiry.', 'warning');
       return;
     }
@@ -74,8 +129,11 @@ export const EnquiryDrawer: React.FC = () => {
           whatsapp: (formData.whatsapp.trim() || formData.phone.trim()),
           email: formData.email.trim() || 'sales@murthimachineworks.com',
           company: formData.company.trim(),
-          location: formData.location.trim() || 'Coimbatore / India',
-          message: formData.message.trim() || 'Please share detailed quotation with technical specifications and delivery timeframe.'
+          location: (formData.address.trim() || formData.location.trim() || 'Coimbatore / India'),
+          address: (formData.address.trim() || formData.location.trim()),
+          user_type: formData.user_type,
+          machine_photos: formData.user_type === 'seller' ? formData.machine_photos : [],
+          message: formData.message.trim() || (formData.user_type === 'seller' ? 'Seller submitted machine for valuation/sale.' : 'Please share detailed quotation with technical specifications and delivery timeframe.')
         },
         items
       );
@@ -351,6 +409,99 @@ export const EnquiryDrawer: React.FC = () => {
                         Business & Contact Details
                       </h4>
 
+                      {/* 1. I am a: Buyer / Seller / Mediator */}
+                      <div>
+                        <label className="text-[11px] font-heading font-bold text-slate-700 block mb-1.5">
+                          I am a *
+                        </label>
+                        <div className="grid grid-cols-3 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, user_type: 'buyer' })}
+                            className={`p-2 rounded-xl border text-center transition cursor-pointer flex flex-col items-center justify-center ${
+                              formData.user_type === 'buyer'
+                                ? 'bg-amber-500/10 border-amber-500 text-amber-950 font-bold ring-2 ring-amber-500/30'
+                                : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-white'
+                            }`}
+                          >
+                            <ShoppingBag className={`w-4 h-4 mb-0.5 ${formData.user_type === 'buyer' ? 'text-amber-600' : 'text-slate-400'}`} />
+                            <span className="text-[11px] font-bold">Buyer</span>
+                            <span className="text-[9px] text-slate-500 font-normal">Buy Machines</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, user_type: 'seller' })}
+                            className={`p-2 rounded-xl border text-center transition cursor-pointer flex flex-col items-center justify-center ${
+                              formData.user_type === 'seller'
+                                ? 'bg-rose-500/10 border-[#C81E1E] text-rose-950 font-bold ring-2 ring-rose-500/30'
+                                : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-white'
+                            }`}
+                          >
+                            <Tag className={`w-4 h-4 mb-0.5 ${formData.user_type === 'seller' ? 'text-[#C81E1E]' : 'text-slate-400'}`} />
+                            <span className="text-[11px] font-bold">Seller</span>
+                            <span className="text-[9px] text-slate-500 font-normal">Sell Machines</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, user_type: 'mediator' })}
+                            className={`p-2 rounded-xl border text-center transition cursor-pointer flex flex-col items-center justify-center ${
+                              formData.user_type === 'mediator'
+                                ? 'bg-indigo-500/10 border-indigo-500 text-indigo-950 font-bold ring-2 ring-indigo-500/30'
+                                : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-white'
+                            }`}
+                          >
+                            <Handshake className={`w-4 h-4 mb-0.5 ${formData.user_type === 'mediator' ? 'text-indigo-600' : 'text-slate-400'}`} />
+                            <span className="text-[11px] font-bold">Mediator</span>
+                            <span className="text-[9px] text-slate-500 font-normal">Broker / Agent</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 2. Seller Machine Photos Upload */}
+                      {formData.user_type === 'seller' && (
+                        <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl space-y-2">
+                          <label className="text-[11px] font-heading font-bold text-slate-800 flex items-center gap-1.5">
+                            <Camera className="w-3.5 h-3.5 text-[#C81E1E]" />
+                            <span>Attach Machine Photo(s) You Are Selling</span>
+                          </label>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {formData.machine_photos.map((p, idx) => (
+                              <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-300 bg-slate-100">
+                                <img src={p} alt={`Selling machine ${idx + 1}`} className="w-full h-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => removePhoto(idx)}
+                                  className="absolute top-0.5 right-0.5 p-1 bg-rose-600 text-white rounded-full hover:bg-rose-700"
+                                >
+                                  <X className="w-2.5 h-2.5" />
+                                </button>
+                              </div>
+                            ))}
+                            {formData.machine_photos.length < 3 && (
+                              <label className="w-16 h-16 border-2 border-dashed border-amber-400 hover:border-[#C81E1E] bg-white rounded-lg flex flex-col items-center justify-center cursor-pointer transition text-slate-500 hover:text-[#C81E1E] p-1 text-center">
+                                <Upload className="w-4 h-4 mb-0.5" />
+                                <span className="text-[9px] font-bold">Add Photo</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  multiple
+                                  onChange={handlePhotoUpload}
+                                  className="hidden"
+                                  disabled={isCompressingPhoto}
+                                />
+                              </label>
+                            )}
+                          </div>
+                          {isCompressingPhoto && (
+                            <p className="text-[10px] text-amber-700 font-medium animate-pulse">
+                              Optimizing machine picture...
+                            </p>
+                          )}
+                        </div>
+                      )}
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="text-[11px] font-heading font-bold text-slate-700 block mb-1">
@@ -375,7 +526,7 @@ export const EnquiryDrawer: React.FC = () => {
 
                         <div>
                           <label className="text-[11px] font-heading font-bold text-slate-700 block mb-1">
-                            Company / Works Name *
+                            Company / Works Name <span className="text-slate-400 font-normal">(Optional)</span>
                           </label>
                           <div className="relative">
                             <Building className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
@@ -383,15 +534,10 @@ export const EnquiryDrawer: React.FC = () => {
                               type="text"
                               value={formData.company}
                               onChange={e => setFormData({ ...formData, company: e.target.value })}
-                              placeholder="e.g. Apex Auto Parts"
-                              className={`w-full pl-8 pr-2.5 py-2 text-xs bg-slate-50/80 hover:bg-white border rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-[#C81E1E] focus:ring-2 focus:ring-[#C81E1E]/20 transition ${
-                                errors.company ? 'border-[#C81E1E]' : 'border-slate-300'
-                              }`}
+                              placeholder="e.g. Apex Auto Parts (Optional)"
+                              className="w-full pl-8 pr-2.5 py-2 text-xs bg-slate-50/80 hover:bg-white border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-[#C81E1E] focus:ring-2 focus:ring-[#C81E1E]/20 transition"
                             />
                           </div>
-                          {errors.company && (
-                            <p className="text-[10px] text-[#C81E1E] mt-0.5 font-medium">{errors.company}</p>
-                          )}
                         </div>
                       </div>
 
@@ -419,14 +565,14 @@ export const EnquiryDrawer: React.FC = () => {
 
                         <div>
                           <label className="text-[11px] font-heading font-bold text-slate-700 block mb-1">
-                            Location / City
+                            Address / Location <span className="text-slate-400 font-normal">(Optional)</span>
                           </label>
                           <div className="relative">
                             <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
                             <input
                               type="text"
                               value={formData.location}
-                              onChange={e => setFormData({ ...formData, location: e.target.value })}
+                              onChange={e => setFormData({ ...formData, location: e.target.value, address: e.target.value })}
                               placeholder="e.g. Coimbatore, Tamil Nadu"
                               className="w-full pl-8 pr-2.5 py-2 text-xs bg-slate-50/80 hover:bg-white border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:border-[#C81E1E] focus:ring-2 focus:ring-[#C81E1E]/20 transition"
                             />

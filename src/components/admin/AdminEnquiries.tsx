@@ -16,7 +16,11 @@ import {
   MapPin,
   Clock,
   CheckCircle2,
-  Edit
+  Edit,
+  Camera,
+  Tag,
+  ShoppingBag,
+  Handshake
 } from 'lucide-react';
 
 export const AdminEnquiries: React.FC = () => {
@@ -177,12 +181,35 @@ export const AdminEnquiries: React.FC = () => {
               {filtered.map(enq => {
                 const badge = getEnquiryStatusBadge(enq.status);
                 const cleanPhone = (enq.whatsapp || enq.phone || '').replace(/[^0-9]/g, '');
+                const userRole = enq.user_type || 'buyer';
                 return (
                   <tr key={enq.id} className="hover:bg-slate-50/70 transition">
                     <td className="py-3.5 px-4">
-                      <p className="font-bold text-slate-900">{enq.customer_name}</p>
-                      <p className="text-[11px] text-slate-500 font-medium">{enq.company || 'Direct Buyer'}</p>
-                      {enq.location && <p className="text-[10px] text-slate-400">{enq.location}</p>}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className="font-bold text-slate-900">{enq.customer_name}</p>
+                        {userRole === 'seller' ? (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                            <Tag className="w-2.5 h-2.5" /> SELLER
+                          </span>
+                        ) : userRole === 'mediator' ? (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                            <Handshake className="w-2.5 h-2.5" /> MEDIATOR
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                            <ShoppingBag className="w-2.5 h-2.5" /> BUYER
+                          </span>
+                        )}
+                        {enq.machine_photos && enq.machine_photos.length > 0 && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                            <Camera className="w-2.5 h-2.5 text-[#C81E1E]" /> {enq.machine_photos.length} photo{enq.machine_photos.length > 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-500 font-medium">{enq.company || 'Not Specified'}</p>
+                      {(enq.address || enq.location) && (
+                        <p className="text-[10px] text-slate-400">{enq.address || enq.location}</p>
+                      )}
                     </td>
                     <td className="py-3.5 px-4 font-mono text-slate-700">
                       <div>{enq.phone}</div>
@@ -282,8 +309,23 @@ export const AdminEnquiries: React.FC = () => {
               {/* Customer Profile Grid */}
               <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
                 <div>
-                  <span className="text-[11px] text-slate-500 font-semibold uppercase">Customer Name</span>
-                  <p className="font-bold text-slate-900 text-sm mt-0.5">{selectedEnquiry.customer_name}</p>
+                  <span className="text-[11px] text-slate-500 font-semibold uppercase">Customer Name & Role</span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="font-bold text-slate-900 text-sm">{selectedEnquiry.customer_name}</p>
+                    {selectedEnquiry.user_type === 'seller' ? (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                        SELLER
+                      </span>
+                    ) : selectedEnquiry.user_type === 'mediator' ? (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                        MEDIATOR
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                        BUYER
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <span className="text-[11px] text-slate-500 font-semibold uppercase">Company / Works</span>
@@ -298,10 +340,46 @@ export const AdminEnquiries: React.FC = () => {
                   <p className="font-medium text-slate-900 mt-0.5">{selectedEnquiry.email || 'N/A'}</p>
                 </div>
                 <div className="col-span-2">
-                  <span className="text-[11px] text-slate-500 font-semibold uppercase">Location / Address</span>
-                  <p className="font-medium text-slate-900 mt-0.5">{selectedEnquiry.location || 'Coimbatore / India'}</p>
+                  <span className="text-[11px] text-slate-500 font-semibold uppercase">Address / Location</span>
+                  <p className="font-medium text-slate-900 mt-0.5">
+                    {selectedEnquiry.address || selectedEnquiry.location || 'Coimbatore / India'}
+                  </p>
                 </div>
               </div>
+
+              {/* Machine Photos Gallery (Seller Uploads) */}
+              {selectedEnquiry.machine_photos && selectedEnquiry.machine_photos.length > 0 && (
+                <div className="space-y-2 p-4 bg-amber-50/60 border border-amber-200 rounded-xl">
+                  <h4 className="font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <Camera className="w-4 h-4 text-[#C81E1E]" />
+                    <span>Machine Photos Provided by Seller ({selectedEnquiry.machine_photos.length})</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-600">
+                    Click any picture to open full-resolution inspection view.
+                  </p>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 pt-1">
+                    {selectedEnquiry.machine_photos.map((photo, pIdx) => (
+                      <a
+                        key={pIdx}
+                        href={photo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative block aspect-square rounded-lg overflow-hidden border border-slate-300 shadow-xs bg-black/5 hover:border-[#C81E1E] transition"
+                        title="Click to view full photo"
+                      >
+                        <img
+                          src={photo}
+                          alt={`Seller machine photo ${pIdx + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-200"
+                        />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-[10px] font-bold">
+                          View
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Items List */}
               {selectedEnquiry.items && selectedEnquiry.items.length > 0 && (
