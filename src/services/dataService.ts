@@ -1376,10 +1376,32 @@ export const dataService = {
 
             let extractedPhotos: string[] = [];
             if (Array.isArray(e.machine_photos)) {
-              extractedPhotos = e.machine_photos;
-            } else if (typeof e.machine_photos === 'string') {
+              extractedPhotos = e.machine_photos.filter((p: any) => typeof p === 'string' && p.trim().length > 0);
+            } else if (typeof e.machine_photos === 'string' && e.machine_photos.trim()) {
               try {
-                extractedPhotos = JSON.parse(e.machine_photos);
+                const parsed = JSON.parse(e.machine_photos);
+                if (Array.isArray(parsed)) {
+                  extractedPhotos = parsed.filter((p: any) => typeof p === 'string' && p.trim().length > 0);
+                } else if (typeof parsed === 'string' && parsed.trim()) {
+                  extractedPhotos = [parsed.trim()];
+                }
+              } catch {
+                if (e.machine_photos.startsWith('http') || e.machine_photos.startsWith('data:image')) {
+                  extractedPhotos = [e.machine_photos.trim()];
+                }
+              }
+            }
+
+            // Restore from local backup cache if Supabase didn't store or return machine_photos
+            if (extractedPhotos.length === 0) {
+              try {
+                const cached = localStorage.getItem(`mmw_enq_photos_${e.id}`);
+                if (cached) {
+                  const parsed = JSON.parse(cached);
+                  if (Array.isArray(parsed) && parsed.length > 0) {
+                    extractedPhotos = parsed;
+                  }
+                }
               } catch {}
             }
 
@@ -1412,9 +1434,25 @@ export const dataService = {
             };
           });
 
-          // Merge Supabase enquiries with any local-only enquiries (e.g. freshly submitted offline/preview leads)
+          // Build index of local records to preserve client-side attachments (e.g. photos/address)
+          const localMap = new Map<string, Enquiry>();
+          local.forEach(le => localMap.set(le.id, le));
+
           const mergedMap = new Map<string, Enquiry>();
-          supabaseEnquiries.forEach(e => mergedMap.set(e.id, e));
+          supabaseEnquiries.forEach(se => {
+            const le = localMap.get(se.id);
+            const preservedPhotos = (se.machine_photos && se.machine_photos.length > 0)
+              ? se.machine_photos
+              : (le && le.machine_photos && le.machine_photos.length > 0 ? le.machine_photos : []);
+
+            mergedMap.set(se.id, {
+              ...se,
+              machine_photos: preservedPhotos,
+              user_type: se.user_type || (le ? le.user_type : '') || 'buyer',
+              address: se.address || (le ? le.address : '') || se.location || ''
+            });
+          });
+
           local.forEach(e => {
             if (!mergedMap.has(e.id)) {
               mergedMap.set(e.id, e);
@@ -1500,6 +1538,13 @@ export const dataService = {
     // 1. Immediately save to LocalStorage so Admin Dashboard & Enquiries instantly show it
     const current = getLocalEnquiries();
     saveLocalEnquiries([newEnquiry, ...current]);
+
+    // Cache photos in dedicated local backup key so they can never be wiped by an unmigrated Supabase table
+    if (machine_photos && machine_photos.length > 0) {
+      try {
+        localStorage.setItem(`mmw_enq_photos_${newId}`, JSON.stringify(machine_photos));
+      } catch {}
+    }
 
     // 2. Persist to Supabase if configured with strictly sanitized columns
     const supabase = getSupabaseClient();
@@ -1604,6 +1649,12 @@ export const dataService = {
       status: (mappedStatus || old.status) as EnquiryStatus,
       updated_at: timestamp
     };
+
+    if (updates.machine_photos !== undefined && Array.isArray(updates.machine_photos)) {
+      try {
+        localStorage.setItem(`mmw_enq_photos_${id}`, JSON.stringify(updates.machine_photos));
+      } catch {}
+    }
 
     saveLocalEnquiries([...current]);
 

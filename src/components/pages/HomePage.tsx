@@ -85,15 +85,21 @@ export const HomePage: React.FC = () => {
 
       for (const file of filesToProcess) {
         try {
-          const res = await convertAndCompressToWebP(file, { maxSizeBytes: 350 * 1024, maxWidth: 1200 });
-          newUrls.push(res.dataUrl);
+          // If Supabase Storage is connected, uploads directly to bucket; otherwise converts to efficient WebP
+          const res = await dataService.uploadProductImage(file, 'seller-machines');
+          newUrls.push(res.url);
         } catch {
-          const dataUrl = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.readAsDataURL(file);
-          });
-          newUrls.push(dataUrl);
+          try {
+            const res = await convertAndCompressToWebP(file, { maxSizeBytes: 350 * 1024, maxWidth: 1200 });
+            newUrls.push(res.dataUrl);
+          } catch {
+            const dataUrl = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.readAsDataURL(file);
+            });
+            newUrls.push(dataUrl);
+          }
         }
       }
 
@@ -164,7 +170,7 @@ export const HomePage: React.FC = () => {
         address: (enquiryForm.address || '').trim(),
         location: (enquiryForm.address || 'Coimbatore / India').trim(),
         user_type: enquiryForm.user_type,
-        machine_photos: enquiryForm.user_type === 'seller' ? enquiryForm.machine_photos : [],
+        machine_photos: (enquiryForm.machine_photos && enquiryForm.machine_photos.length > 0) ? enquiryForm.machine_photos : [],
         message: `Service / Machine Requested: ${enquiryForm.service}\nRequirements: ${enquiryForm.message.trim() || (enquiryForm.user_type === 'seller' ? 'Seller has machine available for inspection and sale.' : 'Customer requested quotation, pricing, and machine availability.')}`,
         status: 'new',
         notes: `Selected Service: ${enquiryForm.service}`

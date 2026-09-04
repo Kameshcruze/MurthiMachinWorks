@@ -20,7 +20,10 @@ import {
   Camera,
   Tag,
   ShoppingBag,
-  Handshake
+  Handshake,
+  Download,
+  Upload,
+  ExternalLink
 } from 'lucide-react';
 
 export const AdminEnquiries: React.FC = () => {
@@ -31,6 +34,9 @@ export const AdminEnquiries: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null);
   const [adminNotes, setAdminNotes] = useState('');
+  const [downloadingIndex, setDownloadingIndex] = useState<number | null>(null);
+  const [previewPhoto, setPreviewPhoto] = useState<{ url: string; index: number } | null>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   const loadData = async () => {
     try {
@@ -94,6 +100,120 @@ export const AdminEnquiries: React.FC = () => {
   const openDetails = (enq: Enquiry) => {
     setSelectedEnquiry(enq);
     setAdminNotes(enq.admin_notes || enq.notes || '');
+  };
+
+  const handleDownloadPhoto = async (photoUrl: string, index: number) => {
+    if (!selectedEnquiry) return;
+    setDownloadingIndex(index);
+    try {
+      const cleanCustomer = (selectedEnquiry.customer_name || 'seller').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const filename = `Machine_${cleanCustomer}_${selectedEnquiry.id}_photo_${index + 1}.webp`;
+
+      if (photoUrl.startsWith('data:')) {
+        const link = document.createElement('a');
+        link.href = photoUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('Photo Downloaded', `Saved ${filename}`, 'success');
+        return;
+      }
+
+      // Fetch blob to enable download for cross-origin or remote storage URLs
+      const response = await fetch(photoUrl, { mode: 'cors' });
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+      showToast('Photo Downloaded', `Saved ${filename}`, 'success');
+    } catch (err) {
+      // Direct link fallback
+      const link = document.createElement('a');
+      link.href = photoUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.download = `machine_photo_${index + 1}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Photo Opened', 'Image opened in a new tab for download.', 'info');
+    } finally {
+      setDownloadingIndex(null);
+    }
+  };
+
+  const handleDownloadAllPhotos = async () => {
+    if (!selectedEnquiry || !selectedEnquiry.machine_photos || selectedEnquiry.machine_photos.length === 0) return;
+    showToast('Downloading Photos', `Downloading ${selectedEnquiry.machine_photos.length} photos...`, 'info');
+    for (let i = 0; i < selectedEnquiry.machine_photos.length; i++) {
+      await handleDownloadPhoto(selectedEnquiry.machine_photos[i], i);
+      if (i < selectedEnquiry.machine_photos.length - 1) {
+        await new Promise(r => setTimeout(r, 400));
+      }
+    }
+  };
+
+  const handleAdminPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !selectedEnquiry) return;
+
+    setIsUploadingPhoto(true);
+    try {
+      const currentPhotos = selectedEnquiry.machine_photos || [];
+      const newUrls: string[] = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        try {
+          const res = await dataService.uploadProductImage(file, 'seller-machines');
+          newUrls.push(res.url);
+        } catch {
+          const dataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+          });
+          newUrls.push(dataUrl);
+        }
+      }
+
+      const updatedPhotos = [...currentPhotos, ...newUrls];
+      await dataService.updateEnquiry(selectedEnquiry.id, {
+        machine_photos: updatedPhotos
+      });
+
+      setSelectedEnquiry(prev => prev ? { ...prev, machine_photos: updatedPhotos } : null);
+      showToast('Photos Attached', `${newUrls.length} machine photo(s) added successfully.`, 'success');
+      loadData();
+    } catch (err) {
+      showToast('Upload Error', 'Failed to upload photo.', 'error');
+    } finally {
+      setIsUploadingPhoto(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeletePhoto = async (photoIndex: number) => {
+    if (!selectedEnquiry || !selectedEnquiry.machine_photos) return;
+    if (!window.confirm(`Remove photo ${photoIndex + 1}?`)) return;
+
+    const updatedPhotos = selectedEnquiry.machine_photos.filter((_, idx) => idx !== photoIndex);
+    try {
+      await dataService.updateEnquiry(selectedEnquiry.id, {
+        machine_photos: updatedPhotos
+      });
+      setSelectedEnquiry(prev => prev ? { ...prev, machine_photos: updatedPhotos } : null);
+      showToast('Photo Removed', 'Photo removed from enquiry.', 'info');
+      loadData();
+    } catch (err) {
+      showToast('Error', 'Failed to remove photo.', 'error');
+    }
   };
 
   const filtered = enquiries.filter(enq => {
@@ -201,9 +321,14 @@ export const AdminEnquiries: React.FC = () => {
                           </span>
                         )}
                         {enq.machine_photos && enq.machine_photos.length > 0 && (
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                          <button
+                            type="button"
+                            onClick={() => openDetails(enq)}
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 transition cursor-pointer"
+                            title="Click to view machine photos"
+                          >
                             <Camera className="w-2.5 h-2.5 text-[#C81E1E]" /> {enq.machine_photos.length} photo{enq.machine_photos.length > 1 ? 's' : ''}
-                          </span>
+                          </button>
                         )}
                       </div>
                       <p className="text-[11px] text-slate-500 font-medium">{enq.company || 'Not Specified'}</p>
@@ -259,9 +384,22 @@ export const AdminEnquiries: React.FC = () => {
                           <MessageSquare className="w-4 h-4 fill-current" />
                         </a>
                       )}
+                      {enq.machine_photos && enq.machine_photos.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            openDetails(enq);
+                            setPreviewPhoto({ url: enq.machine_photos![0], index: 0 });
+                          }}
+                          className="p-1.5 text-[#C81E1E] hover:bg-rose-50 rounded-lg inline-flex items-center cursor-pointer"
+                          title={`View / Download ${enq.machine_photos.length} Photo(s)`}
+                        >
+                          <Camera className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         onClick={() => openDetails(enq)}
-                        className="p-1.5 text-slate-600 hover:text-amber-600 hover:bg-slate-100 rounded-lg inline-flex items-center"
+                        className="p-1.5 text-slate-600 hover:text-amber-600 hover:bg-slate-100 rounded-lg inline-flex items-center cursor-pointer"
                         title="View Full RFQ"
                       >
                         <Eye className="w-4 h-4" />
@@ -347,39 +485,124 @@ export const AdminEnquiries: React.FC = () => {
                 </div>
               </div>
 
-              {/* Machine Photos Gallery (Seller Uploads) */}
-              {selectedEnquiry.machine_photos && selectedEnquiry.machine_photos.length > 0 && (
-                <div className="space-y-2 p-4 bg-amber-50/60 border border-amber-200 rounded-xl">
-                  <h4 className="font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+              {/* Machine Photos Gallery (Seller / Customer Uploads) */}
+              <div className="p-4 bg-amber-50/70 border border-amber-300/90 rounded-xl space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
                     <Camera className="w-4 h-4 text-[#C81E1E]" />
-                    <span>Machine Photos Provided by Seller ({selectedEnquiry.machine_photos.length})</span>
-                  </h4>
-                  <p className="text-[11px] text-slate-600">
-                    Click any picture to open full-resolution inspection view.
-                  </p>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 pt-1">
-                    {selectedEnquiry.machine_photos.map((photo, pIdx) => (
-                      <a
-                        key={pIdx}
-                        href={photo}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group relative block aspect-square rounded-lg overflow-hidden border border-slate-300 shadow-xs bg-black/5 hover:border-[#C81E1E] transition"
-                        title="Click to view full photo"
+                    <h4 className="font-bold text-slate-900 uppercase tracking-wider text-xs">
+                      Machine Photos {selectedEnquiry.user_type === 'seller' ? '(Seller Upload)' : ''}
+                      {selectedEnquiry.machine_photos && selectedEnquiry.machine_photos.length > 0
+                        ? ` (${selectedEnquiry.machine_photos.length})`
+                        : ''}
+                    </h4>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {selectedEnquiry.machine_photos && selectedEnquiry.machine_photos.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={handleDownloadAllPhotos}
+                        className="px-2.5 py-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-lg transition flex items-center gap-1.5 shadow-xs cursor-pointer"
                       >
-                        <img
-                          src={photo}
-                          alt={`Seller machine photo ${pIdx + 1}`}
-                          className="w-full h-full object-cover group-hover:scale-105 transition duration-200"
-                        />
-                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-[10px] font-bold">
-                          View
-                        </div>
-                      </a>
-                    ))}
+                        <Download className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Download All ({selectedEnquiry.machine_photos.length})</span>
+                      </button>
+                    )}
+
+                    <label className="px-2.5 py-1.5 text-xs font-bold bg-[#C81E1E] hover:bg-[#B31919] text-white rounded-lg transition flex items-center gap-1.5 shadow-xs cursor-pointer">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{isUploadingPhoto ? 'Processing...' : 'Attach / Upload Photo'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleAdminPhotoUpload}
+                        disabled={isUploadingPhoto}
+                        className="hidden"
+                      />
+                    </label>
                   </div>
                 </div>
-              )}
+
+                {selectedEnquiry.machine_photos && selectedEnquiry.machine_photos.length > 0 ? (
+                  <>
+                    <p className="text-[11px] text-slate-600">
+                      High-resolution machinery pictures uploaded by the customer. Click <strong>Download</strong> to save any photo directly to your computer, or click image to enlarge.
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
+                      {selectedEnquiry.machine_photos.map((photo, pIdx) => (
+                        <div
+                          key={pIdx}
+                          className="group relative flex flex-col bg-white rounded-xl overflow-hidden border border-slate-300 shadow-xs hover:border-[#C81E1E] transition"
+                        >
+                          {/* Image Thumbnail with enlarge overlay */}
+                          <div
+                            onClick={() => setPreviewPhoto({ url: photo, index: pIdx })}
+                            className="aspect-4/3 w-full bg-slate-100 relative overflow-hidden cursor-pointer"
+                            title="Click to inspect full photo"
+                          >
+                            <img
+                              src={photo}
+                              alt={`Machine photo ${pIdx + 1}`}
+                              className="w-full h-full object-cover group-hover:scale-105 transition duration-200"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-1.5 text-white text-xs font-bold">
+                              <span className="flex items-center gap-1 bg-black/70 px-2.5 py-1 rounded-md">
+                                <Eye className="w-3.5 h-3.5" /> Enlarge
+                              </span>
+                            </div>
+                            <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/75 text-white rounded text-[10px] font-bold tracking-wide">
+                              Photo #{pIdx + 1}
+                            </span>
+                          </div>
+
+                          {/* Action Toolbar with Download Button */}
+                          <div className="p-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadPhoto(photo, pIdx)}
+                              disabled={downloadingIndex === pIdx}
+                              className="flex-1 py-1.5 px-2.5 bg-[#C81E1E] hover:bg-[#B31919] text-white text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer shadow-xs disabled:opacity-50"
+                              title="Download full size photo"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                              <span>{downloadingIndex === pIdx ? 'Saving...' : 'Download'}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setPreviewPhoto({ url: photo, index: pIdx })}
+                              className="p-1.5 text-slate-600 hover:text-slate-950 hover:bg-slate-200 rounded-lg transition"
+                              title="Inspect full screen"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePhoto(pIdx)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                              title="Delete photo"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-5 px-4 bg-white/90 rounded-xl border border-dashed border-amber-300 text-center space-y-2.5">
+                    <p className="text-xs font-bold text-slate-800">
+                      No machine photos currently attached to this enquiry
+                    </p>
+                    <p className="text-[11px] text-slate-500 max-w-md mx-auto">
+                      If the seller sent machine photos over WhatsApp ({selectedEnquiry.whatsapp || selectedEnquiry.phone}) or Email, click <strong>Attach / Upload Photo</strong> above to link them to this quotation for technical review and valuation.
+                    </p>
+                  </div>
+                )}
+              </div>
 
               {/* Items List */}
               {selectedEnquiry.items && selectedEnquiry.items.length > 0 && (
@@ -463,10 +686,62 @@ export const AdminEnquiries: React.FC = () => {
 
               <button
                 onClick={() => setSelectedEnquiry(null)}
-                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50"
+                className="px-4 py-2 bg-white border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 cursor-pointer"
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Photo Enlarge / Lightbox Modal with Direct Download Button */}
+      {previewPhoto && (
+        <div className="fixed inset-0 z-60 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-slate-900 rounded-2xl max-w-4xl w-full max-h-[92vh] overflow-hidden flex flex-col border border-slate-700 shadow-2xl">
+            <div className="p-3.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-white">
+              <div className="flex items-center gap-2">
+                <Camera className="w-4 h-4 text-amber-400" />
+                <span className="font-bold text-xs uppercase tracking-wider">
+                  Machine Photo #{previewPhoto.index + 1}
+                  {selectedEnquiry?.customer_name ? ` • ${selectedEnquiry.customer_name}` : ''}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleDownloadPhoto(previewPhoto.url, previewPhoto.index)}
+                  disabled={downloadingIndex === previewPhoto.index}
+                  className="px-3 py-1.5 bg-[#C81E1E] hover:bg-[#B31919] text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>{downloadingIndex === previewPhoto.index ? 'Downloading...' : 'Download Image'}</span>
+                </button>
+                <a
+                  href={previewPhoto.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1.5 text-slate-400 hover:text-white rounded-lg transition"
+                  title="Open in new window"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setPreviewPhoto(null)}
+                  className="p-1.5 text-slate-400 hover:text-white rounded-lg transition cursor-pointer"
+                  title="Close viewer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-4 flex-1 overflow-auto flex items-center justify-center bg-slate-950/60">
+              <img
+                src={previewPhoto.url}
+                alt="Enlarged machine view"
+                className="max-h-[72vh] max-w-full object-contain rounded-lg shadow-lg"
+              />
             </div>
           </div>
         </div>

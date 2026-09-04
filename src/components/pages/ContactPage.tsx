@@ -62,15 +62,20 @@ export const ContactPage: React.FC = () => {
 
       for (const file of filesToProcess) {
         try {
-          const res = await convertAndCompressToWebP(file, { maxSizeBytes: 350 * 1024, maxWidth: 1200 });
-          newUrls.push(res.dataUrl);
+          const res = await dataService.uploadProductImage(file, 'seller-machines');
+          newUrls.push(res.url);
         } catch {
-          const dataUrl = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.readAsDataURL(file);
-          });
-          newUrls.push(dataUrl);
+          try {
+            const res = await convertAndCompressToWebP(file, { maxSizeBytes: 350 * 1024, maxWidth: 1200 });
+            newUrls.push(res.dataUrl);
+          } catch {
+            const dataUrl = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.readAsDataURL(file);
+            });
+            newUrls.push(dataUrl);
+          }
         }
       }
 
@@ -122,7 +127,7 @@ export const ContactPage: React.FC = () => {
           location: (formData.address.trim() || formData.location.trim() || 'Coimbatore / India'),
           address: (formData.address.trim() || formData.location.trim()),
           user_type: formData.user_type,
-          machine_photos: formData.user_type === 'seller' ? formData.machine_photos : [],
+          machine_photos: (formData.machine_photos && formData.machine_photos.length > 0) ? formData.machine_photos : [],
           message: `[${formData.subject}] ${formData.message.trim() || (formData.user_type === 'seller' ? 'Seller offered machine for inspection & sale.' : 'Customer requested machinery information.')}`
         },
         []
