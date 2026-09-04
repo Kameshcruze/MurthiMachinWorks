@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Category } from '../../types';
 import { dataService, DATA_CHANGE_EVENT } from '../../services/dataService';
 import { useSettings } from '../../context/SettingsContext';
@@ -14,7 +14,12 @@ import {
   Sparkles,
   Tag,
   HelpCircle,
-  Upload
+  Upload,
+  Loader2,
+  Link,
+  ChevronDown,
+  ChevronUp,
+  Image as ImageIcon
 } from 'lucide-react';
 
 export const AdminCategories: React.FC = () => {
@@ -26,6 +31,13 @@ export const AdminCategories: React.FC = () => {
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
   const [keywordInput, setKeywordInput] = useState('');
 
+  // Image upload state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [directUrlInput, setDirectUrlInput] = useState('');
+
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -34,6 +46,45 @@ export const AdminCategories: React.FC = () => {
     keywords: [] as string[],
     is_active: true
   });
+
+  const handleProcessCategoryImage = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      showToast('Invalid File', 'Please select a valid image file (JPG, PNG, WebP).', 'error');
+      return;
+    }
+    setIsUploadingImage(true);
+    try {
+      const res = await dataService.uploadProductImage(file, 'categories');
+      setFormData(prev => ({ ...prev, image_url: res.url }));
+      showToast('Image Uploaded', 'Category image uploaded successfully.', 'success');
+    } catch (err: any) {
+      showToast('Upload Failed', err?.message || 'Failed to process image', 'error');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleImageDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingImage(true);
+  };
+
+  const handleImageDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingImage(false);
+  };
+
+  const handleImageDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingImage(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleProcessCategoryImage(file);
+    }
+  };
 
   const loadData = async (showLoading = false) => {
     if (showLoading) setIsLoading(true);
@@ -62,6 +113,8 @@ export const AdminCategories: React.FC = () => {
   const handleStartCreate = () => {
     setEditingCatId(null);
     setKeywordInput('');
+    setShowUrlInput(false);
+    setDirectUrlInput('');
     setFormData({
       name: '',
       slug: '',
@@ -76,6 +129,8 @@ export const AdminCategories: React.FC = () => {
   const handleStartEdit = (cat: Category) => {
     setEditingCatId(cat.id);
     setKeywordInput('');
+    setShowUrlInput(false);
+    setDirectUrlInput('');
     setFormData({
       name: cat.name,
       slug: cat.slug,
@@ -231,44 +286,121 @@ export const AdminCategories: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <label className="text-xs font-semibold text-slate-800 block mb-1">Category Image</label>
-            <div className="flex gap-2 items-center">
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-slate-800 block">Category Image</label>
+
+            {/* Drag & Drop Upload Zone */}
+            <div
+              onDragOver={handleImageDragOver}
+              onDragLeave={handleImageDragLeave}
+              onDrop={handleImageDrop}
+              onClick={() => !isUploadingImage && fileInputRef.current?.click()}
+              className={`relative border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all duration-200 ${
+                isDraggingImage
+                  ? 'border-amber-500 bg-amber-500/10 scale-[1.01]'
+                  : 'border-slate-300 hover:border-amber-500 bg-slate-50/80 hover:bg-slate-50'
+              } ${isUploadingImage ? 'pointer-events-none opacity-80' : ''}`}
+            >
               <input
-                type="url"
-                value={formData.image_url}
-                onChange={e => setFormData({ ...formData, image_url: e.target.value })}
-                placeholder="https://... or upload image file"
-                className="flex-1 p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900"
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/jpg,image/avif,image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleProcessCategoryImage(file);
+                }}
               />
-              <label className="cursor-pointer px-3 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg flex items-center gap-1.5 transition shrink-0">
-                <Upload className="w-3.5 h-3.5" />
-                <span>Upload from Device</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    try {
-                      showToast('Uploading', 'Uploading image...', 'info');
-                      const res = await dataService.uploadProductImage(file);
-                      setFormData(prev => ({ ...prev, image_url: res.url }));
-                      showToast('Image Uploaded', 'Image uploaded successfully.', 'success');
-                    } catch (err: any) {
-                      showToast('Upload Failed', err?.message || 'Failed to process image', 'error');
-                    }
-                  }}
-                />
-              </label>
-            </div>
-            {formData.image_url && (
-              <div className="mt-2 flex items-center gap-3">
-                <div className="w-16 h-12 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
-                  <img src={formatImageUrl(formData.image_url)} alt="Category Preview" className="w-full h-full object-cover" />
+
+              {isUploadingImage ? (
+                <div className="py-3 space-y-2">
+                  <Loader2 className="w-8 h-8 text-amber-500 animate-spin mx-auto" />
+                  <p className="text-xs font-bold text-slate-800">Uploading...</p>
                 </div>
-                <span className="text-[11px] text-slate-500">Image ready for catalog showcase</span>
+              ) : (
+                <div className="space-y-2 py-1">
+                  <div className="w-10 h-10 mx-auto rounded-xl bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center justify-center shadow-xs">
+                    <Upload className="w-5 h-5" />
+                  </div>
+                  <p className="text-xs font-bold text-slate-800">
+                    Click to upload from device, or drag & drop photo here
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Current Image Preview Card */}
+            {formData.image_url && (
+              <div className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-16 h-12 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                    <img
+                      src={formatImageUrl(formData.image_url)}
+                      alt="Category Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-800 truncate">Category Showcase Image</p>
+                    <p className="text-[11px] text-slate-500 truncate max-w-xs">{formData.image_url}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
+                  >
+                    Change
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, image_url: '' }))}
+                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                    title="Remove image"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Secondary: URL Toggle */}
+            <div className="flex items-center justify-end text-xs">
+              <button
+                type="button"
+                onClick={() => setShowUrlInput(!showUrlInput)}
+                className="text-slate-600 hover:text-slate-900 font-semibold flex items-center gap-1.5 transition text-[11px]"
+              >
+                <Link className="w-3 h-3 text-amber-500" />
+                <span>{showUrlInput ? 'Hide URL paste input' : 'Or paste direct image URL (Unsplash / CDN)'}</span>
+                {showUrlInput ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
+            </div>
+
+            {/* URL Input Collapsible */}
+            {showUrlInput && (
+              <div className="p-2.5 bg-slate-100/80 rounded-xl border border-slate-200 flex gap-2">
+                <input
+                  type="url"
+                  value={directUrlInput}
+                  onChange={(e) => setDirectUrlInput(e.target.value)}
+                  placeholder="Paste image URL (https://images.unsplash.com/... or https://cdn...)"
+                  className="flex-1 px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!directUrlInput.trim()) return;
+                    setFormData(prev => ({ ...prev, image_url: directUrlInput.trim() }));
+                    setDirectUrlInput('');
+                    setShowUrlInput(false);
+                    showToast('Image URL Applied', 'Category image URL updated.', 'success');
+                  }}
+                  className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition"
+                >
+                  Apply
+                </button>
               </div>
             )}
           </div>

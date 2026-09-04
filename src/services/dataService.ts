@@ -1530,7 +1530,7 @@ export const dataService = {
   },
 
   // IMAGE UPLOAD & CONVERSION TO WEBP (GUARANTEED < 500 KB)
-  async uploadProductImage(file: File): Promise<{
+  async uploadProductImage(file: File, folder: 'products' | 'categories' | string = 'products'): Promise<{
     url: string;
     fileName: string;
     storagePath?: string;
@@ -1564,7 +1564,7 @@ export const dataService = {
     const datePrefix = new Date().toISOString().slice(0, 7); // YYYY-MM
     const uniqueId = Math.random().toString(36).substring(2, 8);
     const storageFileName = `${cleanBaseName}-${Date.now()}-${uniqueId}.webp`;
-    const filePath = `products/${datePrefix}/${storageFileName}`;
+    const filePath = `${folder}/${datePrefix}/${storageFileName}`;
 
     // 2. Upload to Supabase Storage if configured (with 3.5s timeout guarantee)
     if (supabase && isSupabaseConfigured()) {
