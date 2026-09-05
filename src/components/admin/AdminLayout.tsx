@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '../../context/NavigationContext';
 import { useSettings } from '../../context/SettingsContext';
-import { getClientIp } from '../../utils/ipService';
 import {
   LayoutDashboard,
   Package,
@@ -38,19 +37,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const { navigateTo } = useNavigation();
   const { settings } = useSettings();
   const [isMobileNavOpen, setIsMobileNavOpen] = React.useState(false);
-  const [currentIp, setCurrentIp] = useState<string>('127.0.0.1');
-
-  useEffect(() => {
-    getClientIp().then(ip => setCurrentIp(ip)).catch(() => {});
-  }, []);
 
   // Define full list of navigation items with admin-only flag
   const allNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: false },
-    { id: 'products', label: 'Machinery Catalog (CRUD)', icon: Package, adminOnly: false },
-    { id: 'categories', label: 'Categories (CRUD)', icon: FolderTree, adminOnly: false },
+    { id: 'products', label: 'Machinery Catalog', icon: Package, adminOnly: false },
+    { id: 'categories', label: 'Categories', icon: FolderTree, adminOnly: false },
     { id: 'enquiries', label: 'Enquiries / RFQ Leads', icon: FileSpreadsheet, adminOnly: false },
-    { id: 'audit-logs', label: 'Audit Logs (IP & User)', icon: Activity, highlight: true, adminOnly: true },
+    { id: 'audit-logs', label: 'Audit Logs', icon: Activity, adminOnly: true },
     { id: 'team', label: 'Employee Access & Roles', icon: Users, adminOnly: true },
     { id: 'settings', label: 'Website Settings', icon: Settings, adminOnly: true },
   ];
@@ -145,13 +139,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   <Icon className={`w-4 h-4 ${isActive ? 'text-slate-950' : 'text-slate-400'}`} />
                   <span>{item.label}</span>
                 </div>
-                {item.highlight && (
-                  <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-bold ${
-                    isActive ? 'bg-slate-950 text-amber-400' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                  }`}>
-                    LIVE IP
-                  </span>
-                )}
               </button>
             );
           })}
@@ -231,12 +218,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Active User IP Pill */}
+            {/* Active User Session Pill */}
             <div className="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-slate-500 font-medium">Employee IP:</span>
-              <span className="font-mono font-bold text-slate-800">{currentIp}</span>
-              <span className="text-slate-300">|</span>
+              <span className="text-slate-500 font-medium">Employee ID:</span>
               <span className="font-semibold text-amber-600 font-mono">
                 {user?.id || 'emp-101'}
               </span>

@@ -301,8 +301,8 @@ export const AdminAuditLogs: React.FC = () => {
           </div>
         </div>
 
-        {/* Current Active User & IP Badge */}
-        <div className="bg-slate-800/90 border border-slate-700 rounded-xl p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
+        {/* Current Active User Session Badge */}
+        <div className="bg-slate-800/90 border border-slate-700 rounded-xl p-3 sm:p-3.5 flex items-center gap-3 shrink-0">
           <div>
             <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
               Your Current Session
@@ -311,28 +311,6 @@ export const AdminAuditLogs: React.FC = () => {
               <User className="w-3.5 h-3.5 text-amber-400" />
               {user?.name || 'Administrator'} ({user?.role || 'Super Admin'})
             </p>
-          </div>
-
-          <div className="border-t sm:border-t-0 sm:border-l border-slate-700 pt-2 sm:pt-0 sm:pl-3">
-            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-              Your Client IP
-            </p>
-            <div className="flex items-center gap-1.5">
-              <span className="font-mono text-xs font-bold text-amber-400">
-                {currentIp}
-              </span>
-              <button
-                onClick={() => handleCopyIp(currentIp)}
-                title="Copy current IP"
-                className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-700 transition"
-              >
-                {copiedIp === currentIp ? (
-                  <Check className="w-3 h-3 text-emerald-400" />
-                ) : (
-                  <Copy className="w-3 h-3" />
-                )}
-              </button>
-            </div>
           </div>
         </div>
       </div>

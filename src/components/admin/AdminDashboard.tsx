@@ -345,7 +345,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
                 onClick={() => onNavigateTab('products')}
                 className="text-xs font-bold text-slate-700 hover:text-amber-600 transition"
               >
-                Go to Machinery Catalog (CRUD) →
+                Go to Machinery Catalog →
               </button>
             </div>
           </div>
