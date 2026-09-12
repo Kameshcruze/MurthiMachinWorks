@@ -518,16 +518,17 @@ export const AdminCategories: React.FC = () => {
 
       {/* Categories Grid Table */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-900 text-white font-heading uppercase text-[11px] tracking-wider">
-            <tr>
-              <th className="py-3.5 px-4 font-bold">Category</th>
-              <th className="py-3.5 px-4 font-bold">Description & Search Keywords</th>
-              <th className="py-3.5 px-4 font-bold text-center">Status</th>
-              <th className="py-3.5 px-4 font-bold text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs min-w-[640px]">
+            <thead className="bg-slate-900 text-white font-heading uppercase text-[11px] tracking-wider">
+              <tr>
+                <th className="py-3.5 px-4 font-bold">Category</th>
+                <th className="py-3.5 px-4 font-bold">Description & Search Keywords</th>
+                <th className="py-3.5 px-4 font-bold text-center">Status</th>
+                <th className="py-3.5 px-4 font-bold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200">
             {isLoading ? (
               <tr>
                 <td colSpan={4} className="py-8 text-center text-slate-500">
@@ -609,6 +610,7 @@ export const AdminCategories: React.FC = () => {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

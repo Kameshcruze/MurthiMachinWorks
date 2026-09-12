@@ -84,17 +84,26 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const userRoleBadge = getRoleBadge(user?.role);
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-slate-100 flex flex-col lg:flex-row">
+      {/* Mobile/Tablet Backdrop Overlay */}
+      {isMobileNavOpen && (
+        <div
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 lg:hidden transition-opacity"
+          onClick={() => setIsMobileNavOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar (Collapsible Drawer on Mobile & Tablet, Fixed Sticky on Desktop >= 1024px) */}
       <aside
-        className={`fixed md:sticky top-0 z-40 h-screen w-64 bg-slate-950 text-white flex flex-col justify-between border-r border-slate-800 transition-transform duration-300 ${
-          isMobileNavOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        className={`fixed lg:sticky top-0 z-50 lg:z-40 h-screen w-72 lg:w-64 bg-slate-950 text-white flex flex-col justify-between border-r border-slate-800 transition-transform duration-300 shadow-2xl lg:shadow-none ${
+          isMobileNavOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Brand Top */}
         <div className="p-5 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md">
+            <div className="w-9 h-9 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md shrink-0">
               <Cog className="w-5 h-5 animate-[spin_12s_linear_infinite]" />
             </div>
             <div>
@@ -109,7 +118,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
           <button
             onClick={() => setIsMobileNavOpen(false)}
-            className="md:hidden text-slate-400 hover:text-white"
+            className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-900 transition"
+            aria-label="Close navigation"
           >
             <X className="w-5 h-5" />
           </button>
@@ -147,16 +157,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         {/* User Footer with Live Employee Profile & IP */}
         <div className="p-4 border-t border-slate-800 bg-slate-950/90 space-y-3">
           <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-xs font-bold font-heading">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-xs font-bold font-heading shrink-0">
                   {user?.name?.charAt(0).toUpperCase() || 'A'}
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-white truncate max-w-[110px]">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-white truncate">
                     {user?.name || 'Murthi User'}
                   </p>
-                  <p className="text-[10px] text-amber-400 font-mono truncate max-w-[110px]">
+                  <p className="text-[10px] text-amber-400 font-mono truncate">
                     ID: {user?.id || 'emp-101'}
                   </p>
                 </div>
@@ -165,18 +175,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               <button
                 onClick={logout}
                 title="Logout from portal"
-                className="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition"
+                className="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition shrink-0"
               >
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
 
             {/* Role Badge */}
-            <div className="flex items-center justify-between">
-              <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-md border ${userRoleBadge.bg}`}>
+            <div className="flex items-center justify-between gap-2">
+              <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-md border shrink-0 ${userRoleBadge.bg}`}>
                 {userRoleBadge.label}
               </span>
-              <span className="text-[10px] text-slate-400 truncate max-w-[90px]">
+              <span className="text-[10px] text-slate-400 truncate">
                 {user?.department || 'Operations'}
               </span>
             </div>
@@ -187,7 +197,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             className="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg text-[11px] font-semibold text-slate-300 hover:text-white flex items-center justify-center gap-1.5 transition"
           >
             <span>Open Public Storefront</span>
-            <ExternalLink className="w-3 h-3 text-amber-400" />
+            <ExternalLink className="w-3 h-3 text-amber-400 shrink-0" />
           </button>
         </div>
       </aside>
@@ -195,11 +205,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       {/* Main Container */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navbar */}
-        <header className="bg-white border-b border-slate-200 px-4 sm:px-8 py-3.5 flex items-center justify-between sticky top-0 z-30 shadow-2xs">
+        <header className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between sticky top-0 z-30 shadow-2xs">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsMobileNavOpen(true)}
-              className="md:hidden p-1.5 rounded-lg text-slate-600 hover:bg-slate-100"
+              className="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition"
+              aria-label="Toggle navigation menu"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -217,11 +228,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Active User Session Pill */}
-            <div className="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-slate-500 font-medium">Employee ID:</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-50 border border-slate-200 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="text-slate-500 font-medium hidden sm:inline">Employee ID:</span>
               <span className="font-semibold text-amber-600 font-mono">
                 {user?.id || 'emp-101'}
               </span>
@@ -238,15 +249,15 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 }`}
                 title="View Audit Logs (Admin Only)"
               >
-                <Activity className="w-4 h-4 text-amber-600" />
-                <span className="hidden md:inline">Audit Logs</span>
+                <Activity className="w-4 h-4 text-amber-600 shrink-0" />
+                <span className="hidden sm:inline">Audit Logs</span>
               </button>
             )}
           </div>
         </header>
 
         {/* Content Body */}
-        <main className="p-4 sm:p-8 flex-1 overflow-x-hidden">
+        <main className="p-4 sm:p-6 lg:p-8 flex-1 overflow-x-hidden">
           {isRestrictedCurrentSection ? (
             <div className="max-w-2xl mx-auto my-12 bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center space-y-4">
               <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">

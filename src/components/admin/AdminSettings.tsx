@@ -152,19 +152,8 @@ export const AdminSettings: React.FC = () => {
     }
   };
 
-  const handleResetDemoData = async () => {
-    if (window.confirm('Reset catalog database to initial default factory products and categories? Any new custom items will be overwritten with factory defaults.')) {
-      try {
-        dataService.resetToDemoData();
-        showToast('Reset Complete', 'Default machinery catalog re-initialized.', 'success');
-      } catch (e) {
-        showToast('Reset Error', 'Could not reset database.', 'error');
-      }
-    }
-  };
-
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="space-y-8 max-w-5xl w-full">
       <form onSubmit={handleSave} className="space-y-6">
         {/* Business Brand Identity */}
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-4">
@@ -200,8 +189,8 @@ export const AdminSettings: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="min-w-0">
               <label className="text-xs font-semibold text-slate-800 block mb-1">
                 Currency Symbol
               </label>
@@ -209,11 +198,11 @@ export const AdminSettings: React.FC = () => {
                 type="text"
                 value={formData.currency_symbol}
                 onChange={e => setFormData({ ...formData, currency_symbol: e.target.value })}
-                className="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-bold"
+                className="w-full px-3 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-bold focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <label className="text-xs font-semibold text-slate-800 block mb-1">
                 GST / Tax Label
               </label>
@@ -221,11 +210,11 @@ export const AdminSettings: React.FC = () => {
                 type="text"
                 value="GST (18% Applicable)"
                 readOnly
-                className="w-full p-2.5 text-xs bg-slate-100 border border-slate-300 rounded-lg text-slate-500"
+                className="w-full px-3 py-2.5 text-xs bg-slate-100 border border-slate-300 rounded-lg text-slate-600 font-medium"
               />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <label className="text-xs font-semibold text-slate-800 block mb-1">
                 Testing Metrology Code
               </label>
@@ -233,7 +222,7 @@ export const AdminSettings: React.FC = () => {
                 type="text"
                 value="IS:1878 / ISO 9001"
                 readOnly
-                className="w-full p-2.5 text-xs bg-slate-100 border border-slate-300 rounded-lg text-slate-500 font-mono"
+                className="w-full px-3 py-2.5 text-xs bg-slate-100 border border-slate-300 rounded-lg text-slate-600 font-mono"
               />
             </div>
           </div>
@@ -310,41 +299,47 @@ export const AdminSettings: React.FC = () => {
         </div>
 
         {/* Works, Showrooms & Branch Locations (Google Maps & Addresses) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-5" id="admin-branches-section">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-            <div>
-              <h3 className="font-heading font-bold text-base text-slate-900 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#C81E1E]" />
-                <span>Works, Showrooms & Branch Locations</span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold">
+        <div className="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-5" id="admin-branches-section">
+          {/* Section Header */}
+          <div className="pb-4 border-b border-slate-100 space-y-2.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <div className="w-8 h-8 rounded-lg bg-rose-50 text-[#C81E1E] flex items-center justify-center shrink-0">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <h3 className="font-heading font-bold text-base text-slate-900">
+                  Works, Showrooms & Branch Locations
+                </h3>
+                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold border border-slate-200">
                   {(formData.branches || []).length} Active Addresses
                 </span>
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Configure physical addresses and attached Google Maps URLs. When visitors click an address on the Contact Us page or footer, they are navigated directly to the attached Google Maps link.
-              </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleResetToDefaultBranches}
+                  className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
+                  title="Restore default 3 Coimbatore addresses"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Reset 3 Branches</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleAddBranch}
+                  className="px-3.5 py-2 bg-[#C81E1E] hover:bg-[#B31919] text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Branch</span>
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={handleResetToDefaultBranches}
-                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
-                title="Restore default 3 Coimbatore addresses"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Reset 3 Branches</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleAddBranch}
-                className="px-3 py-1.5 bg-[#C81E1E] hover:bg-[#B31919] text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Branch</span>
-              </button>
-            </div>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Configure physical addresses and attached Google Maps URLs. When visitors click an address on the Contact Us page or footer, they are navigated directly to the attached Google Maps link.
+            </p>
           </div>
 
           {/* Branch Cards List */}
@@ -359,16 +354,16 @@ export const AdminSettings: React.FC = () => {
                 }`}
               >
                 {/* Branch Header Bar */}
-                <div className="flex items-center justify-between gap-3 pb-3 mb-3 border-b border-slate-200/80">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center">
+                <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 mb-3.5 border-b border-slate-200/80">
+                  <div className="flex items-center gap-2.5 flex-wrap min-w-0">
+                    <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center shrink-0">
                       {index + 1}
                     </span>
-                    <span className="font-heading font-black text-xs sm:text-sm text-slate-900 uppercase">
+                    <span className="font-heading font-black text-xs sm:text-sm text-slate-900 uppercase truncate max-w-xs sm:max-w-md">
                       {branch.name || `Branch #${index + 1}`}
                     </span>
                     {branch.is_primary ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-200 text-amber-950 border border-amber-300">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-200 text-amber-950 border border-amber-300 shrink-0">
                         <Star className="w-3 h-3 fill-amber-600 text-amber-700" />
                         <span>Primary Head Works</span>
                       </span>
@@ -376,7 +371,7 @@ export const AdminSettings: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleBranchChange(index, 'is_primary', true)}
-                        className="text-[11px] font-semibold text-slate-500 hover:text-amber-700 hover:underline transition cursor-pointer"
+                        className="text-[11px] font-semibold text-slate-500 hover:text-amber-700 hover:underline transition cursor-pointer shrink-0"
                       >
                         Set as Primary
                       </button>
@@ -387,7 +382,7 @@ export const AdminSettings: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleRemoveBranch(index)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition shrink-0"
                       title="Remove this branch address"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -396,9 +391,9 @@ export const AdminSettings: React.FC = () => {
                 </div>
 
                 {/* Branch Form Inputs */}
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5 text-xs">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 text-xs">
                   {/* Branch Name */}
-                  <div className="sm:col-span-8">
+                  <div className="col-span-1 lg:col-span-7 min-w-0">
                     <label className="font-semibold text-slate-800 block mb-1">
                       Branch / Works Name *
                     </label>
@@ -407,13 +402,13 @@ export const AdminSettings: React.FC = () => {
                       value={branch.name}
                       onChange={e => handleBranchChange(index, 'name', e.target.value)}
                       placeholder="e.g. MURTHI MACHIN WORKS - ONDIPUDUR"
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 font-semibold text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                       required
                     />
                   </div>
 
                   {/* Branch Phone */}
-                  <div className="sm:col-span-4">
+                  <div className="col-span-1 lg:col-span-5 min-w-0">
                     <label className="font-semibold text-slate-800 block mb-1">
                       Direct Contact Phone
                     </label>
@@ -424,13 +419,13 @@ export const AdminSettings: React.FC = () => {
                         value={branch.phone || ''}
                         onChange={e => handleBranchChange(index, 'phone', e.target.value)}
                         placeholder="e.g. 98422 66521"
-                        className="w-full pl-8 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        className="w-full pl-8 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 font-medium text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                       />
                     </div>
                   </div>
 
                   {/* Physical Address */}
-                  <div className="sm:col-span-12">
+                  <div className="col-span-1 lg:col-span-12">
                     <label className="font-semibold text-slate-800 block mb-1">
                       Full Physical Address *
                     </label>
@@ -439,25 +434,25 @@ export const AdminSettings: React.FC = () => {
                       value={branch.address}
                       onChange={e => handleBranchChange(index, 'address', e.target.value)}
                       placeholder="SF NO 215/4C1, IRUGUR MAIN ROAD, ONDIPUTHUR, MEENA FURNITURE OPP, COIMBATORE -641016"
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 leading-relaxed font-sans"
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 leading-relaxed font-sans text-xs sm:text-sm"
                       required
                     />
                   </div>
 
                   {/* Google Maps URL with Live Test Link */}
-                  <div className="sm:col-span-8">
+                  <div className="col-span-1 lg:col-span-7 min-w-0">
                     <label className="font-semibold text-slate-800 block mb-1">
                       Attached Google Maps Navigation URL *
                     </label>
                     <div className="flex gap-2">
-                      <div className="relative flex-1">
+                      <div className="relative flex-1 min-w-0">
                         <Navigation className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <input
                           type="url"
                           value={branch.google_maps_url}
                           onChange={e => handleBranchChange(index, 'google_maps_url', e.target.value)}
                           placeholder="https://maps.app.goo.gl/..."
-                          className="w-full pl-8 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-[11px]"
+                          className="w-full pl-8 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-xs"
                           required
                         />
                       </div>
@@ -470,14 +465,14 @@ export const AdminSettings: React.FC = () => {
                           title="Verify destination in Google Maps"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">Test Map</span>
+                          <span>Test Map</span>
                         </a>
                       )}
                     </div>
                   </div>
 
                   {/* Landmark / Area Note */}
-                  <div className="sm:col-span-4">
+                  <div className="col-span-1 lg:col-span-5 min-w-0">
                     <label className="font-semibold text-slate-800 block mb-1">
                       Landmark / Area Note
                     </label>
@@ -486,7 +481,7 @@ export const AdminSettings: React.FC = () => {
                       value={branch.landmark || ''}
                       onChange={e => handleBranchChange(index, 'landmark', e.target.value)}
                       placeholder="e.g. Opp. Meena Furniture"
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                   </div>
                 </div>
@@ -507,29 +502,6 @@ export const AdminSettings: React.FC = () => {
           </button>
         </div>
       </form>
-
-      {/* Database Maintenance & Reset Card */}
-      <div className="bg-white rounded-xl border border-rose-200 p-6 shadow-xs space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-rose-100">
-          <div>
-            <h3 className="font-heading font-bold text-base text-rose-950">
-              Database Re-Initialization & Seed Data
-            </h3>
-            <p className="text-xs text-slate-600">
-              Restore the full factory sample dataset of Heavy Lathes, CNC Mills, Radial Drills, and Hydraulic Presses.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleResetDemoData}
-            className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold transition flex items-center gap-1.5"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Demo Catalog</span>
-          </button>
-        </div>
-      </div>
     </div>
   );
 };
