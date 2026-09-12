@@ -126,18 +126,11 @@ export const ProductsPage: React.FC = () => {
         if (filters.sortBy === 'newest') {
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         }
-        if (filters.sortBy === 'price_asc') {
-          const priceA = a.sale_price || a.price;
-          const priceB = b.sale_price || b.price;
-          return priceA - priceB;
-        }
-        if (filters.sortBy === 'price_desc') {
-          const priceA = a.sale_price || a.price;
-          const priceB = b.sale_price || b.price;
-          return priceB - priceA;
-        }
         if (filters.sortBy === 'name_asc') {
           return a.name.localeCompare(b.name);
+        }
+        if (filters.sortBy === 'name_desc') {
+          return b.name.localeCompare(a.name);
         }
         return 0;
       });
@@ -240,9 +233,8 @@ export const ProductsPage: React.FC = () => {
               >
                 <option value="featured">Featured First</option>
                 <option value="newest">Newest First</option>
-                <option value="price_asc">Price: Low to High</option>
-                <option value="price_desc">Price: High to Low</option>
                 <option value="name_asc">Name: A to Z</option>
+                <option value="name_desc">Name: Z to A</option>
               </select>
             </div>
           </div>

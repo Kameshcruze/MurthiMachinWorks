@@ -342,15 +342,9 @@ export const EnquiryDrawer: React.FC = () => {
                               <p className="text-[11px] font-mono text-slate-500">
                                 SKU: {item.sku}
                               </p>
-                              {item.price && item.price > 0 ? (
-                                <p className="text-xs font-heading font-extrabold text-[#C81E1E] mt-0.5">
-                                  {formatPrice(item.price, settings.currency_symbol)}
-                                </p>
-                              ) : (
-                                <p className="text-[10px] text-slate-500 font-semibold mt-0.5">
-                                  Price on Request
-                                </p>
-                              )}
+                              <p className="text-[10px] font-bold text-amber-800 mt-0.5">
+                                Contact for Price
+                              </p>
                             </div>
 
                             {/* Quantity Adjust */}

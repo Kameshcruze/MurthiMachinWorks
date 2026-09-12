@@ -18,7 +18,9 @@ import {
   Sparkles,
   ToggleLeft,
   ToggleRight,
-  Tag
+  Tag,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 
 export const AdminProducts: React.FC = () => {
@@ -28,6 +30,7 @@ export const AdminProducts: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCatFilter, setSelectedCatFilter] = useState('');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const [isLoading, setIsLoading] = useState(true);
 
   // Modal State
@@ -186,7 +189,15 @@ export const AdminProducts: React.FC = () => {
     if (!newSpecKey.trim() || !newSpecVal.trim()) return;
     setFormData(prev => ({
       ...prev,
-      specifications: [...(prev.specifications || []), { key: newSpecKey.trim(), value: newSpecVal.trim() }]
+      specifications: [
+        ...(prev.specifications || []),
+        {
+          key: newSpecKey.trim(),
+          value: newSpecVal.trim(),
+          spec_key: newSpecKey.trim(),
+          spec_value: newSpecVal.trim()
+        }
+      ]
     }));
     setNewSpecKey('');
     setNewSpecVal('');
@@ -383,124 +394,284 @@ export const AdminProducts: React.FC = () => {
               </option>
             ))}
           </select>
+
+          {/* View Mode Toggle: Table / Card Format */}
+          <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode('table')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition ${
+                viewMode === 'table'
+                  ? 'bg-white text-slate-900 shadow-2xs border border-slate-200'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Switch to Table Format"
+            >
+              <List className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Table</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('cards')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition ${
+                viewMode === 'cards'
+                  ? 'bg-white text-slate-900 shadow-2xs border border-slate-200'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Switch to Card Format"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Cards</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Products Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
-              <tr>
-                <th className="py-3 px-4">Machine Name & SKU</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4">Price / Term</th>
-                <th className="py-3 px-4">Stock Status</th>
-                <th className="py-3 px-4">Visibility</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filtered.map(p => {
-                const primaryImg = p.images?.find(i => i.is_primary)?.image_url || p.images?.[0]?.image_url;
-                const stockBadge = getStockStatusBadge(p.stock_status);
-                return (
-                  <tr key={p.id} className="hover:bg-slate-50/70 transition">
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={formatImageUrl(primaryImg)}
-                          alt={p.name}
-                          className="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0"
-                          referrerPolicy="no-referrer"
-                        />
-                        <div className="min-w-0">
-                          <p className="font-bold text-slate-900 line-clamp-1">{p.name}</p>
-                          <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500">
-                            <span>SKU: {p.sku}</span>
-                            {p.is_featured && (
-                              <span className="text-[9px] bg-amber-100 text-amber-900 font-bold px-1.5 py-0.2 rounded">
-                                FEATURED
+      {/* Catalog Display: Cards or Table */}
+      {viewMode === 'cards' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filtered.length === 0 ? (
+            <div className="col-span-full bg-white rounded-xl border border-slate-200 p-12 text-center text-slate-500 text-xs">
+              No machinery found matching your search or filters.
+            </div>
+          ) : (
+            filtered.map(p => {
+              const primaryImg = p.images?.find(i => i.is_primary)?.image_url || p.images?.[0]?.image_url;
+              const stockBadge = getStockStatusBadge(p.stock_status);
+              return (
+                <div
+                  key={p.id}
+                  className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs hover:shadow-md transition flex flex-col justify-between group"
+                >
+                  {/* Top Image with Badges */}
+                  <div className="relative aspect-4/3 bg-slate-100 overflow-hidden border-b border-slate-100">
+                    <img
+                      src={formatImageUrl(primaryImg)}
+                      alt={p.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded border backdrop-blur-xs shadow-2xs ${stockBadge.bg}`}>
+                        {stockBadge.label}
+                      </span>
+                      {p.is_featured && (
+                        <span className="text-[9px] bg-amber-500 text-slate-950 font-extrabold px-2 py-0.5 rounded shadow-2xs">
+                          FEATURED
+                        </span>
+                      )}
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <button
+                        onClick={() => handleToggleActive(p)}
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full shadow-2xs border backdrop-blur-xs flex items-center gap-1 ${
+                          p.is_active
+                            ? 'bg-emerald-600/90 border-emerald-500 text-white'
+                            : 'bg-slate-800/90 border-slate-700 text-slate-200'
+                        }`}
+                        title="Click to toggle published status"
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${p.is_active ? 'bg-white' : 'bg-slate-400'}`} />
+                        <span>{p.is_active ? 'Published' : 'Draft'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card Details */}
+                  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                    <div>
+                      <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 mb-1">
+                        <span>SKU: {p.sku}</span>
+                        <span className="font-semibold text-slate-700 truncate max-w-[120px]">
+                          {p.category_name || categories.find(c => c.id === p.category_id)?.name || 'General'}
+                        </span>
+                      </div>
+                      <h3 className="font-heading font-bold text-sm text-slate-900 line-clamp-2 leading-snug" title={p.name}>
+                        {p.name}
+                      </h3>
+                      {p.short_description && (
+                        <p className="text-[11px] text-slate-600 line-clamp-2 mt-1 leading-relaxed">
+                          {p.short_description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Price Block: Prominently Visible in Admin */}
+                    <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-200">
+                      <div className="flex items-baseline justify-between gap-1">
+                        <span className="text-[10px] uppercase font-bold text-slate-600 tracking-wider">
+                          Catalog Price:
+                        </span>
+                        <div className="text-right">
+                          {p.price > 0 ? (
+                            <div>
+                              <span className="font-heading font-extrabold text-sm text-slate-950 font-mono">
+                                {formatPrice(p.sale_price || p.price, settings.currency_symbol)}
                               </span>
-                            )}
-                          </div>
-                          {p.keywords && p.keywords.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {p.keywords.slice(0, 3).map((kw, ki) => (
-                                <span key={ki} className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium border border-slate-200">
-                                  #{kw}
-                                </span>
-                              ))}
-                              {p.keywords.length > 3 && (
-                                <span className="text-[9px] text-slate-400 font-medium">
-                                  +{p.keywords.length - 3} more
+                              {p.sale_price && (
+                                <span className="text-[10px] text-slate-400 line-through font-mono ml-1.5">
+                                  {formatPrice(p.price, settings.currency_symbol)}
                                 </span>
                               )}
                             </div>
+                          ) : (
+                            <span className="text-xs font-semibold text-slate-400 italic">
+                              Not set (₹0)
+                            </span>
                           )}
                         </div>
                       </div>
-                    </td>
-                    <td className="py-3 px-4 font-medium text-slate-700">
-                      {p.category_name || categories.find(c => c.id === p.category_id)?.name || 'General'}
-                    </td>
-                    <td className="py-3 px-4">
-                      {p.show_price && p.price > 0 ? (
-                        <div>
-                          <p className="font-bold text-slate-900">
-                            {formatPrice(p.sale_price || p.price, settings.currency_symbol)}
-                          </p>
-                          {p.sale_price && (
-                            <p className="text-[10px] text-slate-400 line-through">
-                              {formatPrice(p.price, settings.currency_symbol)}
-                            </p>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-[11px] text-slate-500 italic">Price on RFQ</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${stockBadge.bg}`}>
-                        {stockBadge.label}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <button
-                        onClick={() => handleToggleActive(p)}
-                        className={`flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                          p.is_active
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-slate-100 text-slate-500'
-                        }`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${p.is_active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-                        <span>{p.is_active ? 'Published' : 'Draft'}</span>
-                      </button>
-                    </td>
-                    <td className="py-3 px-4 text-right space-x-1">
+                      <div className="mt-1.5 pt-1 border-t border-slate-200/80 flex items-center justify-between text-[10px]">
+                        <span className="text-slate-500 font-medium">Storefront Viewers:</span>
+                        <span className="font-bold text-amber-800 bg-amber-100/80 px-1.5 py-0.2 rounded">
+                          Contact for Price
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Card Actions */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
                       <button
                         onClick={() => openEditModal(p)}
-                        className="p-1.5 text-slate-600 hover:text-amber-600 hover:bg-slate-100 rounded-lg transition"
-                        title="Edit Machine"
+                        className="flex-1 py-2 px-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs"
                       >
-                        <Edit2 className="w-4 h-4" />
+                        <Edit2 className="w-3.5 h-3.5" />
+                        <span>Edit Machine</span>
                       </button>
                       <button
                         onClick={() => handleDelete(p.id, p.name)}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition border border-slate-200 hover:border-rose-200"
                         title="Delete Machine"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
-      </div>
+      ) : (
+        /* Products Table */
+        <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left">
+              <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200">
+                <tr>
+                  <th className="py-3 px-4">Machine Name & SKU</th>
+                  <th className="py-3 px-4">Category</th>
+                  <th className="py-3 px-4">Catalog Price</th>
+                  <th className="py-3 px-4">Stock Status</th>
+                  <th className="py-3 px-4">Visibility</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filtered.map(p => {
+                  const primaryImg = p.images?.find(i => i.is_primary)?.image_url || p.images?.[0]?.image_url;
+                  const stockBadge = getStockStatusBadge(p.stock_status);
+                  return (
+                    <tr key={p.id} className="hover:bg-slate-50/70 transition">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={formatImageUrl(primaryImg)}
+                            alt={p.name}
+                            className="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0"
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="min-w-0">
+                            <p className="font-bold text-slate-900 line-clamp-1">{p.name}</p>
+                            <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500">
+                              <span>SKU: {p.sku}</span>
+                              {p.is_featured && (
+                                <span className="text-[9px] bg-amber-100 text-amber-900 font-bold px-1.5 py-0.2 rounded">
+                                  FEATURED
+                                </span>
+                              )}
+                            </div>
+                            {p.keywords && p.keywords.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {p.keywords.slice(0, 3).map((kw, ki) => (
+                                  <span key={ki} className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium border border-slate-200">
+                                    #{kw}
+                                  </span>
+                                ))}
+                                {p.keywords.length > 3 && (
+                                  <span className="text-[9px] text-slate-400 font-medium">
+                                    +{p.keywords.length - 3} more
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 font-medium text-slate-700">
+                        {p.category_name || categories.find(c => c.id === p.category_id)?.name || 'General'}
+                      </td>
+                      <td className="py-3 px-4">
+                        {p.price > 0 ? (
+                          <div>
+                            <p className="font-bold text-slate-900 font-mono text-xs">
+                              {formatPrice(p.sale_price || p.price, settings.currency_symbol)}
+                            </p>
+                            {p.sale_price && (
+                              <p className="text-[10px] text-slate-400 line-through font-mono">
+                                {formatPrice(p.price, settings.currency_symbol)}
+                              </p>
+                            )}
+                            <span className="text-[9px] text-amber-800 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200 inline-block font-medium mt-0.5">
+                              Catalog Price
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-slate-400 italic">Not set (₹0)</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${stockBadge.bg}`}>
+                          {stockBadge.label}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <button
+                          onClick={() => handleToggleActive(p)}
+                          className={`flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                            p.is_active
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-slate-100 text-slate-500'
+                          }`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${p.is_active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                          <span>{p.is_active ? 'Published' : 'Draft'}</span>
+                        </button>
+                      </td>
+                      <td className="py-3 px-4 text-right space-x-1">
+                        <button
+                          onClick={() => openEditModal(p)}
+                          className="p-1.5 text-slate-600 hover:text-amber-600 hover:bg-slate-100 rounded-lg transition"
+                          title="Edit Machine"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(p.id, p.name)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                          title="Delete Machine"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* CRUD Product Modal */}
       {isModalOpen && (
@@ -617,15 +788,10 @@ export const AdminProducts: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col justify-end space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.show_price}
-                      onChange={e => setFormData({ ...formData, show_price: e.target.checked })}
-                      className="rounded text-amber-500 focus:ring-amber-500"
-                    />
-                    <span className="font-semibold text-slate-800">Display price publicly</span>
-                  </label>
+                  <div className="text-[11px] text-slate-500 bg-amber-50/80 p-2 rounded border border-amber-200/60 leading-snug">
+                    <strong className="text-slate-800 block mb-0.5">Commercial Policy:</strong>
+                    Prices entered here are preserved for admin records, quotations, and catalog audits. Public storefront viewers always see <span className="font-semibold text-amber-900">"Contact for Price"</span>.
+                  </div>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -793,8 +959,8 @@ export const AdminProducts: React.FC = () => {
                 <div className="space-y-1 max-h-48 overflow-y-auto">
                   {formData.specifications?.map((spec, idx) => (
                     <div key={idx} className="flex items-center justify-between p-2 bg-white border border-slate-200 rounded-md">
-                      <span className="font-semibold text-slate-800 w-1/2">{spec.key}</span>
-                      <span className="font-mono text-slate-600 w-1/2">{spec.value}</span>
+                      <span className="font-semibold text-slate-800 w-1/2">{spec.key || spec.spec_key}</span>
+                      <span className="font-mono text-slate-600 w-1/2">{spec.value || spec.spec_value}</span>
                       <button
                         type="button"
                         onClick={() => handleRemoveSpec(idx)}

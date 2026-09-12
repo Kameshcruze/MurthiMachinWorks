@@ -568,15 +568,9 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-6 pt-2">
-          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800">
-            <input
-              type="checkbox"
-              checked={formData.show_price}
-              onChange={e => setFormData({ ...formData, show_price: e.target.checked })}
-              className="rounded border-slate-300 text-amber-500 focus:ring-amber-500 w-4 h-4"
-            />
-            <span>Show Price on Public Website (Uncheck for "Price on Request")</span>
-          </label>
+          <div className="text-xs text-slate-600 bg-amber-50 px-3 py-1.5 rounded-md border border-amber-200">
+            <span className="font-semibold text-slate-800">Storefront Policy:</span> Public catalog displays <strong className="text-amber-900">"Contact for Price"</strong>. Prices entered are preserved for internal admin catalog and commercial quotations.
+          </div>
 
           <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800">
             <input

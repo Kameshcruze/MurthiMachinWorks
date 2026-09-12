@@ -6,6 +6,7 @@ import { dataService, DATA_CHANGE_EVENT } from '../../services/dataService';
 import { ProductCard } from '../products/ProductCard';
 import { formatImageUrl } from '../../utils/helpers';
 import { convertAndCompressToWebP } from '../../utils/imageUtils';
+import { INITIAL_BRANCHES } from '../../data/initialData';
 import {
   ArrowRight,
   MessageSquare,
@@ -38,6 +39,7 @@ import {
   Factory,
   Coins,
   Gauge,
+  ExternalLink,
   Timer,
   ShoppingBag,
   Tag,
@@ -52,6 +54,7 @@ import { motion } from 'motion/react';
 export const HomePage: React.FC = () => {
   const { navigateTo } = useNavigation();
   const { settings, showToast } = useSettings();
+  const branches = settings.branches && settings.branches.length > 0 ? settings.branches : INITIAL_BRANCHES;
 
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -954,15 +957,48 @@ export const HomePage: React.FC = () => {
             </div>
 
             <div className="space-y-4 text-xs sm:text-sm text-slate-700">
-              <div className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-[#C81E1E] shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-bold text-slate-900">Address:</p>
-                  <p className="text-slate-600">No. 45, South Street No. 1, Avarampalayam, Coimbatore - 641 006, Tamil Nadu, India.</p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="font-bold text-slate-900 flex items-center gap-1.5 text-xs sm:text-sm">
+                    <MapPin className="w-4 h-4 text-[#C81E1E]" />
+                    <span>Works & Branch Addresses (Coimbatore):</span>
+                  </p>
+                  <button
+                    onClick={() => navigateTo('contact')}
+                    className="text-[11px] font-bold text-[#C81E1E] hover:underline cursor-pointer"
+                  >
+                    View All 3 Locations →
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  {branches.map((branch, idx) => (
+                    <a
+                      key={branch.id || idx}
+                      href={branch.google_maps_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block p-3 rounded-lg border border-slate-200 hover:border-[#C81E1E] bg-slate-50/80 hover:bg-rose-50/40 transition group cursor-pointer"
+                      title={`Open ${branch.name} on Google Maps`}
+                    >
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="font-heading font-bold text-xs text-slate-900 group-hover:text-[#C81E1E] transition">
+                          {branch.name}
+                        </span>
+                        <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-[#C81E1E] transition shrink-0" />
+                      </div>
+                      <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
+                        {branch.address}
+                      </p>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#C81E1E] mt-1.5 group-hover:underline">
+                        Navigate in Google Maps ↗
+                      </span>
+                    </a>
+                  ))}
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 pt-1">
                 <Phone className="w-5 h-5 text-[#C81E1E] shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold text-slate-900">Phone Numbers:</p>
@@ -980,8 +1016,8 @@ export const HomePage: React.FC = () => {
                 <Mail className="w-5 h-5 text-[#C81E1E] shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold text-slate-900">Email Address:</p>
-                  <a href="mailto:murthimachineworks@gmail.com" className="text-slate-600 hover:text-[#C81E1E] block">
-                    murthimachineworks@gmail.com
+                  <a href={`mailto:${settings.email || 'murthimachinworks@gmail.com'}`} className="text-slate-600 hover:text-[#C81E1E] block">
+                    {settings.email || 'murthimachinworks@gmail.com'}
                   </a>
                 </div>
               </div>
@@ -990,7 +1026,7 @@ export const HomePage: React.FC = () => {
                 <Clock className="w-5 h-5 text-[#C81E1E] shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold text-slate-900">Working Hours:</p>
-                  <p className="text-slate-600">Monday - Saturday: 8:30 AM - 7:30 PM</p>
+                  <p className="text-slate-600">{settings.working_hours ? `Monday - Saturday: ${settings.working_hours}` : 'Monday - Saturday: 10:00 AM - 6:00 PM'}</p>
                 </div>
               </div>
             </div>

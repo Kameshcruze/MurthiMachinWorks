@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigation } from '../../context/NavigationContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
+import { INITIAL_BRANCHES } from '../../data/initialData';
 import {
   Phone,
   Mail,
@@ -12,13 +13,15 @@ import {
   ArrowRight,
   Lock,
   Clock,
-  Wrench
+  Wrench,
+  ExternalLink
 } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   const { navigateTo } = useNavigation();
   const { settings } = useSettings();
   const { isAuthenticated } = useAuth();
+  const branches = settings.branches && settings.branches.length > 0 ? settings.branches : INITIAL_BRANCHES;
 
   const cleanWhatsAppNumber = (settings.whatsapp || '+91 95852 62522').replace(/[^0-9]/g, '');
 
@@ -179,16 +182,35 @@ export const Footer: React.FC = () => {
         {/* Plant & Contact Info */}
         <div className="lg:col-span-3 space-y-3">
           <h4 className="font-heading font-black text-white text-xs sm:text-sm uppercase tracking-wider text-[#F5A623]">
-            Works & Office
+            Works & Locations
           </h4>
           
-          <div className="space-y-3 text-xs text-slate-400">
-            <div className="flex items-start gap-2.5">
-              <MapPin className="w-4 h-4 text-[#F5A623] shrink-0 mt-0.5" />
-              <span>No. 45, South Street No. 1, Avarampalayam, Coimbatore - 641 006, Tamil Nadu, India.</span>
-            </div>
+          <div className="space-y-2.5 text-xs text-slate-400">
+            {branches.map((branch, idx) => (
+              <a
+                key={branch.id || idx}
+                href={branch.google_maps_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-2 p-2 rounded-lg bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-[#F5A623] transition group"
+                title={`Navigate to ${branch.name} via Google Maps`}
+              >
+                <MapPin className="w-3.5 h-3.5 text-[#F5A623] shrink-0 mt-0.5" />
+                <div className="space-y-0.5 min-w-0">
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-white group-hover:text-[#F5A623] transition text-[11px] truncate">
+                      {branch.name}
+                    </span>
+                    <ExternalLink className="w-2.5 h-2.5 text-slate-500 group-hover:text-[#F5A623] shrink-0" />
+                  </div>
+                  <p className="text-[10px] text-slate-400 line-clamp-2 leading-relaxed">
+                    {branch.address}
+                  </p>
+                </div>
+              </a>
+            ))}
 
-            <div className="flex items-start gap-2.5">
+            <div className="flex items-start gap-2.5 pt-1">
               <Phone className="w-4 h-4 text-[#F5A623] shrink-0 mt-0.5" />
               <div className="space-y-0.5">
                 <a href="tel:9842266521" className="block text-white font-bold hover:text-[#F5A623] transition">
@@ -205,14 +227,14 @@ export const Footer: React.FC = () => {
 
             <div className="flex items-center gap-2.5">
               <Mail className="w-4 h-4 text-[#F5A623] shrink-0" />
-              <a href="mailto:murthimachineworks@gmail.com" className="hover:text-white transition">
-                murthimachineworks@gmail.com
+              <a href={`mailto:${settings.email || 'murthimachinworks@gmail.com'}`} className="hover:text-white transition">
+                {settings.email || 'murthimachinworks@gmail.com'}
               </a>
             </div>
 
             <div className="flex items-center gap-2.5">
               <Clock className="w-4 h-4 text-[#F5A623] shrink-0" />
-              <span>Mon – Sat: 8:30 AM – 7:30 PM IST</span>
+              <span>{settings.working_hours ? `${settings.working_hours} IST` : 'Mon – Sat: 10:00 AM – 6:00 PM IST'}</span>
             </div>
           </div>
         </div>

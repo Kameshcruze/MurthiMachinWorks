@@ -116,6 +116,16 @@ export interface SocialLinks {
   twitter?: string;
 }
 
+export interface BranchLocation {
+  id: string;
+  name: string;
+  address: string;
+  google_maps_url: string;
+  phone?: string;
+  landmark?: string;
+  is_primary?: boolean;
+}
+
 export interface SiteSettings {
   id: string;
   business_name: string;
@@ -125,7 +135,9 @@ export interface SiteSettings {
   whatsapp: string;
   email: string;
   address: string;
+  working_hours?: string;
   google_maps_url: string;
+  branches?: BranchLocation[];
   hero_title: string;
   hero_description: string;
   hero_image: string;
@@ -199,6 +211,6 @@ export interface FilterState {
   priceMin: number;
   priceMax: number;
   searchQuery: string;
-  sortBy: 'featured' | 'newest' | 'price_asc' | 'price_desc' | 'name_asc';
+  sortBy: 'featured' | 'newest' | 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc';
 }
 

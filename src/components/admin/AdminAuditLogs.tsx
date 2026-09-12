@@ -274,47 +274,6 @@ export const AdminAuditLogs: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner: Security & Active IP Header */}
-      <div className="bg-slate-900 border border-slate-800 text-white rounded-2xl p-5 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
-            <Shield className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="font-heading font-bold text-lg sm:text-xl text-white">
-                Enterprise Product & Access Audit Log
-              </h2>
-              {isSupabaseConfigured() ? (
-                <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-                  <Cloud className="w-3 h-3" /> DATABASE CLOUD ACTIVE
-                </span>
-              ) : (
-                <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
-                  LIVE CAPTURE ACTIVE
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-              Every newly added, updated, or deleted machinery product is permanently recorded in the database with the employee ID, login user name, timestamp, and network IP address. All portal users can view these audit logs from any device.
-            </p>
-          </div>
-        </div>
-
-        {/* Current Active User Session Badge */}
-        <div className="bg-slate-800/90 border border-slate-700 rounded-xl p-3 sm:p-3.5 flex items-center gap-3 shrink-0">
-          <div>
-            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-              Your Current Session
-            </p>
-            <p className="text-xs font-bold text-white flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-amber-400" />
-              {user?.name || 'Administrator'} ({user?.role || 'Super Admin'})
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* KPI Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">

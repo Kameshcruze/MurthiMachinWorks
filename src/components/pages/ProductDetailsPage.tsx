@@ -224,24 +224,15 @@ export const ProductDetailsPage: React.FC = () => {
               {/* Pricing Box */}
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-baseline justify-between gap-2">
                 <div>
-                  <span className="text-xs text-slate-500 block">Ex-Factory Indicative Pricing</span>
-                  {product.show_price && product.price > 0 ? (
-                    <div className="flex items-baseline gap-2.5 mt-0.5">
-                      <span className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-950">
-                        {formatPrice(product.sale_price || product.price, settings.currency_symbol)}
-                      </span>
-                      {product.sale_price && (
-                        <span className="text-sm text-slate-400 line-through">
-                          {formatPrice(product.price, settings.currency_symbol)}
-                        </span>
-                      )}
-                      <span className="text-xs text-slate-500 font-medium">+ GST (18%)</span>
-                    </div>
-                  ) : (
-                    <span className="text-lg font-bold text-slate-800">
-                      Price Available on Commercial Request
+                  <span className="text-xs text-slate-500 block font-medium">Commercial Factory Pricing</span>
+                  <div className="flex items-baseline gap-2.5 mt-1">
+                    <span className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-950">
+                      Contact for Price
                     </span>
-                  )}
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Official quotation with Ex-Works / CIF Coimbatore commercial terms provided on request.
+                  </p>
                 </div>
 
                 <div className="text-right">
@@ -254,18 +245,29 @@ export const ProductDetailsPage: React.FC = () => {
 
               {/* Key Quick Highlights */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
-                  <span className="text-[11px] text-slate-500 block">Bed Casting</span>
-                  <span className="text-xs font-bold text-slate-800">Grade 25 / Meehanite</span>
-                </div>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
-                  <span className="text-[11px] text-slate-500 block">Hardness</span>
-                  <span className="text-xs font-bold text-slate-800">450 - 500 BHN</span>
-                </div>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
-                  <span className="text-[11px] text-slate-500 block">Testing</span>
-                  <span className="text-xs font-bold text-slate-800">Laser Interferometry</span>
-                </div>
+                {specs.length >= 3 ? (
+                  specs.slice(0, 3).map((sp, i) => (
+                    <div key={i} className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
+                      <span className="text-[11px] text-slate-500 block truncate">{sp.key || sp.spec_key}</span>
+                      <span className="text-xs font-bold text-slate-900 truncate block">{sp.value || sp.spec_value}</span>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
+                      <span className="text-[11px] text-slate-500 block">Bed Casting</span>
+                      <span className="text-xs font-bold text-slate-800">Grade 25 / Meehanite</span>
+                    </div>
+                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
+                      <span className="text-[11px] text-slate-500 block">Hardness</span>
+                      <span className="text-xs font-bold text-slate-800">450 - 500 BHN</span>
+                    </div>
+                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
+                      <span className="text-[11px] text-slate-500 block">Testing</span>
+                      <span className="text-xs font-bold text-slate-800">Laser Interferometry</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -427,13 +429,18 @@ export const ProductDetailsPage: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200">
-                        {specs.map((s, idx) => (
-                          <tr key={s.id || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                            <td className="py-3 px-4 font-semibold text-slate-800">{s.spec_key}</td>
-                            <td className="py-3 px-4 font-mono font-bold text-slate-950">{s.spec_value}</td>
-                            <td className="py-3 px-4 text-slate-500">{s.unit || 'Standard'}</td>
-                          </tr>
-                        ))}
+                        {specs.map((s, idx) => {
+                          const paramName = s.key || s.spec_key || '';
+                          const paramVal = s.value || s.spec_value || '';
+                          const paramUnit = s.unit || 'Standard';
+                          return (
+                            <tr key={s.id || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                              <td className="py-3 px-4 font-semibold text-slate-800">{paramName}</td>
+                              <td className="py-3 px-4 font-mono font-bold text-slate-950">{paramVal}</td>
+                              <td className="py-3 px-4 text-slate-500">{paramUnit}</td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

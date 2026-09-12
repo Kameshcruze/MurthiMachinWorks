@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
 import { dataService } from '../../services/dataService';
+import { INITIAL_BRANCHES } from '../../data/initialData';
+import { BranchLocation, SiteSettings } from '../../types';
 import {
   Sliders,
   Building,
@@ -13,17 +15,29 @@ import {
   RotateCcw,
   ShieldCheck,
   CheckCircle2,
-  Lock
+  Lock,
+  ExternalLink,
+  Plus,
+  Trash2,
+  Compass,
+  Star,
+  Navigation
 } from 'lucide-react';
 
 export const AdminSettings: React.FC = () => {
   const { settings, updateSettings, showToast } = useSettings();
   const { isAdmin } = useAuth();
-  const [formData, setFormData] = useState({ ...settings });
+  const [formData, setFormData] = useState<SiteSettings>({
+    ...settings,
+    branches: settings.branches && settings.branches.length > 0 ? settings.branches : INITIAL_BRANCHES
+  });
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    setFormData({ ...settings });
+    setFormData({
+      ...settings,
+      branches: settings.branches && settings.branches.length > 0 ? settings.branches : INITIAL_BRANCHES
+    });
   }, [settings]);
 
   if (!isAdmin) {
@@ -54,6 +68,87 @@ export const AdminSettings: React.FC = () => {
       showToast('Error', 'Failed to save settings.', 'error');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleAddBranch = () => {
+    const newBranch: BranchLocation = {
+      id: `branch-${Date.now()}`,
+      name: 'MURTHI MACHIN WORKS - ',
+      address: '',
+      google_maps_url: '',
+      phone: '98422 66521',
+      landmark: '',
+      is_primary: false
+    };
+    setFormData(prev => ({
+      ...prev,
+      branches: [...(prev.branches || []), newBranch]
+    }));
+    showToast('New Branch Added', 'Fill in the branch title, address, and Google Maps URL.', 'info');
+  };
+
+  const handleBranchChange = (index: number, field: keyof BranchLocation, value: any) => {
+    setFormData(prev => {
+      const branches = [...(prev.branches || [])];
+      branches[index] = { ...branches[index], [field]: value };
+
+      if (field === 'is_primary' && value === true) {
+        branches.forEach((b, i) => {
+          if (i !== index) b.is_primary = false;
+        });
+        return {
+          ...prev,
+          branches,
+          address: branches[index].address || prev.address,
+          google_maps_url: branches[index].google_maps_url || prev.google_maps_url
+        };
+      }
+
+      if (branches[index].is_primary && field === 'address') {
+        return { ...prev, branches, address: value };
+      }
+      if (branches[index].is_primary && field === 'google_maps_url') {
+        return { ...prev, branches, google_maps_url: value };
+      }
+
+      return { ...prev, branches };
+    });
+  };
+
+  const handleRemoveBranch = (index: number) => {
+    const branches = formData.branches || [];
+    if (branches.length <= 1) {
+      showToast('Cannot Remove', 'At least one factory or branch address is required.', 'warning');
+      return;
+    }
+    const branchName = branches[index]?.name || 'Branch';
+    if (window.confirm(`Are you sure you want to remove ${branchName}?`)) {
+      setFormData(prev => {
+        const filtered = (prev.branches || []).filter((_, i) => i !== index);
+        if (filtered.length > 0 && !filtered.some(b => b.is_primary)) {
+          filtered[0].is_primary = true;
+        }
+        return {
+          ...prev,
+          branches: filtered,
+          address: filtered[0]?.address || prev.address,
+          google_maps_url: filtered[0]?.google_maps_url || prev.google_maps_url
+        };
+      });
+      showToast('Branch Removed', `${branchName} has been removed.`, 'info');
+    }
+  };
+
+  const handleResetToDefaultBranches = () => {
+    if (window.confirm('Reset addresses to the 3 official Coimbatore factory locations (Ondipudur, Ramanathapuram, Avarampalayam)?')) {
+      setFormData(prev => ({
+        ...prev,
+        branches: INITIAL_BRANCHES,
+        address: INITIAL_BRANCHES[0].address,
+        google_maps_url: INITIAL_BRANCHES[0].google_maps_url
+      }));
+      showToast('Addresses Restored', 'Loaded the 3 official Coimbatore factory branches.', 'success');
     }
   };
 
@@ -193,7 +288,7 @@ export const AdminSettings: React.FC = () => {
                 type="email"
                 value={formData.email}
                 onChange={e => setFormData({ ...formData, email: e.target.value })}
-                placeholder="sales@murthimachineworks.com"
+                placeholder="murthimachinworks@gmail.com"
                 className="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
                 required
               />
@@ -205,24 +300,198 @@ export const AdminSettings: React.FC = () => {
               </label>
               <input
                 type="text"
-                value={formData.working_hours}
+                value={formData.working_hours || '10:00 AM - 6:00 PM'}
                 onChange={e => setFormData({ ...formData, working_hours: e.target.value })}
-                placeholder="Mon - Sat: 8:30 AM - 6:30 PM IST"
+                placeholder="10:00 AM - 6:00 PM"
                 className="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
           </div>
+        </div>
 
-          <div>
-            <label className="text-xs font-semibold text-slate-800 block mb-1">
-              Factory Physical Address
-            </label>
-            <textarea
-              rows={2}
-              value={formData.address}
-              onChange={e => setFormData({ ...formData, address: e.target.value })}
-              className="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
-            />
+        {/* Works, Showrooms & Branch Locations (Google Maps & Addresses) */}
+        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-5" id="admin-branches-section">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div>
+              <h3 className="font-heading font-bold text-base text-slate-900 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-[#C81E1E]" />
+                <span>Works, Showrooms & Branch Locations</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold">
+                  {(formData.branches || []).length} Active Addresses
+                </span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Configure physical addresses and attached Google Maps URLs. When visitors click an address on the Contact Us page or footer, they are navigated directly to the attached Google Maps link.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleResetToDefaultBranches}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
+                title="Restore default 3 Coimbatore addresses"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Reset 3 Branches</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleAddBranch}
+                className="px-3 py-1.5 bg-[#C81E1E] hover:bg-[#B31919] text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Branch</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Branch Cards List */}
+          <div className="space-y-4">
+            {(formData.branches && formData.branches.length > 0 ? formData.branches : INITIAL_BRANCHES).map((branch, index) => (
+              <div
+                key={branch.id || `branch-${index}`}
+                className={`p-4 sm:p-5 rounded-xl border transition-all ${
+                  branch.is_primary
+                    ? 'bg-amber-50/40 border-amber-300 ring-1 ring-amber-300/60'
+                    : 'bg-slate-50/70 border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                {/* Branch Header Bar */}
+                <div className="flex items-center justify-between gap-3 pb-3 mb-3 border-b border-slate-200/80">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center">
+                      {index + 1}
+                    </span>
+                    <span className="font-heading font-black text-xs sm:text-sm text-slate-900 uppercase">
+                      {branch.name || `Branch #${index + 1}`}
+                    </span>
+                    {branch.is_primary ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-200 text-amber-950 border border-amber-300">
+                        <Star className="w-3 h-3 fill-amber-600 text-amber-700" />
+                        <span>Primary Head Works</span>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleBranchChange(index, 'is_primary', true)}
+                        className="text-[11px] font-semibold text-slate-500 hover:text-amber-700 hover:underline transition cursor-pointer"
+                      >
+                        Set as Primary
+                      </button>
+                    )}
+                  </div>
+
+                  {(formData.branches || []).length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveBranch(index)}
+                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                      title="Remove this branch address"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Branch Form Inputs */}
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5 text-xs">
+                  {/* Branch Name */}
+                  <div className="sm:col-span-8">
+                    <label className="font-semibold text-slate-800 block mb-1">
+                      Branch / Works Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={branch.name}
+                      onChange={e => handleBranchChange(index, 'name', e.target.value)}
+                      placeholder="e.g. MURTHI MACHIN WORKS - ONDIPUDUR"
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      required
+                    />
+                  </div>
+
+                  {/* Branch Phone */}
+                  <div className="sm:col-span-4">
+                    <label className="font-semibold text-slate-800 block mb-1">
+                      Direct Contact Phone
+                    </label>
+                    <div className="relative">
+                      <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={branch.phone || ''}
+                        onChange={e => handleBranchChange(index, 'phone', e.target.value)}
+                        placeholder="e.g. 98422 66521"
+                        className="w-full pl-8 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Physical Address */}
+                  <div className="sm:col-span-12">
+                    <label className="font-semibold text-slate-800 block mb-1">
+                      Full Physical Address *
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={branch.address}
+                      onChange={e => handleBranchChange(index, 'address', e.target.value)}
+                      placeholder="SF NO 215/4C1, IRUGUR MAIN ROAD, ONDIPUTHUR, MEENA FURNITURE OPP, COIMBATORE -641016"
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 leading-relaxed font-sans"
+                      required
+                    />
+                  </div>
+
+                  {/* Google Maps URL with Live Test Link */}
+                  <div className="sm:col-span-8">
+                    <label className="font-semibold text-slate-800 block mb-1">
+                      Attached Google Maps Navigation URL *
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Navigation className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="url"
+                          value={branch.google_maps_url}
+                          onChange={e => handleBranchChange(index, 'google_maps_url', e.target.value)}
+                          placeholder="https://maps.app.goo.gl/..."
+                          className="w-full pl-8 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-[11px]"
+                          required
+                        />
+                      </div>
+                      {branch.google_maps_url && (
+                        <a
+                          href={branch.google_maps_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-2 bg-slate-100 hover:bg-amber-100 hover:text-amber-900 text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shrink-0"
+                          title="Verify destination in Google Maps"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Test Map</span>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Landmark / Area Note */}
+                  <div className="sm:col-span-4">
+                    <label className="font-semibold text-slate-800 block mb-1">
+                      Landmark / Area Note
+                    </label>
+                    <input
+                      type="text"
+                      value={branch.landmark || ''}
+                      onChange={e => handleBranchChange(index, 'landmark', e.target.value)}
+                      placeholder="e.g. Opp. Meena Furniture"
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

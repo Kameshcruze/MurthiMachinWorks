@@ -4,6 +4,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { dataService } from '../../services/dataService';
 import { UserEnquiryRole } from '../../types';
 import { convertAndCompressToWebP } from '../../utils/imageUtils';
+import { INITIAL_BRANCHES } from '../../data/initialData';
 import {
   ChevronRight,
   Phone,
@@ -24,7 +25,10 @@ import {
   Camera,
   Upload,
   Trash2,
-  X
+  X,
+  ExternalLink,
+  Navigation,
+  Compass
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -147,6 +151,8 @@ export const ContactPage: React.FC = () => {
     }
   };
 
+  const branches = settings.branches && settings.branches.length > 0 ? settings.branches : INITIAL_BRANCHES;
+
   const cleanWhatsAppNumber = (settings.whatsapp || '+91 95852 62522').replace(/[^0-9]/g, '');
   const waUrl = `https://wa.me/${cleanWhatsAppNumber}?text=${encodeURIComponent(
     `Hello Murthi Machine Works, I would like to schedule a consultation regarding industrial machinery tools.`
@@ -182,33 +188,78 @@ export const ContactPage: React.FC = () => {
           {/* Left: Contact Info Cards (5 cols) */}
           <div className="lg:col-span-5 space-y-6">
             {/* Works Factory Location Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
-              <h3 className="font-heading font-bold text-lg text-slate-900 pb-3 border-b border-slate-100">
-                Manufacturing Works & Headquarters
-              </h3>
-
-              <div className="space-y-4 text-xs">
-                <div className="flex items-start gap-3.5">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 shrink-0 mt-0.5">
-                    <MapPin className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <strong className="block text-slate-900 font-semibold mb-0.5">Factory & Office Address:</strong>
-                    <p className="text-slate-600 leading-relaxed">
-                      {settings.address || 'SF No. 248/2, Industrial Estate Road, Peelamedu, Coimbatore - 641004, Tamil Nadu, India'}
-                    </p>
-                  </div>
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5">
+              <div className="pb-3 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h3 className="font-heading font-bold text-base sm:text-lg text-slate-900">
+                    Works & Branch Addresses
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Click any address to navigate via Google Maps
+                  </p>
                 </div>
+                <span className="px-2.5 py-1 rounded-full bg-rose-50 text-[#C81E1E] text-[10px] font-black border border-rose-200 uppercase tracking-wider">
+                  3 Centers
+                </span>
+              </div>
 
+              {/* Branch Addresses List - Clicking navigates to attached Google Maps URL */}
+              <div className="space-y-3">
+                {branches.map((branch, idx) => (
+                  <a
+                    key={branch.id || idx}
+                    href={branch.google_maps_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-3.5 rounded-xl border border-slate-200 hover:border-[#C81E1E] bg-slate-50/70 hover:bg-rose-50/40 transition group shadow-2xs cursor-pointer"
+                    title={`Click to open ${branch.name} on Google Maps`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-[#C81E1E]/10 group-hover:bg-[#C81E1E] text-[#C81E1E] group-hover:text-white flex items-center justify-center shrink-0 transition">
+                          <MapPin className="w-3.5 h-3.5" />
+                        </div>
+                        <h4 className="font-heading font-bold text-xs text-slate-900 group-hover:text-[#C81E1E] transition leading-tight">
+                          {branch.name}
+                        </h4>
+                      </div>
+                      <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#C81E1E] transition shrink-0" />
+                    </div>
+
+                    <p className="text-[11px] text-slate-600 mt-2 ml-8 leading-relaxed">
+                      {branch.address}
+                    </p>
+
+                    <div className="mt-2.5 ml-8 flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60 text-[10px]">
+                      <span className="font-bold text-[#C81E1E] group-hover:underline flex items-center gap-1">
+                        <Navigation className="w-3 h-3" />
+                        <span>Open in Google Maps</span>
+                      </span>
+
+                      {branch.phone && (
+                        <span className="text-slate-500 font-medium">
+                          Tel: {branch.phone}
+                        </span>
+                      )}
+                    </div>
+                  </a>
+                ))}
+              </div>
+
+              <div className="space-y-3.5 text-xs pt-2 border-t border-slate-100">
                 <div className="flex items-start gap-3.5">
                   <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 shrink-0 mt-0.5">
                     <Phone className="w-4 h-4" />
                   </div>
                   <div>
                     <strong className="block text-slate-900 font-semibold mb-0.5">Direct Phone Line:</strong>
-                    <a href={`tel:${settings.phone}`} className="text-slate-800 font-bold hover:text-amber-600 transition">
-                      {settings.phone}
-                    </a>
+                    <div className="flex flex-wrap gap-2 text-slate-800 font-bold">
+                      <a href="tel:9842266521" className="hover:text-amber-600 transition">98422 66521</a>
+                      <span>•</span>
+                      <a href="tel:8778384248" className="hover:text-amber-600 transition">87783 84248</a>
+                      <span>•</span>
+                      <a href="tel:7402114228" className="hover:text-amber-600 transition">74021 14228</a>
+                    </div>
                   </div>
                 </div>
 
@@ -243,7 +294,7 @@ export const ContactPage: React.FC = () => {
                   <div>
                     <strong className="block text-slate-900 font-semibold mb-0.5">Factory Working Hours:</strong>
                     <p className="text-slate-600">
-                      Monday to Saturday: 8:30 AM – 6:30 PM IST<br />
+                      {settings.working_hours ? `Monday to Saturday: ${settings.working_hours} IST` : 'Monday to Saturday: 10:00 AM – 6:00 PM IST'}<br />
                       Sunday: Technical Emergency Support Available
                     </p>
                   </div>
@@ -572,6 +623,106 @@ export const ContactPage: React.FC = () => {
                 </button>
               </form>
             )}
+          </div>
+        </div>
+
+        {/* 3 Works & Branch Addresses with Google Maps Navigation */}
+        <div className="mt-12 bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs" id="coimbatore-branch-locations">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#C81E1E] mb-1">
+                <MapPin className="w-4 h-4" />
+                <span>Our 3 Locations in Coimbatore, Tamil Nadu</span>
+              </div>
+              <h2 className="font-heading font-black text-xl sm:text-2xl text-slate-900 tracking-tight">
+                Works, Machine Yards & Branch Locations
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
+                Click any address below to launch live GPS turn-by-turn navigation directly in Google Maps. You are always welcome to inspect machines under power.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 shrink-0 self-start md:self-auto">
+              <Compass className="w-4 h-4 text-[#C81E1E]" />
+              <span className="font-semibold text-slate-700">Clicking any card opens Google Maps</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+            {branches.map((branch, idx) => (
+              <a
+                key={branch.id || idx}
+                href={branch.google_maps_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col justify-between p-5 sm:p-6 rounded-xl border-2 border-slate-200 hover:border-[#C81E1E] bg-slate-50/50 hover:bg-rose-50/20 hover:shadow-md transition-all duration-200 group cursor-pointer relative"
+                title={`Navigate to ${branch.name} via Google Maps`}
+              >
+                <div>
+                  {/* Top Badges */}
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-slate-200 text-[10px] font-black text-slate-700 uppercase tracking-wide group-hover:border-rose-200">
+                      <span className="w-2 h-2 rounded-full bg-[#C81E1E]" />
+                      Location 0{idx + 1}
+                    </span>
+
+                    {branch.is_primary ? (
+                      <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[10px] font-bold border border-amber-300">
+                        Primary Works
+                      </span>
+                    ) : idx === 1 ? (
+                      <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-800 text-[10px] font-bold">
+                        Singanallur Unit
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-800 text-[10px] font-bold">
+                        Avarampalayam Unit
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Branch Name */}
+                  <h3 className="font-heading font-black text-sm sm:text-base text-slate-900 group-hover:text-[#C81E1E] transition leading-snug">
+                    {branch.name}
+                  </h3>
+
+                  {/* Physical Street Address */}
+                  <div className="mt-3 flex items-start gap-2.5 text-xs text-slate-600 leading-relaxed font-sans">
+                    <MapPin className="w-4 h-4 text-[#C81E1E] shrink-0 mt-0.5" />
+                    <span>{branch.address}</span>
+                  </div>
+
+                  {/* Landmark if provided */}
+                  {branch.landmark && (
+                    <div className="mt-2.5 ml-6.5 text-[11px] text-slate-500 bg-white/80 border border-slate-200 rounded-md px-2.5 py-1 inline-block">
+                      <strong className="text-slate-700">Landmark:</strong> {branch.landmark}
+                    </div>
+                  )}
+                </div>
+
+                {/* Bottom CTA Bar */}
+                <div className="mt-6 pt-4 border-t border-slate-200/80 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-1.5 font-bold text-[#C81E1E] group-hover:underline">
+                    <Navigation className="w-3.5 h-3.5" />
+                    <span>Navigate in Google Maps</span>
+                    <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </div>
+
+                  {branch.phone && (
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `tel:${branch.phone?.replace(/[^0-9]/g, '')}`;
+                      }}
+                      className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 px-2 py-1 rounded hover:bg-white transition"
+                      title="Call this branch"
+                    >
+                      📞 {branch.phone}
+                    </span>
+                  )}
+                </div>
+              </a>
+            ))}
           </div>
         </div>
       </div>

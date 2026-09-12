@@ -1,4 +1,32 @@
-import { Category, Product, SiteSettings, Enquiry } from '../types';
+import { Category, Product, SiteSettings, Enquiry, BranchLocation } from '../types';
+
+export const INITIAL_BRANCHES: BranchLocation[] = [
+  {
+    id: 'branch-ondipudur',
+    name: 'MURTHI MACHIN WORKS - ONDIPUDUR',
+    address: 'SF NO 215/4C1, IRUGUR MAIN ROAD, ONDIPUTHUR, MEENA FURNITURE OPP, COIMBATORE -641016',
+    google_maps_url: 'https://maps.app.goo.gl/THnpY5ZuNNcjqyr26?g_st=aw',
+    phone: '98422 66521',
+    landmark: 'Meena Furniture Opposite',
+    is_primary: true
+  },
+  {
+    id: 'branch-ramanathapuram',
+    name: 'MURTHI MACHIN WORKS - RAMANATHAPURAM',
+    address: '21A, Rajaji Nagar, Iyer hospital Bus stop, Singanallur, Coimbatore -641005',
+    google_maps_url: 'https://maps.app.goo.gl/ULtX34ZW4GRXsL6i7?g_st=aw',
+    phone: '87783 84248',
+    landmark: 'Near Iyer Hospital Bus Stop'
+  },
+  {
+    id: 'branch-avarampalayam',
+    name: 'MURTHI MACHIN WORKS - AVARAMPALAYAM',
+    address: 'NO 45, SOUTH STREET NO1, AVARAMPALAYAM, COIMBATORE - 641006',
+    google_maps_url: 'https://maps.app.goo.gl/78BeuXEJk6GkxJPB6?g_st=aw',
+    phone: '74021 14228',
+    landmark: 'South Street No. 1'
+  }
+];
 
 export const INITIAL_SETTINGS: SiteSettings = {
   id: 'site_settings_1',
@@ -7,9 +35,11 @@ export const INITIAL_SETTINGS: SiteSettings = {
   logo_url: '',
   phone: '98422 66521',
   whatsapp: '98422 66521',
-  email: 'murthimachineworks@gmail.com',
-  address: 'No. 45, South Street No. 1, Avarampalayam, Coimbatore - 641 006, Tamil Nadu, India.',
-  google_maps_url: 'https://maps.google.com/?q=Avarampalayam+Coimbatore',
+  email: 'murthimachinworks@gmail.com',
+  address: 'SF NO 215/4C1, IRUGUR MAIN ROAD, ONDIPUTHUR, MEENA FURNITURE OPP, COIMBATORE -641016',
+  working_hours: '10:00 AM - 6:00 PM',
+  google_maps_url: 'https://maps.app.goo.gl/THnpY5ZuNNcjqyr26?g_st=aw',
+  branches: INITIAL_BRANCHES,
   hero_title: 'Leading Machinery Sales & Service Experts in Coimbatore',
   hero_description: 'New Machinery • Used Machinery • Repairs • Maintenance • Reconditioning',
   hero_image: '/hero-banner.webp',

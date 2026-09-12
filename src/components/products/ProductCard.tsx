@@ -110,23 +110,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, featuredBadge
           {/* Price Row */}
           <div className="flex items-baseline justify-between mb-3.5">
             <div>
-              {product.show_price && product.price > 0 ? (
-                <div className="flex items-baseline gap-2">
-                  <span className="font-heading font-extrabold text-slate-950 text-lg">
-                    {formatPrice(product.sale_price || product.price, settings.currency_symbol)}
-                  </span>
-                  {product.sale_price && (
-                    <span className="text-xs text-slate-400 line-through">
-                      {formatPrice(product.price, settings.currency_symbol)}
-                    </span>
-                  )}
-                  <span className="text-[10px] text-slate-500 font-medium">+ GST</span>
-                </div>
-              ) : (
-                <span className="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded">
-                  Contact for Price
-                </span>
-              )}
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-md">
+                Contact for Price
+              </span>
             </div>
             <span className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
               <ShieldCheck className="w-3 h-3 text-emerald-600" />

@@ -207,13 +207,7 @@ export const CartPage: React.FC = () => {
                           {item.product_name}
                         </h4>
                         <p className="text-xs font-mono text-slate-500">SKU: {item.sku}</p>
-                        {item.price && item.price > 0 ? (
-                          <p className="text-xs font-bold text-slate-900 mt-0.5">
-                            {formatPrice(item.price, settings.currency_symbol)}
-                          </p>
-                        ) : (
-                          <p className="text-[11px] text-slate-500 font-medium mt-0.5">Price on Request</p>
-                        )}
+                        <p className="text-[11px] font-bold text-amber-800 mt-0.5">Contact for Price</p>
                       </div>
 
                       {/* Quantity Selector */}

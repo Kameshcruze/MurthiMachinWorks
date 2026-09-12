@@ -1,5 +1,5 @@
-import { Category, Product, SiteSettings, Enquiry, EnquiryItem, EnquiryStatus, AuditLog, AuditFieldChange, EmployeeUser } from '../types';
-import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_ENQUIRIES, INITIAL_SETTINGS, INITIAL_EMPLOYEES, INITIAL_AUDIT_LOGS } from '../data/initialData';
+import { Category, Product, SiteSettings, Enquiry, EnquiryItem, EnquiryStatus, AuditLog, AuditFieldChange, EmployeeUser, BranchLocation } from '../types';
+import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_ENQUIRIES, INITIAL_SETTINGS, INITIAL_EMPLOYEES, INITIAL_AUDIT_LOGS, INITIAL_BRANCHES } from '../data/initialData';
 import { getSupabaseClient, isSupabaseConfigured } from './supabase';
 import { slugify } from '../utils/helpers';
 import { getClientIp, getCachedIpSync } from '../utils/ipService';
@@ -215,6 +215,18 @@ function getLocalSettings(): SiteSettings {
     }
     if (parsed.hero_image === '/hero-banner.png' || !parsed.hero_image) {
       parsed.hero_image = '/hero-banner.webp';
+      changed = true;
+    }
+    if (parsed.email !== 'murthimachinworks@gmail.com') {
+      parsed.email = 'murthimachinworks@gmail.com';
+      changed = true;
+    }
+    if (!parsed.working_hours || parsed.working_hours.includes('8:30') || parsed.working_hours.includes('9:00')) {
+      parsed.working_hours = '10:00 AM - 6:00 PM';
+      changed = true;
+    }
+    if (!parsed.branches || !Array.isArray(parsed.branches) || parsed.branches.length === 0) {
+      parsed.branches = INITIAL_BRANCHES;
       changed = true;
     }
     if (changed) {
@@ -1816,6 +1828,18 @@ export const dataService = {
           }
           if (data.hero_image === '/hero-banner.png' || !data.hero_image) {
             data.hero_image = '/hero-banner.webp';
+            needsUpdate = true;
+          }
+          if (data.email !== 'murthimachinworks@gmail.com') {
+            data.email = 'murthimachinworks@gmail.com';
+            needsUpdate = true;
+          }
+          if (!data.working_hours || data.working_hours.includes('8:30') || data.working_hours.includes('9:00')) {
+            data.working_hours = '10:00 AM - 6:00 PM';
+            needsUpdate = true;
+          }
+          if (!data.branches || !Array.isArray(data.branches) || data.branches.length === 0) {
+            data.branches = INITIAL_BRANCHES;
             needsUpdate = true;
           }
           if (needsUpdate) {

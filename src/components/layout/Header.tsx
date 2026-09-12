@@ -153,7 +153,7 @@ export const Header: React.FC = () => {
 
             <div className="hidden md:flex items-center gap-1.5 text-[11px] text-slate-950 font-bold border-l border-black/20 pl-3 shrink-0">
               <Clock className="w-3.5 h-3.5 text-slate-950" />
-              <span>Mon - Sat: 9:00 AM - 8:00 PM</span>
+              <span>{settings.working_hours || 'Mon - Sat: 10:00 AM - 6:00 PM'}</span>
             </div>
           </div>
 
@@ -214,35 +214,35 @@ export const Header: React.FC = () => {
 
       {/* 2. MAIN LOGO & CONTACT HEADER */}
       <div className="w-full bg-white border-b lg:border-b-0 border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-2.5 sm:py-4 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-3 md:gap-6">
           {/* Logo */}
           <button
             onClick={() => navigateTo('home')}
-            className="flex items-center gap-2 sm:gap-3 text-left group focus:outline-none min-w-0"
+            className="flex items-center gap-2.5 sm:gap-3 text-left group focus:outline-none shrink-0"
             id="btn-header-brand-logo"
           >
             {/* Yellow Cog Emblem with stylized M */}
-            <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-[#F5A623] flex items-center justify-center shadow-md shrink-0 border-2 border-amber-600/30">
-              <Cog className="w-6 h-6 sm:w-9 sm:h-9 text-slate-950 animate-[spin_20s_linear_infinite]" />
-              <span className="absolute font-heading font-black text-[11px] sm:text-sm text-slate-950 tracking-tighter">
+            <div className="relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-[#F5A623] flex items-center justify-center shadow-md shrink-0 border-2 border-amber-600/30">
+              <Cog className="w-6 h-6 sm:w-8 sm:h-8 md:w-9 md:h-9 text-slate-950 animate-[spin_20s_linear_infinite]" />
+              <span className="absolute font-heading font-black text-[11px] sm:text-xs md:text-sm text-slate-950 tracking-tighter">
                 M
               </span>
             </div>
 
-            <div className="min-w-0">
-              <h1 className="font-heading font-black text-sm sm:text-xl md:text-2xl tracking-tight text-slate-950 leading-none group-hover:text-[#C81E1E] transition-colors whitespace-nowrap">
-                MURTHI MACHIN WORKS
+            <div>
+              <h1 className="font-heading font-black text-sm sm:text-lg md:text-xl xl:text-2xl tracking-tight text-slate-950 leading-tight group-hover:text-[#C81E1E] transition-colors whitespace-nowrap">
+                {settings?.business_name ? settings.business_name.toUpperCase() : 'MURTHI MACHIN WORKS'}
               </h1>
-              <p className="text-[9px] sm:text-[11px] font-bold text-slate-700 mt-1 tracking-tight truncate">
-                All New and Old Machinery Sales & Service
+              <p className="text-[9px] sm:text-[10px] md:text-[11px] font-bold text-slate-700 tracking-tight whitespace-nowrap">
+                {settings?.tagline || 'All New and Old Machinery Sales & Service'}
               </p>
             </div>
           </button>
 
           {/* Right Group: Contact widgets + CTA + Mobile controls */}
-          <div className="flex items-center gap-4 sm:gap-6 xl:gap-8 shrink-0">
-            {/* Phone Numbers Stack (Tablet & Desktop) */}
-            <div className="hidden md:flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 md:gap-4 xl:gap-6 shrink-0">
+            {/* Phone Numbers Stack (Shown on xl screens with abundant horizontal room) */}
+            <div className="hidden xl:flex items-center gap-3 shrink-0">
               <div className="w-10 h-10 rounded-full bg-[#F5A623] flex items-center justify-center text-slate-950 shrink-0 shadow-xs">
                 <Phone className="w-5 h-5 fill-current" />
               </div>
@@ -259,17 +259,17 @@ export const Header: React.FC = () => {
               </div>
             </div>
 
-            {/* Email Widget (Desktop only) */}
-            <div className="hidden lg:flex items-center gap-3">
+            {/* Email Widget (Ultra-wide screens 2xl only) */}
+            <div className="hidden 2xl:flex items-center gap-3 shrink-0">
               <div className="w-10 h-10 rounded-full bg-[#F5A623] flex items-center justify-center text-slate-950 shrink-0 shadow-xs">
                 <Mail className="w-5 h-5 fill-current" />
               </div>
               <div className="text-xs leading-tight">
                 <a
-                  href="mailto:murthimachineworks@gmail.com"
-                  className="block font-bold text-slate-900 hover:text-[#C81E1E] transition truncate max-w-[200px]"
+                  href={`mailto:${settings?.email || 'murthimachinworks@gmail.com'}`}
+                  className="block font-bold text-slate-900 hover:text-[#C81E1E] transition truncate max-w-[180px]"
                 >
-                  murthimachineworks@gmail.com
+                  {settings?.email || 'murthimachinworks@gmail.com'}
                 </a>
                 <span className="text-[11px] text-slate-500 font-medium">Mail Us Today</span>
               </div>
@@ -305,10 +305,21 @@ export const Header: React.FC = () => {
             {/* Desktop & Tablet Quote Button */}
             <button
               onClick={handleGetQuoteClick}
-              className="hidden sm:inline-flex px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-[#C81E1E] to-[#A81717] hover:from-[#B31919] hover:to-[#911313] active:bg-[#991414] text-white font-heading font-black text-xs sm:text-sm tracking-wider uppercase rounded-lg shadow-md hover:shadow-lg transition-all whitespace-nowrap"
+              className="hidden sm:inline-flex px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-[#C81E1E] to-[#A81717] hover:from-[#B31919] hover:to-[#911313] active:bg-[#991414] text-white font-heading font-black text-xs sm:text-sm tracking-wider uppercase rounded-lg shadow-md hover:shadow-lg transition-all whitespace-nowrap shrink-0"
               id="btn-header-get-quote"
             >
               GET A QUOTE
+            </button>
+
+            {/* Mobile/Tablet Menu Hamburger Button (hidden on lg where navbar is visible) */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 text-slate-800 hover:text-[#C81E1E] hover:bg-slate-100 rounded-lg transition ml-1"
+              title={isMobileMenuOpen ? 'Close Menu' : 'Open Menu'}
+              aria-label="Navigation Menu"
+              id="btn-mobile-menu-toggle"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
