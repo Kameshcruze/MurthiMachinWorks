@@ -197,6 +197,7 @@ function saveLocalEnquiries(enqs: Enquiry[], notify = true): void {
 }
 
 function getLocalSettings(): SiteSettings {
+  if (typeof localStorage === 'undefined') return INITIAL_SETTINGS;
   const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
   if (!data) {
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(INITIAL_SETTINGS));
@@ -239,7 +240,9 @@ function getLocalSettings(): SiteSettings {
 }
 
 function saveLocalSettings(settings: SiteSettings, notify = true): void {
-  localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+  }
   if (notify) notifyDataChanged('settings');
 }
 
@@ -1834,18 +1837,26 @@ export const dataService = {
             data.email = 'murthimachinworks@gmail.com';
             needsUpdate = true;
           }
-          if (!data.working_hours || data.working_hours.includes('8:30') || data.working_hours.includes('9:00')) {
+          // Restore working_hours from database if stored in social_links
+          if (data.social_links && typeof data.social_links === 'object' && data.social_links.working_hours) {
+            data.working_hours = data.social_links.working_hours;
+          } else if (!data.working_hours || data.working_hours.includes('8:30') || data.working_hours.includes('9:00')) {
             data.working_hours = '10:00 AM - 6:00 PM';
             needsUpdate = true;
           }
-          if (!data.branches || !Array.isArray(data.branches) || data.branches.length === 0) {
+
+          // Restore branches from database (either top-level branches or serialized inside social_links.branches)
+          if (data.social_links && typeof data.social_links === 'object' && Array.isArray(data.social_links.branches) && data.social_links.branches.length > 0) {
+            data.branches = data.social_links.branches;
+          } else if (!data.branches || !Array.isArray(data.branches) || data.branches.length === 0) {
             data.branches = INITIAL_BRANCHES;
             needsUpdate = true;
           }
+
           if (needsUpdate) {
-            supabase.from('site_settings').upsert([data]).then(() => {});
-            saveLocalSettings(data, false);
+            this.updateSiteSettings(data).catch(() => {});
           }
+          saveLocalSettings(data, false);
           return data;
         }
       } catch (err) {
@@ -1862,9 +1873,47 @@ export const dataService = {
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('site_settings').upsert([updated]);
+        // Build sanitized payload for PostgreSQL database table
+        const VALID_SITE_SETTINGS_COLUMNS = new Set([
+          'id', 'business_name', 'tagline', 'logo_url', 'phone', 'whatsapp', 'email',
+          'address', 'google_maps_url', 'hero_title', 'hero_description', 'hero_image',
+          'featured_heading', 'about_content', 'currency_symbol', 'gstin', 'established_year',
+          'social_links', 'updated_at'
+        ]);
+
+        const existingSocial = typeof updated.social_links === 'object' && updated.social_links !== null
+          ? updated.social_links
+          : {};
+
+        const enrichedSocial = {
+          ...existingSocial,
+          branches: updated.branches || [],
+          working_hours: updated.working_hours || '10:00 AM - 6:00 PM'
+        };
+
+        const dbPayload: any = {};
+        for (const key of Object.keys(updated)) {
+          if (VALID_SITE_SETTINGS_COLUMNS.has(key)) {
+            dbPayload[key] = (updated as any)[key];
+          }
+        }
+
+        dbPayload.social_links = enrichedSocial;
+        dbPayload.updated_at = new Date().toISOString();
+
+        // Ensure primary address and maps link are updated in top-level table columns
+        if (updated.branches && updated.branches.length > 0) {
+          const primaryBranch = updated.branches.find((b: any) => b.is_primary) || updated.branches[0];
+          dbPayload.address = primaryBranch.address;
+          dbPayload.google_maps_url = primaryBranch.google_maps_url;
+        }
+
+        const { error } = await supabase.from('site_settings').upsert([dbPayload]);
+        if (error) {
+          console.warn('Supabase updateSettings error:', error);
+        }
       } catch (err) {
-        console.warn('Supabase updateSettings error:', err);
+        console.warn('Supabase updateSettings exception:', err);
       }
     }
 
@@ -1876,7 +1925,7 @@ export const dataService = {
       target_type: 'SETTINGS',
       target_id: 'site-config',
       target_name: 'Website Global Configuration',
-      details: `Updated contact numbers, company info, and header metadata.`
+      details: `Updated contact numbers, factory branch addresses, and company settings in database.`
     });
 
     return updated;

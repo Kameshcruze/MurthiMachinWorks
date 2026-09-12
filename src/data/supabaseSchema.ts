@@ -107,6 +107,8 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
     currency_symbol TEXT DEFAULT '₹',
     gstin TEXT DEFAULT '33AABCM1234F1Z8',
     established_year TEXT DEFAULT '1985',
+    working_hours TEXT DEFAULT '10:00 AM - 6:00 PM',
+    branches JSONB,
     social_links JSONB DEFAULT '{"linkedin":"","youtube":"","facebook":"","instagram":"","twitter":""}'::jsonb,
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
