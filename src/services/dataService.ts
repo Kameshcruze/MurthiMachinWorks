@@ -230,6 +230,10 @@ function getLocalSettings(): SiteSettings {
       parsed.branches = INITIAL_BRANCHES;
       changed = true;
     }
+    if (parsed.business_name && parsed.business_name.toLowerCase().includes('machine works')) {
+      parsed.business_name = 'Murthi Machin Works';
+      changed = true;
+    }
     if (changed) {
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(parsed));
     }

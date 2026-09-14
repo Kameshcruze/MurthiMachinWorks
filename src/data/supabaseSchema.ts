@@ -4,7 +4,7 @@
  */
 
 export const SUPABASE_SQL_SCHEMA = `-- ==============================================================================
--- MURTHI MACHINE WORKS - SUPABASE DATABASE SCHEMA, POLICIES & SEED DATA
+-- MURTHI MACHIN WORKS - SUPABASE DATABASE SCHEMA, POLICIES & SEED DATA
 -- ==============================================================================
 
 -- 1. Enable UUID Extension
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS public.enquiry_items (
 -- 7. Create Site Settings Table
 CREATE TABLE IF NOT EXISTS public.site_settings (
     id TEXT PRIMARY KEY DEFAULT 'site_settings_1',
-    business_name TEXT DEFAULT 'Murthi Machine Works',
+    business_name TEXT DEFAULT 'Murthi Machin Works',
     tagline TEXT DEFAULT 'Precision Machinery. Built for Performance.',
     logo_url TEXT,
     phone TEXT DEFAULT '+91 95852 62522',
@@ -253,7 +253,7 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.site_settings (id, business_name, tagline, phone, whatsapp, email, address, gstin, established_year)
 VALUES (
     'site_settings_1',
-    'Murthi Machine Works',
+    'Murthi Machin Works',
     'Precision Machinery. Built for Performance.',
     '+91 95852 62522',
     '+91 95852 62522',

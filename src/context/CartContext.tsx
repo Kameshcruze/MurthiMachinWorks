@@ -52,7 +52,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           product_id: product.id,
           product_name: product.name,
           sku: product.sku,
-          price: product.show_price ? (product.sale_price || product.price) : 0,
+          price: product.sale_price || product.price || 0,
           quantity,
           image_url: primaryImg,
           category_name: product.category_name

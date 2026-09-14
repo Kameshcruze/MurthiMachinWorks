@@ -27,7 +27,7 @@ export const AdminLogin: React.FC = () => {
     try {
       const res = await login(email.trim(), password);
       if (res.success) {
-        showToast('Login Successful', 'Welcome to Murthi Machine Works Administration.', 'success');
+        showToast('Login Successful', 'Welcome to Murthi Machin Works Administration.', 'success');
         navigateTo('admin-dashboard');
       } else {
         setError(res.error || 'Invalid credentials.');
@@ -55,7 +55,7 @@ export const AdminLogin: React.FC = () => {
             M
           </div>
           <h2 className="font-heading font-extrabold text-2xl text-white tracking-tight">
-            Murthi Machine Works
+            Murthi Machin Works
           </h2>
           <p className="text-xs text-slate-400">
             Administrative Management & Production Portal

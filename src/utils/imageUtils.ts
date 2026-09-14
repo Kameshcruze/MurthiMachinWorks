@@ -1,5 +1,5 @@
 /**
- * Image processing utilities for Murthi Machine Works
+ * Image processing utilities for Murthi Machin Works
  * - Client-side conversion to WebP format
  * - Adaptive compression to ensure size is strictly under 500 KB
  * - File formatting and validation

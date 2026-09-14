@@ -223,7 +223,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   : activeSection.replace('-', ' ')}
               </h1>
               <p className="text-[11px] text-slate-500 mt-0.5 hidden sm:block">
-                Murthi Machine Works • Industrial Portal Control
+                Murthi Machin Works • Industrial Portal Control
               </p>
             </div>
           </div>

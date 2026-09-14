@@ -22,7 +22,7 @@ export const TermsPage: React.FC = () => {
             Commercial Terms & Manufacturing Conditions
           </h1>
           <p className="text-xs text-slate-300">
-            Murthi Machine Works • Coimbatore, Tamil Nadu
+            Murthi Machin Works • Coimbatore, Tamil Nadu
           </p>
         </div>
       </div>
@@ -46,7 +46,7 @@ export const TermsPage: React.FC = () => {
           <section className="space-y-2">
             <h2 className="font-heading font-bold text-base text-slate-900">3. Commissioning & Warranty</h2>
             <p>
-              All Murthi Machine Works tools carry a standard 12-month mechanical warranty against manufacturing defects from the date of dispatch. Electrical motors and CNC controllers carry OEM standard warranties.
+              All Murthi Machin Works tools carry a standard 12-month mechanical warranty against manufacturing defects from the date of dispatch. Electrical motors and CNC controllers carry OEM standard warranties.
             </p>
           </section>
 

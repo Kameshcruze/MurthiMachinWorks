@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useNavigation } from '../../context/NavigationContext';
+import { useAuth } from '../../context/AuthContext';
 import { dataService } from '../../services/dataService';
 import { formatImageUrl, formatPrice, generateWhatsAppCartLink } from '../../utils/helpers';
 import { UserEnquiryRole } from '../../types';
@@ -36,6 +37,7 @@ export const EnquiryDrawer: React.FC = () => {
   const { items, removeFromCart, updateQuantity, clearCart, totalItems, isCartOpen, setIsCartOpen } = useCart();
   const { settings, showToast } = useSettings();
   const { navigateTo } = useNavigation();
+  const { isAuthenticated } = useAuth();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedEnquiryId, setSubmittedEnquiryId] = useState<string | null>(null);
@@ -258,7 +260,7 @@ export const EnquiryDrawer: React.FC = () => {
                         Reference ID: <span className="font-bold text-[#C81E1E]">{submittedEnquiryId}</span>
                       </p>
                       <p className="text-xs text-slate-600 max-w-xs mx-auto leading-relaxed">
-                        Thank you for your enquiry with Murthi Machine Works. Our Coimbatore sales engineering desk will prepare your formal proposal and contact you shortly.
+                        Thank you for your enquiry with Murthi Machin Works. Our Coimbatore sales engineering desk will prepare your formal proposal and contact you shortly.
                       </p>
                     </div>
 
@@ -342,9 +344,20 @@ export const EnquiryDrawer: React.FC = () => {
                               <p className="text-[11px] font-mono text-slate-500">
                                 SKU: {item.sku}
                               </p>
-                              <p className="text-[10px] font-bold text-amber-800 mt-0.5">
-                                Contact for Price
-                              </p>
+                              {isAuthenticated && item.price > 0 ? (
+                                <p className="text-xs font-heading font-extrabold text-slate-950 font-mono mt-0.5">
+                                  {formatPrice(item.price * item.quantity, settings.currency_symbol)}
+                                  {item.quantity > 1 && (
+                                    <span className="text-[10px] text-slate-500 font-normal ml-1">
+                                      ({formatPrice(item.price, settings.currency_symbol)}/ea)
+                                    </span>
+                                  )}
+                                </p>
+                              ) : (
+                                <p className="text-[10px] font-bold text-amber-800 mt-0.5">
+                                  Contact for Price
+                                </p>
+                              )}
                             </div>
 
                             {/* Quantity Adjust */}

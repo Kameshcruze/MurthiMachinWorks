@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useNavigation } from '../../context/NavigationContext';
+import { useAuth } from '../../context/AuthContext';
 import { dataService } from '../../services/dataService';
 import { formatImageUrl, formatPrice, generateWhatsAppCartLink } from '../../utils/helpers';
 import {
@@ -27,6 +28,7 @@ export const CartPage: React.FC = () => {
   const { items, removeFromCart, updateQuantity, clearCart, totalItems } = useCart();
   const { settings, showToast } = useSettings();
   const { navigateTo } = useNavigation();
+  const { isAuthenticated } = useAuth();
 
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -131,7 +133,7 @@ export const CartPage: React.FC = () => {
                 Reference Order / RFQ Number: <strong className="text-slate-900">{submittedEnquiryId}</strong>
               </p>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Thank you for your enquiry. Murthi Machine Works engineering estimation team has logged your requirement and will share complete technical specifications and pricing breakdown.
+                Thank you for your enquiry. Murthi Machin Works engineering estimation team has logged your requirement and will share complete technical specifications and pricing breakdown.
               </p>
             </div>
 
@@ -207,7 +209,18 @@ export const CartPage: React.FC = () => {
                           {item.product_name}
                         </h4>
                         <p className="text-xs font-mono text-slate-500">SKU: {item.sku}</p>
-                        <p className="text-[11px] font-bold text-amber-800 mt-0.5">Contact for Price</p>
+                        {isAuthenticated && item.price > 0 ? (
+                          <p className="text-xs sm:text-sm font-heading font-extrabold text-slate-950 font-mono mt-0.5">
+                            {formatPrice(item.price * item.quantity, settings.currency_symbol)}
+                            {item.quantity > 1 && (
+                              <span className="text-[11px] text-slate-500 font-normal ml-1">
+                                ({formatPrice(item.price, settings.currency_symbol)}/ea)
+                              </span>
+                            )}
+                          </p>
+                        ) : (
+                          <p className="text-[11px] font-bold text-amber-800 mt-0.5">Contact for Price</p>
+                        )}
                       </div>
 
                       {/* Quantity Selector */}

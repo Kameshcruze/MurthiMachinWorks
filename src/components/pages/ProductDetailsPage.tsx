@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigation } from '../../context/NavigationContext';
 import { useCart } from '../../context/CartContext';
 import { useSettings } from '../../context/SettingsContext';
+import { useAuth } from '../../context/AuthContext';
 import { Product } from '../../types';
 import { dataService } from '../../services/dataService';
 import { ProductGallery } from '../products/ProductGallery';
@@ -31,6 +32,7 @@ export const ProductDetailsPage: React.FC = () => {
   const { params, navigateTo } = useNavigation();
   const { items, addToCart, setIsCartOpen } = useCart();
   const { settings, showToast } = useSettings();
+  const { isAuthenticated } = useAuth();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -226,12 +228,30 @@ export const ProductDetailsPage: React.FC = () => {
                 <div>
                   <span className="text-xs text-slate-500 block font-medium">Commercial Factory Pricing</span>
                   <div className="flex items-baseline gap-2.5 mt-1">
-                    <span className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-950">
-                      Contact for Price
-                    </span>
+                    {isAuthenticated && product.price > 0 ? (
+                      <div className="flex items-baseline gap-2.5">
+                        <span className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-950 font-mono">
+                          {formatPrice(product.sale_price || product.price, settings.currency_symbol)}
+                        </span>
+                        {product.sale_price && product.sale_price < product.price && (
+                          <span className="text-sm sm:text-base text-slate-400 line-through font-mono">
+                            {formatPrice(product.price, settings.currency_symbol)}
+                          </span>
+                        )}
+                        <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded ml-1">
+                          Member Price
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-950">
+                        Contact for Price
+                      </span>
+                    )}
                   </div>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Official quotation with Ex-Works / CIF Coimbatore commercial terms provided on request.
+                    {isAuthenticated && product.price > 0
+                      ? 'Authorized employee/client portal price. Taxes and freight as applicable.'
+                      : 'Official quotation with Ex-Works / CIF Coimbatore commercial terms provided on request.'}
                   </p>
                 </div>
 

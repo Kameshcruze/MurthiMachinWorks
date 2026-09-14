@@ -41,7 +41,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
     slug: productToEdit?.slug || '',
     sku: productToEdit?.sku || '',
     category_id: productToEdit?.category_id || '',
-    brand: productToEdit?.brand || 'Murthi Machine Works',
+    brand: productToEdit?.brand || 'Murthi Machin Works',
     short_description: productToEdit?.short_description || '',
     description: productToEdit?.description || '',
     price: productToEdit?.price || 0,
@@ -380,7 +380,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
               type="text"
               value={formData.brand}
               onChange={e => setFormData({ ...formData, brand: e.target.value })}
-              placeholder="Murthi Machine Works"
+              placeholder="Murthi Machin Works"
               className="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>

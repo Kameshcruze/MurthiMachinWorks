@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Default project credentials configured for Murthi Machine Works
+// Default project credentials configured for Murthi Machin Works
 const DEFAULT_SUPABASE_URL = 'https://apsqlkojfspbxzboowah.supabase.co';
 const DEFAULT_SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwc3Fsa29qZnNwYnh6Ym9vd2FoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDc3ODMsImV4cCI6MjEwMzMyMzc4M30.fy1jI5cf4Nt7R5AjBhqqc42VpZ3plbzQnaqYsIfZTP8';

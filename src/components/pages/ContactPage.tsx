@@ -156,7 +156,7 @@ export const ContactPage: React.FC = () => {
 
   const cleanWhatsAppNumber = (settings.whatsapp || '+91 95852 62522').replace(/[^0-9]/g, '');
   const waUrl = `https://wa.me/${cleanWhatsAppNumber}?text=${encodeURIComponent(
-    `Hello Murthi Machine Works, I would like to schedule a consultation regarding industrial machinery tools.`
+    `Hello Murthi Machin Works, I would like to schedule a consultation regarding industrial machinery tools.`
   )}`;
 
   return (
@@ -334,7 +334,7 @@ export const ContactPage: React.FC = () => {
                     Message Successfully Dispatched!
                   </h3>
                   <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
-                    Thank you for reaching out to Murthi Machine Works. Our engineering estimation desk will review your requirements and respond with technical specifications and pricing.
+                    Thank you for reaching out to Murthi Machin Works. Our engineering estimation desk will review your requirements and respond with technical specifications and pricing.
                   </p>
                 </div>
                 <div className="pt-4">

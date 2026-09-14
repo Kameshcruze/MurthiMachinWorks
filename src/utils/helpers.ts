@@ -1,5 +1,5 @@
 /**
- * Helper utility functions for Murthi Machine Works
+ * Helper utility functions for Murthi Machin Works
  */
 
 // Convert Google Drive share links to direct renderable image URLs
@@ -50,7 +50,7 @@ export function generateWhatsAppProductLink(
   whatsappNumber: string,
   productName: string,
   sku: string,
-  customBusinessName: string = 'Murthi Machine Works'
+  customBusinessName: string = 'Murthi Machin Works'
 ): string {
   const cleanNumber = whatsappNumber.replace(/[^0-9]/g, '');
   const message = `Hello ${customBusinessName},
@@ -70,7 +70,7 @@ export function generateWhatsAppCartLink(
   whatsappNumber: string,
   items: { productName: string; sku: string; quantity: number }[],
   customerInfo?: { name?: string; company?: string; location?: string },
-  customBusinessName: string = 'Murthi Machine Works'
+  customBusinessName: string = 'Murthi Machin Works'
 ): string {
   const cleanNumber = whatsappNumber.replace(/[^0-9]/g, '');
   

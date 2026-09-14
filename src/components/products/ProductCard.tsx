@@ -3,6 +3,7 @@ import { Product } from '../../types';
 import { useNavigation } from '../../context/NavigationContext';
 import { useCart } from '../../context/CartContext';
 import { useSettings } from '../../context/SettingsContext';
+import { useAuth } from '../../context/AuthContext';
 import { formatImageUrl, formatPrice, getStockStatusBadge, generateWhatsAppProductLink } from '../../utils/helpers';
 import { MessageSquare, Plus, Check, Eye, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -16,6 +17,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, featuredBadge
   const { navigateTo } = useNavigation();
   const { items, addToCart } = useCart();
   const { settings, showToast } = useSettings();
+  const { isAuthenticated } = useAuth();
 
   const isItemInCart = items.some(it => it.product_id === product.id);
   const primaryImg = product.images?.find(i => i.is_primary)?.image_url || product.images?.[0]?.image_url;
@@ -110,9 +112,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, featuredBadge
           {/* Price Row */}
           <div className="flex items-baseline justify-between mb-3.5">
             <div>
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-md">
-                Contact for Price
-              </span>
+              {isAuthenticated && product.price > 0 ? (
+                <div className="flex items-baseline gap-1.5">
+                  <span className="font-heading font-extrabold text-base sm:text-lg text-slate-950 font-mono">
+                    {formatPrice(product.sale_price || product.price, settings.currency_symbol)}
+                  </span>
+                  {product.sale_price && product.sale_price < product.price && (
+                    <span className="text-[11px] text-slate-400 line-through font-mono">
+                      {formatPrice(product.price, settings.currency_symbol)}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-md">
+                  Contact for Price
+                </span>
+              )}
             </div>
             <span className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
               <ShieldCheck className="w-3 h-3 text-emerald-600" />

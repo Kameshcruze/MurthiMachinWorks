@@ -34,7 +34,7 @@ export const AboutPage: React.FC = () => {
               Home
             </button>
             <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-amber-400 font-semibold">About Murthi Machine Works</span>
+            <span className="text-amber-400 font-semibold">About Murthi Machin Works</span>
           </div>
 
           <div className="max-w-3xl space-y-3">
@@ -46,7 +46,7 @@ export const AboutPage: React.FC = () => {
               Engineering Reliability. Precision Since 1985.
             </h1>
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-              Murthi Machine Works is a premier manufacturer and supplier of heavy-duty industrial lathe machines, universal milling machines, CNC machining centers, and custom industrial machinery.
+              Murthi Machin Works is a premier manufacturer and supplier of heavy-duty industrial lathe machines, universal milling machines, CNC machining centers, and custom industrial machinery.
             </p>
           </div>
         </div>
@@ -65,7 +65,7 @@ export const AboutPage: React.FC = () => {
               Four Decades of Heavy Metal Cutting Innovation
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Founded in the industrial hub of Coimbatore, Tamil Nadu, Murthi Machine Works started with a simple commitment: to build machine tools that deliver micron-level repeatable accuracy while standing up to high continuous duty cycles.
+              Founded in the industrial hub of Coimbatore, Tamil Nadu, Murthi Machin Works started with a simple commitment: to build machine tools that deliver micron-level repeatable accuracy while standing up to high continuous duty cycles.
             </p>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               Today, our state-of-the-art facility integrates specialized captive foundry castings, induction bed hardening, multi-axis slide-way grinding, and laser interferometry alignment testing to ensure every lathe, mill, and press that rolls out of our facility surpasses global standards.
@@ -89,7 +89,7 @@ export const AboutPage: React.FC = () => {
             <div className="relative rounded-2xl overflow-hidden shadow-xl border border-slate-200">
               <img
                 src="/about-us.webp"
-                alt="Murthi Machine Works Coimbatore Facility"
+                alt="Murthi Machin Works Coimbatore Facility"
                 className="w-full h-96 object-cover"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=85";

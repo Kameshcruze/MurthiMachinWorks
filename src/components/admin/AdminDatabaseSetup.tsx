@@ -124,7 +124,7 @@ export const AdminDatabaseSetup: React.FC = () => {
           Supabase PostgreSQL Setup & Migration Guide
         </h2>
         <p className="text-xs text-slate-500">
-          Follow these 4 simple steps to connect your Murthi Machine Works catalog to a live Supabase PostgreSQL backend.
+          Follow these 4 simple steps to connect your Murthi Machin Works catalog to a live Supabase PostgreSQL backend.
         </p>
       </div>
 
