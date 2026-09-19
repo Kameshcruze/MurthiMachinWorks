@@ -763,7 +763,12 @@ export const AdminBilling: React.FC = () => {
                       const summary = bill.items?.map(i => i.product_name).join(', ') || 'General Machinery';
 
                       return (
-                        <tr key={bill.id} className="hover:bg-slate-50/80 transition">
+                        <tr
+                          key={bill.id}
+                          onClick={() => handlePreviewBill(bill)}
+                          className="hover:bg-slate-100/90 transition cursor-pointer group"
+                          title="Click to view full A4 tax invoice preview"
+                        >
                           <td className="py-3.5 px-4 font-mono font-bold text-[#082138]">
                             {bill.invoice_number}
                           </td>
@@ -792,7 +797,7 @@ export const AdminBilling: React.FC = () => {
                           <td className="py-3.5 px-4 font-mono font-extrabold text-[#082138] text-right">
                             {formatPrice(bill.total_amount)}
                           </td>
-                          <td className="py-3.5 px-4">
+                          <td className="py-3.5 px-4" onClick={e => e.stopPropagation()}>
                             <div className="flex items-center justify-center gap-1.5">
                               <button
                                 type="button"

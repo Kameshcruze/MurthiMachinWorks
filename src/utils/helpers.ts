@@ -252,3 +252,53 @@ export function generateNextInvoiceNo(existingBills: Array<{ invoice_number?: st
   return `${prefix}${nextNum.toString().padStart(3, '0')}`;
 }
 
+/**
+ * Generates the next sequential quotation number (e.g. MMW/QTN/2026-27/001)
+ * based on the highest existing quotation number in the system.
+ */
+export function generateNextQuotationNo(existingQuotations: Array<{ quotation_number?: string }>): string {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const fullYear = now.getFullYear();
+  const startYear = currentMonth < 3 ? fullYear - 1 : fullYear;
+  const endYearShort = (startYear + 1).toString().slice(-2);
+  const prefix = `MMW/QTN/${startYear}-${endYearShort}/`;
+
+  let maxNum = 0;
+  if (Array.isArray(existingQuotations)) {
+    for (const q of existingQuotations) {
+      if (q && typeof q.quotation_number === 'string') {
+        const match = q.quotation_number.match(/(\d+)$/);
+        if (match && match[1]) {
+          const num = parseInt(match[1], 10);
+          if (!isNaN(num) && num > maxNum) {
+            maxNum = num;
+          }
+        }
+      }
+    }
+  }
+
+  const nextNum = maxNum + 1;
+  return `${prefix}${nextNum.toString().padStart(3, '0')}`;
+}
+
+/**
+ * Format date string (YYYY-MM-DD or ISO) to DD/MM/YYYY
+ */
+export function formatDateIndian(dateStr?: string | null): string {
+  if (!dateStr) return '';
+  // Check if already in DD/MM/YYYY
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return dateStr;
+  try {
+    const parts = dateStr.split('T')[0].split('-');
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    }
+  } catch {
+    // fallback
+  }
+  return dateStr;
+}
+

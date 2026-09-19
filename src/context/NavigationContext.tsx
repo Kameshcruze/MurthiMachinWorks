@@ -13,6 +13,8 @@ export type PageRoute =
   | 'terms'
   | 'admin-login'
   | 'admin-dashboard'
+  | 'admin-bills'
+  | 'admin-quotations'
   | 'admin-products'
   | 'admin-product-new'
   | 'admin-product-edit'
@@ -52,6 +54,8 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (hash.startsWith('admin/')) {
       const sub = hash.replace('admin/', '');
       if (sub === 'login') setCurrentPage('admin-login');
+      else if (sub === 'bills' || sub === 'billing' || sub === 'bill') setCurrentPage('admin-bills');
+      else if (sub === 'quotations' || sub === 'quotation') setCurrentPage('admin-quotations');
       else if (sub === 'products/new') setCurrentPage('admin-product-new');
       else if (sub.startsWith('products/edit/')) {
         const id = sub.replace('products/edit/', '');
@@ -121,6 +125,15 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       case 'admin/dashboard':
         setCurrentPage('admin-dashboard');
         break;
+      case 'admin/bills':
+      case 'admin/bill':
+      case 'admin/billing':
+        setCurrentPage('admin-bills');
+        break;
+      case 'admin/quotations':
+      case 'admin/quotation':
+        setCurrentPage('admin-quotations');
+        break;
       case 'admin/sql-setup':
       case 'admin/database':
       case 'admin/supabase':
@@ -172,6 +185,8 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     else if (page === 'terms') hash = 'terms';
     else if (page === 'admin-login') hash = 'admin/login';
     else if (page === 'admin-dashboard') hash = 'admin/dashboard';
+    else if (page === 'admin-bills') hash = 'admin/bills';
+    else if (page === 'admin-quotations') hash = 'admin/quotations';
     else if (page === 'admin-products') hash = 'admin/products';
     else if (page === 'admin-product-new') hash = 'admin/products/new';
     else if (page === 'admin-product-edit') hash = `admin/products/edit/${newParams.productId}`;

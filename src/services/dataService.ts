@@ -1,7 +1,7 @@
-import { Category, Product, SiteSettings, Enquiry, EnquiryItem, EnquiryStatus, AuditLog, AuditFieldChange, EmployeeUser, BranchLocation, Bill, BillItem } from '../types';
+import { Category, Product, SiteSettings, Enquiry, EnquiryItem, EnquiryStatus, AuditLog, AuditFieldChange, EmployeeUser, BranchLocation, Bill, BillItem, Quotation, QuotationItem } from '../types';
 import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_ENQUIRIES, INITIAL_SETTINGS, INITIAL_EMPLOYEES, INITIAL_AUDIT_LOGS, INITIAL_BRANCHES } from '../data/initialData';
 import { getSupabaseClient, isSupabaseConfigured } from './supabase';
-import { slugify, generateNextInvoiceNo } from '../utils/helpers';
+import { slugify, generateNextInvoiceNo, generateNextQuotationNo } from '../utils/helpers';
 import { getClientIp, getCachedIpSync } from '../utils/ipService';
 import { convertAndCompressToWebP, formatBytes, ProcessedImageResult } from '../utils/imageUtils';
 
@@ -13,6 +13,7 @@ const STORAGE_KEYS = {
   AUDIT_LOGS: 'mmw_db_audit_logs_v1',
   EMPLOYEES: 'mmw_db_employees_v1',
   BILLS: 'mmw_db_bills_v1',
+  QUOTATIONS: 'mmw_db_quotations_v1',
 };
 
 // Event bus for live synchronization across components
@@ -364,6 +365,76 @@ function saveLocalBills(bills: Bill[], notify = true): void {
   if (typeof localStorage === 'undefined') return;
   localStorage.setItem(STORAGE_KEYS.BILLS, JSON.stringify(bills));
   if (notify) notifyDataChanged('bills');
+}
+
+export const INITIAL_QUOTATIONS: Quotation[] = [
+  {
+    id: 'qtn-1001',
+    quotation_number: 'MMW/QTN/2026-27/001',
+    quotation_date: '2026-07-21',
+    customer_name: 'S. S ENGINEERING',
+    customer_address: 'SF NO 12/13, New Street, Suriya Nagar,\nKamatchipuram, Ondipudur,\nCoimbatore - 641016',
+    customer_gstin: '33ABVFS0964K1ZK',
+    items: [
+      {
+        id: 'qtn-item-1',
+        product_description: 'VISWAKALA POWER PRESS (10 TON CAPACITY)',
+        quantity: 1,
+        rate: 120000,
+        amount: 120000
+      },
+      {
+        id: 'qtn-item-2',
+        product_description: '3 PHASE 1 HP MOTOR, SWITCH AND BELT',
+        quantity: 1,
+        rate: 9000,
+        amount: 9000
+      }
+    ],
+    subtotal: 129000,
+    tax_type: 'intra_state',
+    cgst_rate: 9,
+    cgst_amount: 11610,
+    sgst_rate: 9,
+    sgst_amount: 11610,
+    igst_rate: 18,
+    igst_amount: 0,
+    total_amount: 152220,
+    rupees_in_words: 'Rupees One Lakh Fifty Two Thousand Two Hundred Twenty Only',
+    terms_and_conditions: [
+      'Payment 50% Advance and balance before delivery.',
+      'Machine Packing, Loading and Freight charges will be extra.'
+    ],
+    bank_name: 'STATE BANK OF INDIA',
+    bank_account_name: 'Murthi Machin Works',
+    bank_account_no: '44117451637',
+    bank_ifsc: 'SBIN0021453',
+    bank_branch: 'Avarampalayam',
+    status: 'sent',
+    created_by: 'Murthi Admin',
+    created_at: '2026-07-21T10:00:00.000Z',
+    updated_at: '2026-07-21T10:00:00.000Z'
+  }
+];
+
+function getLocalQuotations(): Quotation[] {
+  if (typeof localStorage === 'undefined') return INITIAL_QUOTATIONS;
+  const data = localStorage.getItem(STORAGE_KEYS.QUOTATIONS);
+  if (!data) {
+    localStorage.setItem(STORAGE_KEYS.QUOTATIONS, JSON.stringify(INITIAL_QUOTATIONS));
+    return INITIAL_QUOTATIONS;
+  }
+  try {
+    return JSON.parse(data);
+  } catch {
+    return INITIAL_QUOTATIONS;
+  }
+}
+
+function saveLocalQuotations(quotations: Quotation[], notify = true): void {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.setItem(STORAGE_KEYS.QUOTATIONS, JSON.stringify(quotations));
+  if (notify) notifyDataChanged('quotations');
 }
 
 
@@ -2422,6 +2493,265 @@ export const dataService = {
     return true;
   },
 
+  // QUOTATIONS MANAGEMENT (Supabase + Offline Local Storage)
+  async getQuotations(): Promise<Quotation[]> {
+    const supabase = getSupabaseClient();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase
+          .from('quotations')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && Array.isArray(data)) {
+          if (data.length > 0) {
+            const mapped: Quotation[] = data.map((q: any) => ({
+              ...q,
+              items: Array.isArray(q.items) ? q.items : typeof q.items === 'string' ? JSON.parse(q.items) : [],
+              terms_and_conditions: Array.isArray(q.terms_and_conditions)
+                ? q.terms_and_conditions
+                : typeof q.terms_and_conditions === 'string'
+                ? JSON.parse(q.terms_and_conditions)
+                : []
+            }));
+            saveLocalQuotations(mapped, false);
+            return mapped;
+          }
+        } else if (error) {
+          console.warn('Supabase getQuotations query warning:', error.message);
+        }
+      } catch (err) {
+        console.warn('Supabase getQuotations fallback to local:', err);
+      }
+    }
+    return getLocalQuotations();
+  },
+
+  async getQuotationById(id: string): Promise<Quotation | null> {
+    const list = await this.getQuotations();
+    return list.find(q => q.id === id) || null;
+  },
+
+  async createQuotation(qData: Omit<Quotation, 'id' | 'created_at' | 'updated_at'> & { id?: string }): Promise<Quotation> {
+    const currentUser = getActiveUser();
+    const nowIso = new Date().toISOString();
+    const quotationId = qData.id || `qtn-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
+    const sanitizeDate = (d: any) => {
+      if (!d || typeof d !== 'string') return null;
+      const trimmed = d.trim();
+      if (!trimmed) return null;
+      const dt = new Date(trimmed);
+      return isNaN(dt.getTime()) ? null : trimmed.slice(0, 10);
+    };
+
+    const rawItems = Array.isArray(qData.items) ? qData.items : [];
+    const sanitizedItems: QuotationItem[] = rawItems.map((it: any, idx: number) => ({
+      id: it?.id || `qtn-item-${Date.now()}-${idx}`,
+      product_description: String(it?.product_description || 'Industrial Machinery & Equipment').trim(),
+      quantity: Number(it?.quantity) > 0 ? Number(it?.quantity) : 1,
+      rate: Number(it?.rate) >= 0 ? Number(it?.rate) : 0,
+      amount: Number(it?.amount) >= 0 ? Number(it?.amount) : (Number(it?.quantity) || 1) * (Number(it?.rate) || 0)
+    }));
+
+    const quotationDate = sanitizeDate(qData.quotation_date) || nowIso.slice(0, 10);
+    const defaultTerms = [
+      'Payment 50% Advance and balance before delivery.',
+      'Machine Packing, Loading and Freight charges will be extra.'
+    ];
+
+    let payload: Record<string, any> = {
+      id: quotationId,
+      quotation_number: qData.quotation_number?.trim() || 'MMW/QTN/2026-27/001',
+      quotation_date: quotationDate,
+      customer_name: qData.customer_name?.trim() || 'Messers. Client',
+      customer_address: qData.customer_address?.trim() || '',
+      customer_gstin: qData.customer_gstin?.trim() || null,
+      customer_phone: qData.customer_phone?.trim() || null,
+      items: sanitizedItems,
+      subtotal: Number(qData.subtotal) || 0,
+      tax_type: qData.tax_type || 'intra_state',
+      cgst_rate: Number(qData.cgst_rate) || 0,
+      cgst_amount: Number(qData.cgst_amount) || 0,
+      sgst_rate: Number(qData.sgst_rate) || 0,
+      sgst_amount: Number(qData.sgst_amount) || 0,
+      igst_rate: Number(qData.igst_rate) || 0,
+      igst_amount: Number(qData.igst_amount) || 0,
+      total_amount: Number(qData.total_amount) || 0,
+      rupees_in_words: qData.rupees_in_words?.trim() || '',
+      terms_and_conditions: Array.isArray(qData.terms_and_conditions) && qData.terms_and_conditions.length > 0
+        ? qData.terms_and_conditions
+        : defaultTerms,
+      bank_name: qData.bank_name?.trim() || 'STATE BANK OF INDIA',
+      bank_account_name: qData.bank_account_name?.trim() || 'Murthi Machin Works',
+      bank_account_no: qData.bank_account_no?.trim() || '44117451637',
+      bank_ifsc: qData.bank_ifsc?.trim() || 'SBIN0021453',
+      bank_branch: qData.bank_branch?.trim() || 'Avarampalayam',
+      notes: qData.notes?.trim() || null,
+      status: qData.status || 'draft',
+      converted_bill_id: qData.converted_bill_id || null,
+      created_by: currentUser.name || 'Murthi Admin',
+      created_at: nowIso,
+      updated_at: nowIso
+    };
+
+    const supabase = getSupabaseClient();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        let { error } = await supabase.from('quotations').insert([payload]);
+        if (error && (error.code === '23505' || error.message?.includes('unique constraint') || error.message?.includes('quotations_number_key'))) {
+          const { data: existingRows } = await supabase.from('quotations').select('quotation_number');
+          const nextQtn = generateNextQuotationNo((existingRows || []) as any);
+          payload.quotation_number = nextQtn;
+          const retry = await supabase.from('quotations').insert([payload]);
+          error = retry.error;
+        }
+        if (error) {
+          console.warn('Supabase quotations insert warning (saved locally):', error.message);
+        }
+      } catch (err: any) {
+        console.warn('Supabase quotations insert fallback (saved locally):', err);
+      }
+    }
+
+    const newQuotation: Quotation = payload as Quotation;
+    const current = getLocalQuotations();
+    const updated = [newQuotation, ...current.filter(q => q.id !== newQuotation.id)];
+    saveLocalQuotations(updated, true);
+
+    try {
+      await this.createAuditLog({
+        action: 'CREATE',
+        target_type: 'SETTINGS' as any,
+        target_id: newQuotation.id,
+        target_name: `Quotation #${newQuotation.quotation_number}`,
+        details: `Created quotation for ${newQuotation.customer_name} (Total: ₹${newQuotation.total_amount.toLocaleString('en-IN')})`
+      });
+    } catch {
+      // safe
+    }
+
+    return newQuotation;
+  },
+
+  async updateQuotation(id: string, updates: Partial<Quotation>): Promise<Quotation> {
+    const list = await this.getQuotations();
+    const existing = list.find(q => q.id === id);
+    if (!existing) throw new Error('Quotation not found');
+
+    const nowIso = new Date().toISOString();
+    const sanitizeDate = (d: any) => {
+      if (!d || typeof d !== 'string') return null;
+      const trimmed = d.trim();
+      if (!trimmed) return null;
+      const dt = new Date(trimmed);
+      return isNaN(dt.getTime()) ? null : trimmed.slice(0, 10);
+    };
+
+    const merged = { ...existing, ...updates, id, updated_at: nowIso };
+
+    const rawItems = Array.isArray(merged.items) ? merged.items : [];
+    const sanitizedItems: QuotationItem[] = rawItems.map((it: any, idx: number) => ({
+      id: it?.id || `qtn-item-${Date.now()}-${idx}`,
+      product_description: String(it?.product_description || 'Industrial Machinery & Equipment').trim(),
+      quantity: Number(it?.quantity) > 0 ? Number(it?.quantity) : 1,
+      rate: Number(it?.rate) >= 0 ? Number(it?.rate) : 0,
+      amount: Number(it?.amount) >= 0 ? Number(it?.amount) : (Number(it?.quantity) || 1) * (Number(it?.rate) || 0)
+    }));
+
+    const updatePayload = {
+      quotation_number: merged.quotation_number?.trim() || existing.quotation_number,
+      quotation_date: sanitizeDate(merged.quotation_date) || existing.quotation_date,
+      customer_name: merged.customer_name?.trim() || existing.customer_name,
+      customer_address: merged.customer_address?.trim() || '',
+      customer_gstin: merged.customer_gstin?.trim() || null,
+      customer_phone: merged.customer_phone?.trim() || null,
+      items: sanitizedItems,
+      subtotal: Number(merged.subtotal) || 0,
+      tax_type: merged.tax_type || 'intra_state',
+      cgst_rate: Number(merged.cgst_rate) || 0,
+      cgst_amount: Number(merged.cgst_amount) || 0,
+      sgst_rate: Number(merged.sgst_rate) || 0,
+      sgst_amount: Number(merged.sgst_amount) || 0,
+      igst_rate: Number(merged.igst_rate) || 0,
+      igst_amount: Number(merged.igst_amount) || 0,
+      total_amount: Number(merged.total_amount) || 0,
+      rupees_in_words: merged.rupees_in_words?.trim() || '',
+      terms_and_conditions: Array.isArray(merged.terms_and_conditions) ? merged.terms_and_conditions : existing.terms_and_conditions,
+      bank_name: merged.bank_name?.trim() || 'STATE BANK OF INDIA',
+      bank_account_name: merged.bank_account_name?.trim() || 'Murthi Machin Works',
+      bank_account_no: merged.bank_account_no?.trim() || '44117451637',
+      bank_ifsc: merged.bank_ifsc?.trim() || 'SBIN0021453',
+      bank_branch: merged.bank_branch?.trim() || 'Avarampalayam',
+      notes: merged.notes?.trim() || null,
+      status: merged.status || existing.status || 'draft',
+      converted_bill_id: merged.converted_bill_id || existing.converted_bill_id || null,
+      updated_at: nowIso
+    };
+
+    const supabase = getSupabaseClient();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase.from('quotations').update(updatePayload).eq('id', id);
+        if (error) {
+          console.warn('Supabase updateQuotation warning:', error.message);
+        }
+      } catch (err: any) {
+        console.warn('Supabase updateQuotation fallback:', err);
+      }
+    }
+
+    const updatedQuotation: Quotation = {
+      ...existing,
+      ...updatePayload,
+      id,
+      created_by: existing.created_by,
+      created_at: existing.created_at
+    };
+
+    const current = getLocalQuotations();
+    const newList = current.map(q => (q.id === id ? updatedQuotation : q));
+    saveLocalQuotations(newList, true);
+
+    return updatedQuotation;
+  },
+
+  async deleteQuotation(id: string): Promise<boolean> {
+    const list = await this.getQuotations();
+    const existing = list.find(q => q.id === id);
+
+    const supabase = getSupabaseClient();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase.from('quotations').delete().eq('id', id);
+        if (error) {
+          console.warn('Supabase deleteQuotation warning:', error.message);
+        }
+      } catch (err: any) {
+        console.warn('Supabase deleteQuotation fallback:', err);
+      }
+    }
+
+    const current = getLocalQuotations();
+    saveLocalQuotations(current.filter(q => q.id !== id), true);
+
+    if (existing) {
+      try {
+        await this.createAuditLog({
+          action: 'DELETE',
+          target_type: 'SETTINGS' as any,
+          target_id: id,
+          target_name: `Quotation #${existing.quotation_number}`,
+          details: `Deleted quotation record for ${existing.customer_name}`
+        });
+      } catch {
+        // safe
+      }
+    }
+
+    return true;
+  },
+
   // RESET TO DEMO DATA
   resetToDemoData(): void {
     localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCTS));
@@ -2431,6 +2761,7 @@ export const dataService = {
     localStorage.setItem(STORAGE_KEYS.AUDIT_LOGS, JSON.stringify(INITIAL_AUDIT_LOGS));
     localStorage.setItem(STORAGE_KEYS.EMPLOYEES, JSON.stringify(INITIAL_EMPLOYEES));
     localStorage.setItem(STORAGE_KEYS.BILLS, JSON.stringify(INITIAL_BILLS));
+    localStorage.setItem(STORAGE_KEYS.QUOTATIONS, JSON.stringify(INITIAL_QUOTATIONS));
     notifyDataChanged('all');
   },
 

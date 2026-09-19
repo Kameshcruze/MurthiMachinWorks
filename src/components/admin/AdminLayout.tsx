@@ -20,7 +20,8 @@ import {
   UserCheck,
   Lock,
   Cog,
-  ReceiptText
+  ReceiptText,
+  FileText
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -43,6 +44,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const allNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: false },
     { id: 'bills', label: 'Bill / Tax Invoice', icon: ReceiptText, adminOnly: false },
+    { id: 'quotations', label: 'Quotation', icon: FileText, adminOnly: false },
     { id: 'products', label: 'Machinery Catalog', icon: Package, adminOnly: false },
     { id: 'categories', label: 'Categories', icon: FolderTree, adminOnly: false },
     { id: 'enquiries', label: 'Enquiries / RFQ Leads', icon: FileSpreadsheet, adminOnly: false },
@@ -133,7 +135,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             const Icon = item.icon;
             const isActive = activeSection === item.id || 
               (item.id === 'sql-setup' && (activeSection === 'database' || activeSection === 'supabase')) ||
-              (item.id === 'database' && activeSection === 'sql-setup');
+              (item.id === 'database' && activeSection === 'sql-setup') ||
+              (item.id === 'bills' && (activeSection === 'billing' || activeSection === 'bill')) ||
+              (item.id === 'quotations' && activeSection === 'quotation');
             return (
               <button
                 key={item.id}

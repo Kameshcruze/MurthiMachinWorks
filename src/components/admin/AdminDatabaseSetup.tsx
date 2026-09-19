@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SUPABASE_SCHEMA_SQL, SUPABASE_STORAGE_SETUP_SQL, SUPABASE_ENQUIRIES_MIGRATION_SQL, SUPABASE_BILLS_SETUP_SQL } from '../../data/supabaseSchema';
+import { SUPABASE_SCHEMA_SQL, SUPABASE_STORAGE_SETUP_SQL, SUPABASE_ENQUIRIES_MIGRATION_SQL, SUPABASE_BILLS_SETUP_SQL, SUPABASE_QUOTATIONS_SETUP_SQL } from '../../data/supabaseSchema';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
 import { getSupabaseConfig, isSupabaseConfigured, setCustomSupabaseConfig, clearCustomSupabaseConfig, getSupabaseClient } from '../../services/supabase';
@@ -13,6 +13,7 @@ export const AdminDatabaseSetup: React.FC = () => {
   const [storageCopied, setStorageCopied] = useState(false);
   const [migrationCopied, setMigrationCopied] = useState(false);
   const [billsCopied, setBillsCopied] = useState(false);
+  const [quotationsCopied, setQuotationsCopied] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
   const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [testMessage, setTestMessage] = useState('');
@@ -427,6 +428,43 @@ export const AdminDatabaseSetup: React.FC = () => {
 
         <div className="bg-slate-950 rounded-lg p-3 text-[11px] font-mono text-sky-200 overflow-x-auto">
           <pre>{SUPABASE_BILLS_SETUP_SQL.trim()}</pre>
+        </div>
+      </div>
+
+      {/* Quotations Supabase Table Card */}
+      <div className="bg-white rounded-xl border border-rose-200 p-6 shadow-sm space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center shrink-0">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-heading font-bold text-base text-slate-900 flex items-center gap-2">
+                <span>Commercial Quotations Table (New Section)</span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                Run this script in your Supabase SQL Editor to store machinery quotations, customer details, line items, and terms &amp; conditions in the cloud.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard.writeText(SUPABASE_QUOTATIONS_SETUP_SQL);
+              setQuotationsCopied(true);
+              showToast('Quotations SQL Copied', 'Copied quotations table SQL script to clipboard.', 'success');
+              setTimeout(() => setQuotationsCopied(false), 3000);
+            }}
+            className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg shadow-xs transition flex items-center gap-1.5 shrink-0 cursor-pointer"
+          >
+            {quotationsCopied ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{quotationsCopied ? 'Copied Quotations SQL' : 'Copy Quotations SQL'}</span>
+          </button>
+        </div>
+
+        <div className="bg-slate-950 rounded-lg p-3 text-[11px] font-mono text-rose-200 overflow-x-auto">
+          <pre>{SUPABASE_QUOTATIONS_SETUP_SQL.trim()}</pre>
         </div>
       </div>
 

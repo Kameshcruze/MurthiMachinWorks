@@ -3,7 +3,7 @@ import { useNavigation } from '../../context/NavigationContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
 import { dataService, DATA_CHANGE_EVENT } from '../../services/dataService';
-import { Product, Category, Enquiry, AuditLog, EmployeeUser, Bill } from '../../types';
+import { Product, Category, Enquiry, AuditLog, EmployeeUser, Bill, Quotation } from '../../types';
 import { formatPrice, getEnquiryStatusBadge } from '../../utils/helpers';
 import { getClientIp } from '../../utils/ipService';
 import {
@@ -43,19 +43,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [employees, setEmployees] = useState<EmployeeUser[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
+  const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [currentIp, setCurrentIp] = useState<string>('Resolving...');
   const [isLoading, setIsLoading] = useState(true);
 
   const loadData = async () => {
     try {
-      const [prods, cats, enqs, logs, emps, ip, loadedBills] = await Promise.all([
+      const [prods, cats, enqs, logs, emps, ip, loadedBills, loadedQuotations] = await Promise.all([
         dataService.getProducts(),
         dataService.getCategories(),
         dataService.getEnquiries(),
         isAdmin ? dataService.getAuditLogs({ limit: 8 }) : Promise.resolve([]),
         isAdmin ? dataService.getEmployees() : Promise.resolve([]),
         getClientIp(),
-        dataService.getBills()
+        dataService.getBills(),
+        dataService.getQuotations()
       ]);
       setProducts(prods);
       setCategories(cats);
@@ -64,6 +66,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
       setEmployees(emps);
       setCurrentIp(ip);
       setBills(loadedBills);
+      setQuotations(loadedQuotations);
     } catch (e) {
       console.warn('Dashboard load error:', e);
     } finally {
@@ -132,6 +135,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
             <span>Generate Bill</span>
           </button>
           <button
+            onClick={() => onNavigateTab('quotations')}
+            className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5 transition cursor-pointer"
+          >
+            <FileText className="w-4 h-4" />
+            <span>Create Quotation</span>
+          </button>
+          <button
             onClick={() => onNavigateTab('products')}
             className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5 transition"
           >
@@ -151,7 +161,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
       </div>
 
       {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
         <div
           onClick={() => onNavigateTab('bills')}
           className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:border-[#0088CC] transition cursor-pointer flex items-center justify-between"
@@ -163,6 +173,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
           </div>
           <div className="w-12 h-12 rounded-xl bg-blue-50 text-[#0088CC] flex items-center justify-center">
             <ReceiptText className="w-6 h-6" />
+          </div>
+        </div>
+
+        <div
+          onClick={() => onNavigateTab('quotations')}
+          className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:border-rose-500 transition cursor-pointer flex items-center justify-between"
+        >
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Quotations</p>
+            <p className="font-heading font-extrabold text-2xl text-rose-700">{quotations.length}</p>
+            <p className="text-[11px] text-rose-600 font-medium">Commercial RFQs</p>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+            <FileText className="w-6 h-6" />
           </div>
         </div>
 

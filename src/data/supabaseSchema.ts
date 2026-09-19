@@ -539,4 +539,59 @@ CREATE INDEX IF NOT EXISTS idx_bills_customer_name ON public.bills(customer_name
 CREATE INDEX IF NOT EXISTS idx_bills_created_at ON public.bills(created_at DESC);
 `;
 
+export const SUPABASE_QUOTATIONS_SETUP_SQL = `-- ==============================================================================
+-- MURTHI MACHIN WORKS - COMMERCIAL QUOTATIONS TABLE (SUPABASE)
+-- Run this in your Supabase SQL Editor to enable database storage for quotations!
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS public.quotations (
+    id TEXT PRIMARY KEY,
+    quotation_number TEXT UNIQUE NOT NULL,
+    quotation_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    customer_name TEXT NOT NULL,
+    customer_address TEXT,
+    customer_gstin TEXT,
+    customer_phone TEXT,
+    items JSONB NOT NULL DEFAULT '[]'::jsonb,
+    subtotal NUMERIC(12,2) NOT NULL DEFAULT 0,
+    tax_type TEXT NOT NULL DEFAULT 'intra_state',
+    cgst_rate NUMERIC(5,2) DEFAULT 9,
+    cgst_amount NUMERIC(12,2) DEFAULT 0,
+    sgst_rate NUMERIC(5,2) DEFAULT 9,
+    sgst_amount NUMERIC(12,2) DEFAULT 0,
+    igst_rate NUMERIC(5,2) DEFAULT 18,
+    igst_amount NUMERIC(12,2) DEFAULT 0,
+    total_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+    rupees_in_words TEXT,
+    terms_and_conditions JSONB DEFAULT '[]'::jsonb,
+    bank_name TEXT DEFAULT 'STATE BANK OF INDIA',
+    bank_account_name TEXT DEFAULT 'Murthi Machin Works',
+    bank_account_no TEXT DEFAULT '44117451637',
+    bank_ifsc TEXT DEFAULT 'SBIN0021453',
+    bank_branch TEXT DEFAULT 'Avarampalayam',
+    notes TEXT,
+    status TEXT DEFAULT 'draft',
+    converted_bill_id TEXT,
+    created_by TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable Row Level Security (RLS)
+ALTER TABLE public.quotations ENABLE ROW LEVEL SECURITY;
+
+-- Allow read & write access for quotations
+CREATE POLICY "Allow full access to quotations" 
+ON public.quotations 
+FOR ALL 
+USING (true) 
+WITH CHECK (true);
+
+-- Fast lookup indexes for quotations
+CREATE INDEX IF NOT EXISTS idx_quotations_number ON public.quotations(quotation_number);
+CREATE INDEX IF NOT EXISTS idx_quotations_customer_name ON public.quotations(customer_name);
+CREATE INDEX IF NOT EXISTS idx_quotations_created_at ON public.quotations(created_at DESC);
+`;
+
+
 

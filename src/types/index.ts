@@ -261,3 +261,44 @@ export interface Bill {
   updated_at?: string;
 }
 
+export interface QuotationItem {
+  id: string;
+  product_description: string;
+  quantity: number;
+  rate: number;
+  amount: number;
+}
+
+export interface Quotation {
+  id: string;
+  quotation_number: string;
+  quotation_date: string;
+  customer_name: string;
+  customer_address: string;
+  customer_gstin?: string;
+  customer_phone?: string;
+  items: QuotationItem[];
+  subtotal: number;
+  tax_type: 'intra_state' | 'inter_state' | 'none';
+  cgst_rate: number;
+  cgst_amount: number;
+  sgst_rate: number;
+  sgst_amount: number;
+  igst_rate: number;
+  igst_amount: number;
+  total_amount: number;
+  rupees_in_words?: string;
+  terms_and_conditions: string[];
+  bank_name?: string;
+  bank_account_name?: string;
+  bank_account_no?: string;
+  bank_ifsc?: string;
+  bank_branch?: string;
+  notes?: string;
+  status?: 'draft' | 'sent' | 'accepted' | 'rejected' | 'converted';
+  converted_bill_id?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
