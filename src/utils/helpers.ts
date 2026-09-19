@@ -131,3 +131,124 @@ export function getEnquiryStatusBadge(status: string): { label: string; bg: stri
       return { label: status || 'New', bg: 'bg-slate-100 text-slate-700', text: 'text-slate-700' };
   }
 }
+
+/**
+ * Splits a numerical amount into Rupees integer and Paise string (2 digits)
+ */
+export function splitRupeesPaise(val: number | undefined | null): { rs: string; ps: string } {
+  if (val === undefined || val === null || isNaN(val)) {
+    return { rs: '0', ps: '00' };
+  }
+  const rounded = Math.round((val + Number.EPSILON) * 100) / 100;
+  const parts = rounded.toFixed(2).split('.');
+  const rsInt = parseInt(parts[0], 10);
+  return {
+    rs: rsInt.toLocaleString('en-IN'),
+    ps: parts[1] || '00'
+  };
+}
+
+/**
+ * Converts numbers into Indian Currency Words (e.g. Lakhs, Crores, Thousands)
+ */
+export function numberToIndianWords(num: number): string {
+  if (num === 0 || isNaN(num) || !num) return 'Rupees Zero Only';
+
+  const singleDigits = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+  const twoDigits = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  const tensMultiple = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+  function convertTwoDigit(n: number): string {
+    if (n === 0) return '';
+    if (n < 10) return singleDigits[n];
+    if (n >= 10 && n < 20) return twoDigits[n - 10];
+    const tens = Math.floor(n / 10);
+    const unit = n % 10;
+    return (tensMultiple[tens] + (unit ? ' ' + singleDigits[unit] : '')).trim();
+  }
+
+  function convertThreeDigit(n: number): string {
+    const hundred = Math.floor(n / 100);
+    const rest = n % 100;
+    let res = '';
+    if (hundred > 0) {
+      res += singleDigits[hundred] + ' Hundred';
+      if (rest > 0) res += ' and ';
+    }
+    if (rest > 0) {
+      res += convertTwoDigit(rest);
+    }
+    return res.trim();
+  }
+
+  const rounded = Math.round((num + Number.EPSILON) * 100) / 100;
+  const integerPart = Math.floor(rounded);
+  const paisePart = Math.round((rounded - integerPart) * 100);
+
+  if (integerPart === 0 && paisePart > 0) {
+    return `${convertTwoDigit(paisePart)} Paise Only`;
+  }
+
+  let n = integerPart;
+  const crore = Math.floor(n / 10000000);
+  n %= 10000000;
+  const lakh = Math.floor(n / 100000);
+  n %= 100000;
+  const thousand = Math.floor(n / 1000);
+  n %= 1000;
+  const hundredAndBelow = n;
+
+  let words = '';
+  if (crore > 0) {
+    words += (convertTwoDigit(crore) || convertThreeDigit(crore)) + ' Crore ';
+  }
+  if (lakh > 0) {
+    words += convertTwoDigit(lakh) + ' Lakh ';
+  }
+  if (thousand > 0) {
+    words += convertTwoDigit(thousand) + ' Thousand ';
+  }
+  if (hundredAndBelow > 0) {
+    words += convertThreeDigit(hundredAndBelow);
+  }
+
+  words = words.trim();
+  let result = `Rupees ${words}`;
+  if (paisePart > 0) {
+    result += ` and ${convertTwoDigit(paisePart)} Paise`;
+  }
+  return `${result} Only`;
+}
+
+/**
+ * Generates the next sequential invoice number (e.g. MMW/2026-27/005)
+ * based on the highest existing invoice number in the system.
+ */
+export function generateNextInvoiceNo(existingBills: Array<{ invoice_number?: string }>): string {
+  const now = new Date();
+  const currentMonth = now.getMonth(); // 0-indexed: 0 = Jan, 3 = Apr
+  const fullYear = now.getFullYear();
+  // Financial year starts in April in India
+  const startYear = currentMonth < 3 ? fullYear - 1 : fullYear;
+  const endYearShort = (startYear + 1).toString().slice(-2);
+  const prefix = `MMW/${startYear}-${endYearShort}/`;
+
+  let maxNum = 0;
+  if (Array.isArray(existingBills)) {
+    for (const b of existingBills) {
+      if (b && typeof b.invoice_number === 'string') {
+        const match = b.invoice_number.match(/(\d+)$/);
+        if (match && match[1]) {
+          const num = parseInt(match[1], 10);
+          if (!isNaN(num) && num > maxNum) {
+            maxNum = num;
+          }
+        }
+      }
+    }
+  }
+
+  const nextNum = maxNum + 1;
+  return `${prefix}${nextNum.toString().padStart(3, '0')}`;
+}
+

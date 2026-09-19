@@ -3,6 +3,7 @@ import { Category } from '../../types';
 import { dataService, DATA_CHANGE_EVENT } from '../../services/dataService';
 import { useSettings } from '../../context/SettingsContext';
 import { generateSlug, formatImageUrl } from '../../utils/helpers';
+import { exportCategoriesToExcel } from '../../utils/exportMachineryExcel';
 import {
   FolderTree,
   Plus,
@@ -19,13 +20,15 @@ import {
   Link,
   ChevronDown,
   ChevronUp,
-  Image as ImageIcon
+  Image as ImageIcon,
+  FileSpreadsheet
 } from 'lucide-react';
 
 export const AdminCategories: React.FC = () => {
   const { showToast } = useSettings();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
@@ -229,10 +232,31 @@ export const AdminCategories: React.FC = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (categories.length === 0) {
+      showToast('Export Notice', 'No category records available to download.', 'info');
+      return;
+    }
+    try {
+      setIsExporting(true);
+      exportCategoriesToExcel(categories);
+      showToast(
+        'Excel Downloaded',
+        `Successfully exported ${categories.length} machinery categories to Excel.`,
+        'success'
+      );
+    } catch (err: any) {
+      console.error('Failed to export categories to Excel:', err);
+      showToast('Export Error', err.message || 'Could not export categories to Excel.', 'error');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Action Bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 className="font-heading font-bold text-base text-slate-800">
             Machinery Categories ({categories.length})
@@ -242,15 +266,29 @@ export const AdminCategories: React.FC = () => {
           </p>
         </div>
 
-        {!isEditing && (
+        <div className="flex items-center gap-3">
           <button
-            onClick={handleStartCreate}
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg shadow flex items-center gap-1.5 transition"
+            id="btn-download-categories-excel"
+            type="button"
+            onClick={handleExportExcel}
+            disabled={isExporting || categories.length === 0}
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            title="Download full machinery categories list in Excel (.xlsx) format"
           >
-            <Plus className="w-4 h-4" />
-            <span>Create Machinery Category</span>
+            <FileSpreadsheet className="w-4 h-4 text-emerald-100" />
+            <span>{isExporting ? 'Exporting Excel...' : 'Download Excel'}</span>
           </button>
-        )}
+
+          {!isEditing && (
+            <button
+              onClick={handleStartCreate}
+              className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg shadow flex items-center gap-1.5 transition"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Machinery Category</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Inline Create/Edit Form Modal/Card */}

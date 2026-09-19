@@ -482,4 +482,61 @@ ADD COLUMN IF NOT EXISTS address TEXT,
 ADD COLUMN IF NOT EXISTS machine_photos JSONB DEFAULT '[]'::jsonb;
 `;
 
+export const SUPABASE_BILLS_SETUP_SQL = `-- ==============================================================================
+-- MURTHI MACHIN WORKS - BILLING & COMMERCIAL TAX INVOICE TABLE (SUPABASE)
+-- Run this in your Supabase SQL Editor to enable database storage for bills!
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS public.bills (
+    id TEXT PRIMARY KEY,
+    invoice_number TEXT NOT NULL UNIQUE,
+    invoice_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    customer_name TEXT NOT NULL,
+    customer_address TEXT,
+    customer_gstin TEXT,
+    order_number TEXT,
+    order_date DATE,
+    delivery_note_no TEXT,
+    delivery_note_date DATE,
+    despatched_by TEXT,
+    document_through TEXT,
+    vehicle_number TEXT,
+    eway_bill_no TEXT,
+    items JSONB NOT NULL DEFAULT '[]'::jsonb,
+    subtotal NUMERIC(12,2) NOT NULL DEFAULT 0,
+    tax_type TEXT NOT NULL DEFAULT 'intra_state',
+    cgst_rate NUMERIC(5,2) DEFAULT 9,
+    cgst_amount NUMERIC(12,2) DEFAULT 0,
+    sgst_rate NUMERIC(5,2) DEFAULT 9,
+    sgst_amount NUMERIC(12,2) DEFAULT 0,
+    igst_rate NUMERIC(5,2) DEFAULT 18,
+    igst_amount NUMERIC(12,2) DEFAULT 0,
+    total_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+    rupees_in_words TEXT,
+    bank_name TEXT DEFAULT 'STATE BANK OF INDIA',
+    bank_account_name TEXT DEFAULT 'Murthi Machin Works',
+    bank_account_no TEXT DEFAULT '44117451637',
+    bank_ifsc TEXT DEFAULT 'SBIN0021453',
+    bank_branch TEXT DEFAULT 'Avarampalayam',
+    created_by TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable Row Level Security (RLS)
+ALTER TABLE public.bills ENABLE ROW LEVEL SECURITY;
+
+-- Allow read & write access for bills
+CREATE POLICY "Allow full access to bills" 
+ON public.bills 
+FOR ALL 
+USING (true) 
+WITH CHECK (true);
+
+-- Create fast lookup indexes
+CREATE INDEX IF NOT EXISTS idx_bills_invoice_number ON public.bills(invoice_number);
+CREATE INDEX IF NOT EXISTS idx_bills_customer_name ON public.bills(customer_name);
+CREATE INDEX IF NOT EXISTS idx_bills_created_at ON public.bills(created_at DESC);
+`;
+
 

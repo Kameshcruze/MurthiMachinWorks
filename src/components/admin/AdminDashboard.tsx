@@ -3,7 +3,7 @@ import { useNavigation } from '../../context/NavigationContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
 import { dataService, DATA_CHANGE_EVENT } from '../../services/dataService';
-import { Product, Category, Enquiry, AuditLog, EmployeeUser } from '../../types';
+import { Product, Category, Enquiry, AuditLog, EmployeeUser, Bill } from '../../types';
 import { formatPrice, getEnquiryStatusBadge } from '../../utils/helpers';
 import { getClientIp } from '../../utils/ipService';
 import {
@@ -23,7 +23,9 @@ import {
   Globe,
   Shield,
   RefreshCw,
-  UserCheck
+  UserCheck,
+  ReceiptText,
+  FileText
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -40,18 +42,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [employees, setEmployees] = useState<EmployeeUser[]>([]);
+  const [bills, setBills] = useState<Bill[]>([]);
   const [currentIp, setCurrentIp] = useState<string>('Resolving...');
   const [isLoading, setIsLoading] = useState(true);
 
   const loadData = async () => {
     try {
-      const [prods, cats, enqs, logs, emps, ip] = await Promise.all([
+      const [prods, cats, enqs, logs, emps, ip, loadedBills] = await Promise.all([
         dataService.getProducts(),
         dataService.getCategories(),
         dataService.getEnquiries(),
         isAdmin ? dataService.getAuditLogs({ limit: 8 }) : Promise.resolve([]),
         isAdmin ? dataService.getEmployees() : Promise.resolve([]),
-        getClientIp()
+        getClientIp(),
+        dataService.getBills()
       ]);
       setProducts(prods);
       setCategories(cats);
@@ -59,6 +63,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
       setAuditLogs(logs);
       setEmployees(emps);
       setCurrentIp(ip);
+      setBills(loadedBills);
     } catch (e) {
       console.warn('Dashboard load error:', e);
     } finally {
@@ -120,6 +125,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">
           <button
+            onClick={() => onNavigateTab('bills')}
+            className="px-4 py-2.5 bg-[#0088CC] hover:bg-[#0077B6] text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5 transition cursor-pointer"
+          >
+            <ReceiptText className="w-4 h-4" />
+            <span>Generate Bill</span>
+          </button>
+          <button
             onClick={() => onNavigateTab('products')}
             className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5 transition"
           >
@@ -139,7 +151,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
       </div>
 
       {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div
+          onClick={() => onNavigateTab('bills')}
+          className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:border-[#0088CC] transition cursor-pointer flex items-center justify-between"
+        >
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tax Invoices</p>
+            <p className="font-heading font-extrabold text-2xl text-[#082138]">{bills.length}</p>
+            <p className="text-[11px] text-[#0088CC] font-medium">A4 Printable Bills</p>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-blue-50 text-[#0088CC] flex items-center justify-center">
+            <ReceiptText className="w-6 h-6" />
+          </div>
+        </div>
+
         <div
           onClick={() => onNavigateTab('products')}
           className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:border-amber-500 transition cursor-pointer flex items-center justify-between"

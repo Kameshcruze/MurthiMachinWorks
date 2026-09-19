@@ -163,7 +163,7 @@ export interface AdminUser {
 }
 
 export type AuditActionType = 'CREATE' | 'UPDATE' | 'DELETE' | 'DUPLICATE' | 'STATUS_CHANGE';
-export type AuditTargetType = 'PRODUCT' | 'CATEGORY' | 'ENQUIRY' | 'SETTINGS' | 'USER';
+export type AuditTargetType = 'PRODUCT' | 'CATEGORY' | 'ENQUIRY' | 'SETTINGS' | 'USER' | 'BILL';
 
 export interface AuditFieldChange {
   field: string;
@@ -212,5 +212,52 @@ export interface FilterState {
   priceMax: number;
   searchQuery: string;
   sortBy: 'featured' | 'newest' | 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc';
+}
+
+export interface BillItem {
+  id: string;
+  product_name: string;
+  serial_number?: string;
+  category?: string;
+  hsn_code?: string;
+  quantity: number;
+  rate: number;
+  amount: number;
+}
+
+export interface Bill {
+  id: string;
+  invoice_number: string;
+  invoice_date: string;
+  customer_name: string;
+  customer_address: string;
+  customer_gstin?: string;
+  order_number?: string;
+  order_date?: string;
+  delivery_note_no?: string;
+  delivery_note_date?: string;
+  despatched_by?: string;
+  document_through?: string;
+  vehicle_number?: string;
+  eway_bill_no?: string;
+  items: BillItem[];
+  subtotal: number;
+  tax_type: 'intra_state' | 'inter_state';
+  cgst_rate: number;
+  cgst_amount: number;
+  sgst_rate: number;
+  sgst_amount: number;
+  igst_rate: number;
+  igst_amount: number;
+  total_amount: number;
+  rupees_in_words: string;
+  bank_name?: string;
+  bank_account_name?: string;
+  bank_account_no?: string;
+  bank_ifsc?: string;
+  bank_branch?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at?: string;
 }
 

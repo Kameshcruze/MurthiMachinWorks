@@ -4,6 +4,7 @@ import { dataService, DATA_CHANGE_EVENT } from '../../services/dataService';
 import { useSettings } from '../../context/SettingsContext';
 import { formatImageUrl, formatPrice, slugify, getStockStatusBadge } from '../../utils/helpers';
 import { ProductImageManager } from './ProductImageManager';
+import { exportMachineryToExcel } from '../../utils/exportMachineryExcel';
 import {
   Plus,
   Search,
@@ -20,7 +21,8 @@ import {
   ToggleRight,
   Tag,
   LayoutGrid,
-  List
+  List,
+  FileSpreadsheet
 } from 'lucide-react';
 
 export const AdminProducts: React.FC = () => {
@@ -32,6 +34,7 @@ export const AdminProducts: React.FC = () => {
   const [selectedCatFilter, setSelectedCatFilter] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -332,6 +335,27 @@ export const AdminProducts: React.FC = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (products.length === 0) {
+      showToast('Export Notice', 'No machinery records available to download.', 'info');
+      return;
+    }
+    try {
+      setIsExporting(true);
+      exportMachineryToExcel(products, categories, settings.currency_symbol || '₹');
+      showToast(
+        'Excel Downloaded',
+        `Successfully exported ${products.length} machine tool models with all technical specifications, pricing, and details.`,
+        'success'
+      );
+    } catch (err: any) {
+      console.error('Failed to export machinery to Excel:', err);
+      showToast('Export Error', err.message || 'Could not export machinery list to Excel.', 'error');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const filtered = products.filter(p => {
     if (selectedCatFilter && p.category_id !== selectedCatFilter) return false;
     if (searchQuery) {
@@ -359,13 +383,27 @@ export const AdminProducts: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={openCreateModal}
-          className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg shadow flex items-center justify-center gap-1.5 transition"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Machine</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            id="btn-download-machinery-excel"
+            type="button"
+            onClick={handleExportExcel}
+            disabled={isExporting || products.length === 0}
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            title="Download full machinery list in Excel (.xlsx) format with all specifications, features, and details"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-100" />
+            <span>{isExporting ? 'Exporting Excel...' : 'Download Excel'}</span>
+          </button>
+
+          <button
+            onClick={openCreateModal}
+            className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg shadow flex items-center justify-center gap-1.5 transition"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add New Machine</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter & Search Toolbar */}

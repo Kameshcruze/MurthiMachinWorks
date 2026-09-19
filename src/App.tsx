@@ -35,6 +35,7 @@ import { AdminSettings } from './components/admin/AdminSettings';
 import { AdminDatabaseSetup } from './components/admin/AdminDatabaseSetup';
 import { AdminAuditLogs } from './components/admin/AdminAuditLogs';
 import { AdminTeam } from './components/admin/AdminTeam';
+import { AdminBilling } from './components/admin/bill/AdminBilling';
 
 const AppContent: React.FC = () => {
   const { currentPage, navigateTo } = useNavigation();
@@ -71,7 +72,9 @@ const AppContent: React.FC = () => {
     };
 
     let AdminView = <AdminDashboard onNavigateTab={handleSelectAdminSection} />;
-    if (activeAdminSection === 'products' || activeAdminSection === 'product-new' || activeAdminSection === 'product-edit') {
+    if (activeAdminSection === 'bills' || activeAdminSection === 'billing' || activeAdminSection === 'bill') {
+      AdminView = <AdminBilling />;
+    } else if (activeAdminSection === 'products' || activeAdminSection === 'product-new' || activeAdminSection === 'product-edit') {
       AdminView = <AdminProducts />;
     } else if (activeAdminSection === 'categories') {
       AdminView = <AdminCategories />;

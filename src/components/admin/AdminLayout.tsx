@@ -19,7 +19,8 @@ import {
   Users,
   UserCheck,
   Lock,
-  Cog
+  Cog,
+  ReceiptText
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -31,7 +32,7 @@ interface AdminLayoutProps {
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
   children,
   activeSection,
-  onSelectSection
+  onSelectSection,
 }) => {
   const { user, isAdmin, isSuperAdmin, logout } = useAuth();
   const { navigateTo } = useNavigation();
@@ -41,6 +42,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   // Define full list of navigation items with admin-only flag
   const allNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: false },
+    { id: 'bills', label: 'Bill / Tax Invoice', icon: ReceiptText, adminOnly: false },
     { id: 'products', label: 'Machinery Catalog', icon: Package, adminOnly: false },
     { id: 'categories', label: 'Categories', icon: FolderTree, adminOnly: false },
     { id: 'enquiries', label: 'Enquiries / RFQ Leads', icon: FileSpreadsheet, adminOnly: false },

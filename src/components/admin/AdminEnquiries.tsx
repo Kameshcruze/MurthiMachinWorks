@@ -3,6 +3,7 @@ import { Enquiry } from '../../types';
 import { dataService, DATA_CHANGE_EVENT } from '../../services/dataService';
 import { useSettings } from '../../context/SettingsContext';
 import { formatPrice, getEnquiryStatusBadge } from '../../utils/helpers';
+import { exportEnquiriesToExcel } from '../../utils/exportMachineryExcel';
 import {
   FileSpreadsheet,
   Search,
@@ -37,6 +38,7 @@ export const AdminEnquiries: React.FC = () => {
   const [downloadingIndex, setDownloadingIndex] = useState<number | null>(null);
   const [previewPhoto, setPreviewPhoto] = useState<{ url: string; index: number } | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const loadData = async () => {
     try {
@@ -249,16 +251,53 @@ export const AdminEnquiries: React.FC = () => {
     return true;
   });
 
+  const handleExportExcel = () => {
+    if (enquiries.length === 0) {
+      showToast('Export Notice', 'No enquiry records available to download.', 'info');
+      return;
+    }
+    try {
+      setIsExporting(true);
+      exportEnquiriesToExcel(enquiries);
+      showToast(
+        'Excel Downloaded',
+        `Successfully exported ${enquiries.length} customer enquiries and RFQ leads to Excel.`,
+        'success'
+      );
+    } catch (err: any) {
+      console.error('Failed to export enquiries to Excel:', err);
+      showToast('Export Error', err.message || 'Could not export enquiries to Excel.', 'error');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="font-heading font-bold text-xl text-slate-900">
-          Commercial Enquiries & RFQ Leads
-        </h2>
-        <p className="text-xs text-slate-500">
-          Total {enquiries.length} customer quotations logged in system
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="font-heading font-bold text-xl text-slate-900">
+            Commercial Enquiries & RFQ Leads
+          </h2>
+          <p className="text-xs text-slate-500">
+            Total {enquiries.length} customer quotations logged in system
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            id="btn-download-enquiries-excel"
+            type="button"
+            onClick={handleExportExcel}
+            disabled={isExporting || enquiries.length === 0}
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            title="Download full commercial enquiries list in Excel (.xlsx) format"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-100" />
+            <span>{isExporting ? 'Exporting Excel...' : 'Download Excel'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Toolbar */}

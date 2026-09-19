@@ -1,7 +1,7 @@
-import { Category, Product, SiteSettings, Enquiry, EnquiryItem, EnquiryStatus, AuditLog, AuditFieldChange, EmployeeUser, BranchLocation } from '../types';
+import { Category, Product, SiteSettings, Enquiry, EnquiryItem, EnquiryStatus, AuditLog, AuditFieldChange, EmployeeUser, BranchLocation, Bill, BillItem } from '../types';
 import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_ENQUIRIES, INITIAL_SETTINGS, INITIAL_EMPLOYEES, INITIAL_AUDIT_LOGS, INITIAL_BRANCHES } from '../data/initialData';
 import { getSupabaseClient, isSupabaseConfigured } from './supabase';
-import { slugify } from '../utils/helpers';
+import { slugify, generateNextInvoiceNo } from '../utils/helpers';
 import { getClientIp, getCachedIpSync } from '../utils/ipService';
 import { convertAndCompressToWebP, formatBytes, ProcessedImageResult } from '../utils/imageUtils';
 
@@ -12,6 +12,7 @@ const STORAGE_KEYS = {
   SETTINGS: 'mmw_db_settings_v2',
   AUDIT_LOGS: 'mmw_db_audit_logs_v1',
   EMPLOYEES: 'mmw_db_employees_v1',
+  BILLS: 'mmw_db_bills_v1',
 };
 
 // Event bus for live synchronization across components
@@ -285,6 +286,86 @@ function saveLocalEmployees(emps: EmployeeUser[], notify = true): void {
   localStorage.setItem(STORAGE_KEYS.EMPLOYEES, JSON.stringify(emps));
   if (notify) notifyDataChanged('employees');
 }
+
+export const INITIAL_BILLS: Bill[] = [
+  {
+    id: 'bill-1001',
+    invoice_number: 'MMW/2026-27/001',
+    invoice_date: new Date().toISOString().slice(0, 10),
+    customer_name: 'TexTech Industrial Fabrications Ltd.',
+    customer_address: 'SF No. 42/1B, Avinashi Road, Civil Aerodrome Post, Peelamedu, Coimbatore - 641 014',
+    customer_gstin: '33AABCT9988G1Z5',
+    order_number: 'PO-TEX-8821',
+    order_date: new Date().toISOString().slice(0, 10),
+    delivery_note_no: 'DN-2026-084',
+    delivery_note_date: new Date().toISOString().slice(0, 10),
+    despatched_by: 'KPN Roadways / Transport',
+    document_through: 'Direct Carrier',
+    vehicle_number: 'TN 38 BX 4419',
+    eway_bill_no: 'EWB-882194721092',
+    items: [
+      {
+        id: 'item-1',
+        product_name: 'Heavy Duty Precision Lathe Machine 6.5ft Bed',
+        serial_number: 'MMW-LTH-65-882',
+        category: 'Lathe Machines',
+        hsn_code: '84581100',
+        quantity: 1,
+        rate: 320000,
+        amount: 320000
+      },
+      {
+        id: 'item-2',
+        product_name: 'Vertical Turret Milling Machine Model 3VH',
+        serial_number: 'MMW-MIL-3VH-209',
+        category: 'Milling Machines',
+        hsn_code: '84595100',
+        quantity: 1,
+        rate: 220000,
+        amount: 220000
+      }
+    ],
+    subtotal: 540000,
+    tax_type: 'intra_state',
+    cgst_rate: 9,
+    cgst_amount: 48600,
+    sgst_rate: 9,
+    sgst_amount: 48600,
+    igst_rate: 18,
+    igst_amount: 0,
+    total_amount: 637200,
+    rupees_in_words: 'Rupees Six Lakh Thirty Seven Thousand Two Hundred Only',
+    bank_name: 'STATE BANK OF INDIA',
+    bank_account_name: 'Murthi Machin Works',
+    bank_account_no: '44117451637',
+    bank_ifsc: 'SBIN0021453',
+    bank_branch: 'Avarampalayam',
+    created_by: 'Murthi Admin',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+];
+
+function getLocalBills(): Bill[] {
+  if (typeof localStorage === 'undefined') return INITIAL_BILLS;
+  const data = localStorage.getItem(STORAGE_KEYS.BILLS);
+  if (!data) {
+    localStorage.setItem(STORAGE_KEYS.BILLS, JSON.stringify(INITIAL_BILLS));
+    return INITIAL_BILLS;
+  }
+  try {
+    return JSON.parse(data);
+  } catch {
+    return INITIAL_BILLS;
+  }
+}
+
+function saveLocalBills(bills: Bill[], notify = true): void {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.setItem(STORAGE_KEYS.BILLS, JSON.stringify(bills));
+  if (notify) notifyDataChanged('bills');
+}
+
 
 // ---------------------------------------------
 // UNIFIED DATA SERVICE (Supabase + Local fallback)
@@ -2062,6 +2143,285 @@ export const dataService = {
     return this.getProducts({ searchQuery: query });
   },
 
+  // BILLING & INVOICE MANAGEMENT (Supabase + Offline Local Storage)
+  async getBills(): Promise<Bill[]> {
+    const supabase = getSupabaseClient();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase
+          .from('bills')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && Array.isArray(data)) {
+          if (data.length > 0) {
+            const mapped: Bill[] = data.map((b: any) => ({
+              ...b,
+              items: Array.isArray(b.items) ? b.items : typeof b.items === 'string' ? JSON.parse(b.items) : []
+            }));
+            saveLocalBills(mapped, false);
+            return mapped;
+          }
+        } else if (error) {
+          console.warn('Supabase getBills query warning:', error);
+        }
+      } catch (err) {
+        console.warn('Supabase getBills query fallback:', err);
+      }
+    }
+    return getLocalBills();
+  },
+
+  async getBillById(id: string): Promise<Bill | null> {
+    const bills = await this.getBills();
+    return bills.find(b => b.id === id) || null;
+  },
+
+  async createBill(billData: Omit<Bill, 'id' | 'created_at' | 'updated_at'> & { id?: string }): Promise<Bill> {
+    const currentUser = getActiveUser();
+    const nowIso = new Date().toISOString();
+    const billId = billData.id || `bill-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
+    // Helper to sanitize date fields for PostgreSQL DATE column (never send empty string "")
+    const sanitizeDate = (d: any) => {
+      if (!d || typeof d !== 'string') return null;
+      const trimmed = d.trim();
+      if (!trimmed) return null;
+      const dt = new Date(trimmed);
+      return isNaN(dt.getTime()) ? null : trimmed.slice(0, 10);
+    };
+
+    // Sanitize items
+    const rawItems = Array.isArray(billData.items) ? billData.items : [];
+    const sanitizedItems: BillItem[] = rawItems.map((it: any, idx: number) => ({
+      id: it?.id || `item-${Date.now()}-${idx}`,
+      product_name: String(it?.product_name || 'Industrial Machinery').trim(),
+      serial_number: String(it?.serial_number || '').trim(),
+      category: String(it?.category || 'Machinery').trim(),
+      hsn_code: String(it?.hsn_code || '84581100').trim(),
+      quantity: Number(it?.quantity) > 0 ? Number(it?.quantity) : 1,
+      rate: Number(it?.rate) >= 0 ? Number(it?.rate) : 0,
+      amount: Number(it?.amount) >= 0 ? Number(it?.amount) : (Number(it?.quantity) || 1) * (Number(it?.rate) || 0)
+    }));
+
+    const invoiceDate = sanitizeDate(billData.invoice_date) || nowIso.slice(0, 10);
+
+    let payload: Record<string, any> = {
+      id: billId,
+      invoice_number: billData.invoice_number?.trim() || 'MMW/2026-27/001',
+      invoice_date: invoiceDate,
+      customer_name: billData.customer_name?.trim() || 'Messers. Buyer',
+      customer_address: billData.customer_address?.trim() || null,
+      customer_gstin: billData.customer_gstin?.trim() || null,
+      order_number: billData.order_number?.trim() || null,
+      order_date: sanitizeDate(billData.order_date),
+      delivery_note_no: billData.delivery_note_no?.trim() || null,
+      delivery_note_date: sanitizeDate(billData.delivery_note_date),
+      despatched_by: billData.despatched_by?.trim() || null,
+      document_through: billData.document_through?.trim() || null,
+      vehicle_number: billData.vehicle_number?.trim() || null,
+      eway_bill_no: billData.eway_bill_no?.trim() || null,
+      items: sanitizedItems,
+      subtotal: Number(billData.subtotal) || 0,
+      tax_type: billData.tax_type || 'intra_state',
+      cgst_rate: Number(billData.cgst_rate) || 0,
+      cgst_amount: Number(billData.cgst_amount) || 0,
+      sgst_rate: Number(billData.sgst_rate) || 0,
+      sgst_amount: Number(billData.sgst_amount) || 0,
+      igst_rate: Number(billData.igst_rate) || 0,
+      igst_amount: Number(billData.igst_amount) || 0,
+      total_amount: Number(billData.total_amount) || 0,
+      rupees_in_words: billData.rupees_in_words?.trim() || '',
+      bank_name: billData.bank_name?.trim() || 'STATE BANK OF INDIA',
+      bank_account_name: billData.bank_account_name?.trim() || 'Murthi Machin Works',
+      bank_account_no: billData.bank_account_no?.trim() || '44117451637',
+      bank_ifsc: billData.bank_ifsc?.trim() || 'SBIN0021453',
+      bank_branch: billData.bank_branch?.trim() || 'Avarampalayam',
+      created_by: currentUser.name || 'Murthi Admin',
+      created_at: nowIso,
+      updated_at: nowIso
+    };
+
+    // 1. Persist to Supabase if configured
+    const supabase = getSupabaseClient();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        let { error } = await supabase.from('bills').insert([payload]);
+
+        // If duplicate invoice number collision (Postgres code 23505), automatically calculate next sequential invoice number and retry
+        if (error && (error.code === '23505' || error.message?.includes('unique constraint') || error.message?.includes('bills_invoice_number_key'))) {
+          console.warn('Invoice number collision in database. Generating next sequential number...');
+          const { data: existingRows } = await supabase.from('bills').select('invoice_number');
+          const nextInv = generateNextInvoiceNo((existingRows || []) as any);
+          payload.invoice_number = nextInv;
+          const retry = await supabase.from('bills').insert([payload]);
+          error = retry.error;
+        }
+
+        if (error) {
+          console.error('Supabase bill insert returned error:', error);
+          throw new Error(`Database save error: ${error.message || 'Failed to insert bill'}`);
+        }
+      } catch (err: any) {
+        console.error('Supabase bill insert exception:', err);
+        throw err;
+      }
+    }
+
+    const newBill: Bill = payload as Bill;
+
+    // 2. Persist locally for immediate offline reliability
+    const currentBills = getLocalBills();
+    const updated = [newBill, ...currentBills.filter(b => b.id !== newBill.id)];
+    saveLocalBills(updated, true);
+
+    // 3. Log to Audit trail
+    try {
+      await this.createAuditLog({
+        action: 'CREATE',
+        target_type: 'BILL',
+        target_id: newBill.id,
+        target_name: `Invoice #${newBill.invoice_number}`,
+        details: `Generated new commercial tax invoice for ${newBill.customer_name} (Total: ₹${newBill.total_amount.toLocaleString('en-IN')})`
+      });
+    } catch {
+      // safe
+    }
+
+    return newBill;
+  },
+
+  async updateBill(id: string, updates: Partial<Bill>): Promise<Bill> {
+    const bills = await this.getBills();
+    const existing = bills.find(b => b.id === id);
+    if (!existing) throw new Error('Bill not found');
+
+    const nowIso = new Date().toISOString();
+
+    const sanitizeDate = (d: any) => {
+      if (!d || typeof d !== 'string') return null;
+      const trimmed = d.trim();
+      if (!trimmed) return null;
+      const dt = new Date(trimmed);
+      return isNaN(dt.getTime()) ? null : trimmed.slice(0, 10);
+    };
+
+    const merged = {
+      ...existing,
+      ...updates,
+      id,
+      updated_at: nowIso
+    };
+
+    const rawItems = Array.isArray(merged.items) ? merged.items : [];
+    const sanitizedItems: BillItem[] = rawItems.map((it: any, idx: number) => ({
+      id: it?.id || `item-${Date.now()}-${idx}`,
+      product_name: String(it?.product_name || 'Industrial Machinery').trim(),
+      serial_number: String(it?.serial_number || '').trim(),
+      category: String(it?.category || 'Machinery').trim(),
+      hsn_code: String(it?.hsn_code || '84581100').trim(),
+      quantity: Number(it?.quantity) > 0 ? Number(it?.quantity) : 1,
+      rate: Number(it?.rate) >= 0 ? Number(it?.rate) : 0,
+      amount: Number(it?.amount) >= 0 ? Number(it?.amount) : (Number(it?.quantity) || 1) * (Number(it?.rate) || 0)
+    }));
+
+    const updatePayload = {
+      invoice_number: merged.invoice_number?.trim() || existing.invoice_number,
+      invoice_date: sanitizeDate(merged.invoice_date) || existing.invoice_date,
+      customer_name: merged.customer_name?.trim() || existing.customer_name,
+      customer_address: merged.customer_address?.trim() || null,
+      customer_gstin: merged.customer_gstin?.trim() || null,
+      order_number: merged.order_number?.trim() || null,
+      order_date: sanitizeDate(merged.order_date),
+      delivery_note_no: merged.delivery_note_no?.trim() || null,
+      delivery_note_date: sanitizeDate(merged.delivery_note_date),
+      despatched_by: merged.despatched_by?.trim() || null,
+      document_through: merged.document_through?.trim() || null,
+      vehicle_number: merged.vehicle_number?.trim() || null,
+      eway_bill_no: merged.eway_bill_no?.trim() || null,
+      items: sanitizedItems,
+      subtotal: Number(merged.subtotal) || 0,
+      tax_type: merged.tax_type || 'intra_state',
+      cgst_rate: Number(merged.cgst_rate) || 0,
+      cgst_amount: Number(merged.cgst_amount) || 0,
+      sgst_rate: Number(merged.sgst_rate) || 0,
+      sgst_amount: Number(merged.sgst_amount) || 0,
+      igst_rate: Number(merged.igst_rate) || 0,
+      igst_amount: Number(merged.igst_amount) || 0,
+      total_amount: Number(merged.total_amount) || 0,
+      rupees_in_words: merged.rupees_in_words?.trim() || '',
+      bank_name: merged.bank_name?.trim() || 'STATE BANK OF INDIA',
+      bank_account_name: merged.bank_account_name?.trim() || 'Murthi Machin Works',
+      bank_account_no: merged.bank_account_no?.trim() || '44117451637',
+      bank_ifsc: merged.bank_ifsc?.trim() || 'SBIN0021453',
+      bank_branch: merged.bank_branch?.trim() || 'Avarampalayam',
+      updated_at: nowIso
+    };
+
+    const supabase = getSupabaseClient();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase
+          .from('bills')
+          .update(updatePayload)
+          .eq('id', id);
+
+        if (error) {
+          console.error('Supabase updateBill returned error:', error);
+          throw new Error(`Database update error: ${error.message || 'Failed to update bill'}`);
+        }
+      } catch (err: any) {
+        console.error('Supabase updateBill exception:', err);
+        throw err;
+      }
+    }
+
+    const updatedBill: Bill = { ...existing, ...updatePayload, id, created_by: existing.created_by, created_at: existing.created_at };
+    const current = getLocalBills();
+    const newList = current.map(b => (b.id === id ? updatedBill : b));
+    saveLocalBills(newList, true);
+
+    return updatedBill;
+  },
+
+  async deleteBill(id: string): Promise<boolean> {
+    const bills = await this.getBills();
+    const existing = bills.find(b => b.id === id);
+
+    const supabase = getSupabaseClient();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase.from('bills').delete().eq('id', id);
+        if (error) {
+          console.error('Supabase deleteBill error:', error);
+          throw new Error(`Database delete error: ${error.message || 'Failed to delete bill'}`);
+        }
+      } catch (err: any) {
+        console.error('Supabase deleteBill fallback:', err);
+        throw err;
+      }
+    }
+
+    const current = getLocalBills();
+    saveLocalBills(current.filter(b => b.id !== id), true);
+
+    if (existing) {
+      try {
+        await this.createAuditLog({
+          action: 'DELETE',
+          target_type: 'BILL',
+          target_id: id,
+          target_name: `Invoice #${existing.invoice_number}`,
+          details: `Deleted invoice record for ${existing.customer_name}`
+        });
+      } catch {
+        // safe
+      }
+    }
+
+    return true;
+  },
+
   // RESET TO DEMO DATA
   resetToDemoData(): void {
     localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCTS));
@@ -2070,6 +2430,7 @@ export const dataService = {
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(INITIAL_SETTINGS));
     localStorage.setItem(STORAGE_KEYS.AUDIT_LOGS, JSON.stringify(INITIAL_AUDIT_LOGS));
     localStorage.setItem(STORAGE_KEYS.EMPLOYEES, JSON.stringify(INITIAL_EMPLOYEES));
+    localStorage.setItem(STORAGE_KEYS.BILLS, JSON.stringify(INITIAL_BILLS));
     notifyDataChanged('all');
   },
 
