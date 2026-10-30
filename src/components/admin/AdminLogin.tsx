@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '../../context/NavigationContext';
 import { useSettings } from '../../context/SettingsContext';
-import { Lock, Mail, ArrowRight, ShieldCheck, KeyRound, Sparkles } from 'lucide-react';
+import { Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export const AdminLogin: React.FC = () => {
   const { login, isAuthenticated } = useAuth();
   const { navigateTo } = useNavigation();
   const { showToast } = useSettings();
 
-  const [email, setEmail] = useState('admin@murthimachineworks.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -21,6 +22,11 @@ export const AdminLogin: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim() || !password) {
+      setError('Please enter both your email address and password.');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
@@ -30,18 +36,13 @@ export const AdminLogin: React.FC = () => {
         showToast('Login Successful', 'Welcome to Murthi Machine Works Administration.', 'success');
         navigateTo('admin-dashboard');
       } else {
-        setError(res.error || 'Invalid credentials.');
+        setError(res.error || 'Invalid email address or password.');
       }
     } catch (err: any) {
-      setError(err.message || 'Login error');
+      setError(err.message || 'Login error occurred.');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleFillDemo = () => {
-    setEmail('admin@murthimachineworks.com');
-    setPassword('admin123');
   };
 
   return (
@@ -80,8 +81,9 @@ export const AdminLogin: React.FC = () => {
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="admin@murthimachineworks.com"
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                placeholder="Enter your email address"
+                autoComplete="email"
+                className="w-full pl-9 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
           </div>
@@ -91,91 +93,41 @@ export const AdminLogin: React.FC = () => {
               Password
             </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                placeholder="Enter your password"
+                autoComplete="current-password"
+                className="w-full pl-9 pr-10 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-amber-400 rounded focus:outline-none transition"
+                title={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
             </div>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg shadow-md flex items-center justify-center gap-2 transition"
+            className="w-full py-3 bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-slate-950 text-xs font-bold rounded-lg shadow-md flex items-center justify-center gap-2 transition"
           >
             <span>{isLoading ? 'Verifying Credentials...' : 'Sign In to Dashboard'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        {/* Demo Helper Box */}
-        <div className="p-3.5 bg-slate-800/90 rounded-xl border border-slate-700 text-xs text-slate-300 space-y-2.5">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold text-amber-400 flex items-center gap-1">
-              <KeyRound className="w-3.5 h-3.5" />
-              Employee Login Presets
-            </span>
-            <span className="text-[10px] text-slate-400">All actions logged with IP</span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-1.5 pt-1">
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('admin@murthimachineworks.com');
-                setPassword('admin123');
-              }}
-              className="text-left p-2 rounded-lg bg-slate-900/90 border border-slate-700/80 hover:border-amber-500/50 hover:bg-slate-800 transition"
-            >
-              <p className="text-[11px] font-bold text-white leading-tight">Master Admin</p>
-              <p className="text-[10px] text-amber-400 font-mono truncate">admin@...</p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('kamesh@murthimachineworks.com');
-                setPassword('kamesh123');
-              }}
-              className="text-left p-2 rounded-lg bg-slate-900/90 border border-slate-700/80 hover:border-amber-500/50 hover:bg-slate-800 transition"
-            >
-              <p className="text-[11px] font-bold text-white leading-tight">Kamesh (Prod Head)</p>
-              <p className="text-[10px] text-emerald-400 font-mono truncate">kamesh@...</p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('editor@murthimachineworks.com');
-                setPassword('editor123');
-              }}
-              className="text-left p-2 rounded-lg bg-slate-900/90 border border-slate-700/80 hover:border-amber-500/50 hover:bg-slate-800 transition"
-            >
-              <p className="text-[11px] font-bold text-white leading-tight">Catalog Specialist</p>
-              <p className="text-[10px] text-sky-400 font-mono truncate">editor@...</p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('sales@murthimachineworks.com');
-                setPassword('sales123');
-              }}
-              className="text-left p-2 rounded-lg bg-slate-900/90 border border-slate-700/80 hover:border-amber-500/50 hover:bg-slate-800 transition"
-            >
-              <p className="text-[11px] font-bold text-white leading-tight">Sales Engineer</p>
-              <p className="text-[10px] text-purple-400 font-mono truncate">sales@...</p>
-            </button>
-          </div>
-          <p className="text-[10px] text-slate-400 text-center">
-            Password format: <code className="text-amber-300">[name]123</code> or create custom logins in Team tab.
-          </p>
-        </div>
 
         <div className="text-center pt-2">
           <button
