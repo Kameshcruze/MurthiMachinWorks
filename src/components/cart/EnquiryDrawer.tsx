@@ -260,7 +260,7 @@ export const EnquiryDrawer: React.FC = () => {
                         Reference ID: <span className="font-bold text-[#C81E1E]">{submittedEnquiryId}</span>
                       </p>
                       <p className="text-xs text-slate-600 max-w-xs mx-auto leading-relaxed">
-                        Thank you for your enquiry with Murthi Machin Works. Our Coimbatore sales engineering desk will prepare your formal proposal and contact you shortly.
+                        Thank you for your enquiry with Murthi Machine Works. Our Coimbatore sales engineering desk will prepare your formal proposal and contact you shortly.
                       </p>
                     </div>
 

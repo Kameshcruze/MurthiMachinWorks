@@ -3,7 +3,7 @@ import { toPng } from 'html-to-image';
 import { Bill, BillItem, Product, Category } from '../../../types';
 import { dataService, DATA_CHANGE_EVENT } from '../../../services/dataService';
 import { useSettings } from '../../../context/SettingsContext';
-import { formatPrice, numberToIndianWords, generateNextInvoiceNo } from '../../../utils/helpers';
+import { formatPrice, numberToIndianWords, generateNextInvoiceNo, formatDateIndian } from '../../../utils/helpers';
 import { BillInvoiceTemplate } from './BillInvoiceTemplate';
 import {
   FileText,
@@ -172,10 +172,10 @@ export const AdminBilling: React.FC = () => {
   // Open Form to Edit or Preview Existing Bill
   const handleEditBill = (bill: Bill) => {
     setSelectedBill(bill);
-    setInvoiceNumber(bill.invoice_number);
-    setInvoiceDate(bill.invoice_date);
-    setCustomerName(bill.customer_name);
-    setCustomerAddress(bill.customer_address);
+    setInvoiceNumber(bill.invoice_number || '');
+    setInvoiceDate(bill.invoice_date || '');
+    setCustomerName(bill.customer_name || '');
+    setCustomerAddress(bill.customer_address || '');
     setCustomerGstin(bill.customer_gstin || '');
     setOrderNumber(bill.order_number || '');
     setOrderDate(bill.order_date || '');
@@ -186,11 +186,11 @@ export const AdminBilling: React.FC = () => {
     setVehicleNumber(bill.vehicle_number || '');
     setEwayBillNo(bill.eway_bill_no || '');
     setItems(bill.items && bill.items.length > 0 ? bill.items : []);
-    setTaxType(bill.tax_type);
-    setCgstRate(bill.cgst_rate);
-    setSgstRate(bill.sgst_rate);
-    setIgstRate(bill.igst_rate);
-    setRupeesInWords(bill.rupees_in_words);
+    setTaxType(bill.tax_type || 'intra_state');
+    setCgstRate(bill.cgst_rate ?? 9);
+    setSgstRate(bill.sgst_rate ?? 9);
+    setIgstRate(bill.igst_rate ?? 18);
+    setRupeesInWords(bill.rupees_in_words || '');
     setBankName(bill.bank_name || 'STATE BANK OF INDIA');
     setBankAccountName(bill.bank_account_name || 'Murthi Machin Works');
     setBankAccountNo(bill.bank_account_no || '44117451637');
@@ -392,10 +392,10 @@ export const AdminBilling: React.FC = () => {
 
   // Reusable robust save function
   const handleSaveBillRecord = async (showNotification = true, changeView = true): Promise<Bill | null> => {
-    const validCustomerName = customerName.trim() || 'Messers. Buyer';
-    const validInvoiceNumber = invoiceNumber.trim() || generateNextInvoiceNo(bills);
+    const validCustomerName = (customerName || '').trim() || 'Messers. Buyer';
+    const validInvoiceNumber = (invoiceNumber || '').trim() || generateNextInvoiceNo(bills);
 
-    let validItems = items.filter(i => i.product_name && i.product_name.trim().length > 0);
+    let validItems = (items || []).filter(i => i && i.product_name && String(i.product_name).trim().length > 0);
     if (validItems.length === 0) {
       validItems = [
         {
@@ -414,18 +414,18 @@ export const AdminBilling: React.FC = () => {
     try {
       const billPayload: Omit<Bill, 'id' | 'created_at' | 'updated_at'> = {
         invoice_number: validInvoiceNumber,
-        invoice_date: invoiceDate || new Date().toISOString().slice(0, 10),
+        invoice_date: (invoiceDate || '').trim() || new Date().toISOString().slice(0, 10),
         customer_name: validCustomerName,
-        customer_address: customerAddress.trim(),
-        customer_gstin: customerGstin.trim(),
-        order_number: orderNumber.trim(),
-        order_date: orderDate?.trim() || null,
-        delivery_note_no: deliveryNoteNo.trim(),
-        delivery_note_date: deliveryNoteDate?.trim() || null,
-        despatched_by: despatchedBy.trim(),
-        document_through: documentThrough.trim(),
-        vehicle_number: vehicleNumber.trim(),
-        eway_bill_no: ewayBillNo.trim(),
+        customer_address: (customerAddress || '').trim(),
+        customer_gstin: (customerGstin || '').trim(),
+        order_number: (orderNumber || '').trim(),
+        order_date: orderDate ? String(orderDate).trim() : null,
+        delivery_note_no: (deliveryNoteNo || '').trim(),
+        delivery_note_date: deliveryNoteDate ? String(deliveryNoteDate).trim() : null,
+        despatched_by: (despatchedBy || '').trim(),
+        document_through: (documentThrough || '').trim(),
+        vehicle_number: (vehicleNumber || '').trim(),
+        eway_bill_no: (ewayBillNo || '').trim(),
         items: validItems,
         subtotal,
         tax_type: taxType,
@@ -436,17 +436,26 @@ export const AdminBilling: React.FC = () => {
         igst_rate: igstRate,
         igst_amount: igstAmount,
         total_amount: overallTotal,
-        rupees_in_words: rupeesInWords || numberToIndianWords(overallTotal),
-        bank_name: bankName,
-        bank_account_name: bankAccountName,
-        bank_account_no: bankAccountNo,
-        bank_ifsc: bankIfsc,
-        bank_branch: bankBranch
+        rupees_in_words: (rupeesInWords || '').trim() || numberToIndianWords(overallTotal),
+        bank_name: bankName || 'STATE BANK OF INDIA',
+        bank_account_name: bankAccountName || 'Murthi Machin Works',
+        bank_account_no: bankAccountNo || '44117451637',
+        bank_ifsc: bankIfsc || 'SBIN0021453',
+        bank_branch: bankBranch || 'Avarampalayam'
       };
 
       let saved: Bill;
-      if (selectedBill?.id) {
-        saved = await dataService.updateBill(selectedBill.id, billPayload);
+
+      // Duplicate prevention:
+      // Check if updating existing record by selectedBill?.id OR matching invoice_number
+      const existingRecord =
+        (selectedBill?.id ? bills.find(b => b.id === selectedBill.id) : null) ||
+        bills.find(
+          b => b.invoice_number?.trim().toLowerCase() === validInvoiceNumber.toLowerCase()
+        );
+
+      if (existingRecord) {
+        saved = await dataService.updateBill(existingRecord.id, billPayload);
         if (showNotification) {
           showToast('Bill Saved', `Invoice #${saved.invoice_number} updated successfully`, 'success');
         }
@@ -494,8 +503,10 @@ export const AdminBilling: React.FC = () => {
       setIsGeneratingImage(true);
       showToast('Generating Image', 'Rendering A4-sized high-resolution image...', 'info');
 
-      // 1. Auto-save bill in background so user data is never lost
-      await handleSaveBillRecord(false, false);
+      // 1. Auto-save bill in background ONLY if in edit or create mode
+      if (viewMode === 'edit' || viewMode === 'create') {
+        await handleSaveBillRecord(false, false);
+      }
 
       // 2. Clone invoice element into an off-screen container without CSS transforms
       const cloneContainer = document.createElement('div');
@@ -773,7 +784,7 @@ export const AdminBilling: React.FC = () => {
                             {bill.invoice_number}
                           </td>
                           <td className="py-3.5 px-4 font-mono text-slate-600 whitespace-nowrap">
-                            {bill.invoice_date}
+                            {formatDateIndian(bill.invoice_date)}
                           </td>
                           <td className="py-3.5 px-4">
                             <p className="font-bold text-slate-900">{bill.customer_name}</p>

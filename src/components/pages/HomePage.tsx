@@ -324,7 +324,7 @@ export const HomePage: React.FC = () => {
             <source media="(min-width: 640px)" srcSet={settings.hero_image && settings.hero_image !== '/hero-banner.png' ? settings.hero_image : "/hero-banner.webp"} />
             <img
               src={settings.hero_image && settings.hero_image !== '/hero-banner.png' ? settings.hero_image : "/hero-banner.webp"}
-              alt="Murthi Machin Works Industrial Workshop"
+              alt="Murthi Machine Works Industrial Workshop"
               className="w-full h-full object-cover object-center filter contrast-105 brightness-95"
               style={{ objectFit: 'cover', objectPosition: 'center' }}
               referrerPolicy="no-referrer"
@@ -623,7 +623,7 @@ export const HomePage: React.FC = () => {
             <img
               id="about-us-hero-image"
               src="/about-us.webp"
-              alt="Murthi Machin Works Industrial Manufacturing & Sales"
+              alt="Murthi Machine Works Industrial Manufacturing & Sales"
               className="w-full h-full object-cover object-center"
               referrerPolicy="no-referrer"
               onError={(e) => {
@@ -643,7 +643,7 @@ export const HomePage: React.FC = () => {
             <div className="w-12 h-1 bg-[#F5A623] mb-4" />
 
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Murthi Machin Works is one of Coimbatore's trusted machinery sales and service providers, offering both new and used industrial machinery with complete maintenance and support.
+              Murthi Machine Works is one of Coimbatore's trusted machinery sales and service providers, offering both new and used industrial machinery with complete maintenance and support.
             </p>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               With over 15 years of experience, we have built a strong reputation for quality, reliability, and customer satisfaction. Our team of skilled technicians ensures the best service and support for all types of industrial machinery.
@@ -867,7 +867,7 @@ export const HomePage: React.FC = () => {
                 org: "Precision Engineering, Coimbatore"
               },
               {
-                quote: "We rely on Murthi Machin Works for our factory's hydraulic press repairs and annual maintenance. Their technicians are always dependable and fast.",
+                quote: "We rely on Murthi Machine Works for our factory's hydraulic press repairs and annual maintenance. Their technicians are always dependable and fast.",
                 author: "Suresh Babu",
                 org: "Auto Components Works, Tiruppur"
               },

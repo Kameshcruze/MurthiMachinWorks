@@ -31,7 +31,7 @@ export const Footer: React.FC = () => {
     { label: 'Machinery Categories', page: 'categories' as const },
     { label: 'Our Services', page: 'home' as const, section: 'our-services-section' },
     { label: 'Service Coverage Area', page: 'home' as const, section: 'service-area-section' },
-    { label: 'About Murthi Machin Works', page: 'about' as const },
+    { label: 'About Murthi Machine Works', page: 'about' as const },
     { label: 'Contact & Location', page: 'contact' as const },
     { label: 'Enquiry / Quote RFQ', page: 'cart' as const },
   ];
@@ -112,7 +112,7 @@ export const Footer: React.FC = () => {
             </div>
             <div>
               <span className="font-heading font-black text-lg text-white tracking-wider block">
-                MURTHI MACHIN WORKS
+                MURTHI MACHINE WORKS
               </span>
               <p className="text-[10px] text-[#F5A623] font-black tracking-widest uppercase">
                 MACHINERY SALES & SERVICE • COIMBATORE
@@ -121,7 +121,7 @@ export const Footer: React.FC = () => {
           </div>
 
           <p className="text-xs text-slate-400 leading-relaxed">
-            Murthi Machin Works is one of Coimbatore's trusted machinery sales and service providers, offering both new and used industrial machinery with complete maintenance and support.
+            Murthi Machine Works is one of Coimbatore's trusted machinery sales and service providers, offering both new and used industrial machinery with complete maintenance and support.
           </p>
 
           {/* Quick Action Button */}
@@ -243,7 +243,7 @@ export const Footer: React.FC = () => {
       {/* Bottom Legal & Admin Strip */}
       <div className="border-t border-slate-900 bg-black py-4 px-4 sm:px-8 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>© {new Date().getFullYear()} Murthi Machin Works. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Murthi Machine Works. All rights reserved.</p>
 
           <div className="flex items-center gap-4">
             <button

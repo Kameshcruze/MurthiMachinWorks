@@ -232,8 +232,8 @@ function getLocalSettings(): SiteSettings {
       parsed.branches = INITIAL_BRANCHES;
       changed = true;
     }
-    if (parsed.business_name && parsed.business_name.toLowerCase().includes('machine works')) {
-      parsed.business_name = 'Murthi Machin Works';
+    if (parsed.business_name && (parsed.business_name.toLowerCase().includes('machin works') || parsed.business_name === 'Murthi Machin Works')) {
+      parsed.business_name = 'Murthi Machine Works';
       changed = true;
     }
     if (changed) {
@@ -1126,7 +1126,7 @@ export const dataService = {
                 name: cat?.name || newProduct.category_name,
                 slug: catSlug,
                 description: cat?.description || '',
-                image_url: cat?.image_url || 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80',
+                image_url: cat?.image_url || '',
                 is_active: true,
                 sort_order: cat?.sort_order || 99
               };
@@ -1214,7 +1214,9 @@ export const dataService = {
       category_id: cat ? cat.id : catId,
       category_name: cat ? cat.name : existing.category_name,
       price: updates.price !== undefined ? Number(updates.price) : existing.price,
-      sale_price: updates.sale_price !== undefined ? (updates.sale_price !== null && !isNaN(Number(updates.sale_price)) ? Number(updates.sale_price) : null) : existing.sale_price,
+      sale_price: updates.sale_price !== undefined 
+        ? (updates.sale_price !== null && !isNaN(Number(updates.sale_price)) && Number(updates.sale_price) > 0 ? Number(updates.sale_price) : null) 
+        : existing.sale_price,
       updated_at: new Date().toISOString()
     };
 
@@ -2249,6 +2251,13 @@ export const dataService = {
   },
 
   async createBill(billData: Omit<Bill, 'id' | 'created_at' | 'updated_at'> & { id?: string }): Promise<Bill> {
+    const localBills = getLocalBills();
+    const existing = (billData.id ? localBills.find(b => b.id === billData.id) : null)
+      || (billData.invoice_number ? localBills.find(b => b.invoice_number?.trim().toLowerCase() === String(billData.invoice_number).trim().toLowerCase()) : null);
+    if (existing) {
+      return this.updateBill(existing.id, billData);
+    }
+
     const currentUser = getActiveUser();
     const nowIso = new Date().toISOString();
     const billId = billData.id || `bill-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
@@ -2279,19 +2288,19 @@ export const dataService = {
 
     let payload: Record<string, any> = {
       id: billId,
-      invoice_number: billData.invoice_number?.trim() || 'MMW/2026-27/001',
+      invoice_number: billData.invoice_number ? String(billData.invoice_number).trim() : 'MMW/2026-27/001',
       invoice_date: invoiceDate,
-      customer_name: billData.customer_name?.trim() || 'Messers. Buyer',
-      customer_address: billData.customer_address?.trim() || null,
-      customer_gstin: billData.customer_gstin?.trim() || null,
-      order_number: billData.order_number?.trim() || null,
+      customer_name: billData.customer_name ? String(billData.customer_name).trim() : 'Messers. Buyer',
+      customer_address: billData.customer_address ? String(billData.customer_address).trim() : null,
+      customer_gstin: billData.customer_gstin ? String(billData.customer_gstin).trim() : null,
+      order_number: billData.order_number ? String(billData.order_number).trim() : null,
       order_date: sanitizeDate(billData.order_date),
-      delivery_note_no: billData.delivery_note_no?.trim() || null,
+      delivery_note_no: billData.delivery_note_no ? String(billData.delivery_note_no).trim() : null,
       delivery_note_date: sanitizeDate(billData.delivery_note_date),
-      despatched_by: billData.despatched_by?.trim() || null,
-      document_through: billData.document_through?.trim() || null,
-      vehicle_number: billData.vehicle_number?.trim() || null,
-      eway_bill_no: billData.eway_bill_no?.trim() || null,
+      despatched_by: billData.despatched_by ? String(billData.despatched_by).trim() : null,
+      document_through: billData.document_through ? String(billData.document_through).trim() : null,
+      vehicle_number: billData.vehicle_number ? String(billData.vehicle_number).trim() : null,
+      eway_bill_no: billData.eway_bill_no ? String(billData.eway_bill_no).trim() : null,
       items: sanitizedItems,
       subtotal: Number(billData.subtotal) || 0,
       tax_type: billData.tax_type || 'intra_state',
@@ -2302,12 +2311,12 @@ export const dataService = {
       igst_rate: Number(billData.igst_rate) || 0,
       igst_amount: Number(billData.igst_amount) || 0,
       total_amount: Number(billData.total_amount) || 0,
-      rupees_in_words: billData.rupees_in_words?.trim() || '',
-      bank_name: billData.bank_name?.trim() || 'STATE BANK OF INDIA',
-      bank_account_name: billData.bank_account_name?.trim() || 'Murthi Machin Works',
-      bank_account_no: billData.bank_account_no?.trim() || '44117451637',
-      bank_ifsc: billData.bank_ifsc?.trim() || 'SBIN0021453',
-      bank_branch: billData.bank_branch?.trim() || 'Avarampalayam',
+      rupees_in_words: billData.rupees_in_words ? String(billData.rupees_in_words).trim() : '',
+      bank_name: billData.bank_name ? String(billData.bank_name).trim() : 'STATE BANK OF INDIA',
+      bank_account_name: billData.bank_account_name ? String(billData.bank_account_name).trim() : 'Murthi Machin Works',
+      bank_account_no: billData.bank_account_no ? String(billData.bank_account_no).trim() : '44117451637',
+      bank_ifsc: billData.bank_ifsc ? String(billData.bank_ifsc).trim() : 'SBIN0021453',
+      bank_branch: billData.bank_branch ? String(billData.bank_branch).trim() : 'Avarampalayam',
       created_by: currentUser.name || 'Murthi Admin',
       created_at: nowIso,
       updated_at: nowIso
@@ -2364,7 +2373,11 @@ export const dataService = {
 
   async updateBill(id: string, updates: Partial<Bill>): Promise<Bill> {
     const bills = await this.getBills();
-    const existing = bills.find(b => b.id === id);
+    let existing = bills.find(b => b.id === id);
+    if (!existing) {
+      const local = getLocalBills();
+      existing = local.find(b => b.id === id) || (updates.invoice_number ? local.find(b => b.invoice_number?.trim().toLowerCase() === String(updates.invoice_number).trim().toLowerCase()) : undefined);
+    }
     if (!existing) throw new Error('Bill not found');
 
     const nowIso = new Date().toISOString();
@@ -2397,19 +2410,19 @@ export const dataService = {
     }));
 
     const updatePayload = {
-      invoice_number: merged.invoice_number?.trim() || existing.invoice_number,
+      invoice_number: merged.invoice_number ? String(merged.invoice_number).trim() : existing.invoice_number,
       invoice_date: sanitizeDate(merged.invoice_date) || existing.invoice_date,
-      customer_name: merged.customer_name?.trim() || existing.customer_name,
-      customer_address: merged.customer_address?.trim() || null,
-      customer_gstin: merged.customer_gstin?.trim() || null,
-      order_number: merged.order_number?.trim() || null,
+      customer_name: merged.customer_name ? String(merged.customer_name).trim() : existing.customer_name,
+      customer_address: merged.customer_address ? String(merged.customer_address).trim() : null,
+      customer_gstin: merged.customer_gstin ? String(merged.customer_gstin).trim() : null,
+      order_number: merged.order_number ? String(merged.order_number).trim() : null,
       order_date: sanitizeDate(merged.order_date),
-      delivery_note_no: merged.delivery_note_no?.trim() || null,
+      delivery_note_no: merged.delivery_note_no ? String(merged.delivery_note_no).trim() : null,
       delivery_note_date: sanitizeDate(merged.delivery_note_date),
-      despatched_by: merged.despatched_by?.trim() || null,
-      document_through: merged.document_through?.trim() || null,
-      vehicle_number: merged.vehicle_number?.trim() || null,
-      eway_bill_no: merged.eway_bill_no?.trim() || null,
+      despatched_by: merged.despatched_by ? String(merged.despatched_by).trim() : null,
+      document_through: merged.document_through ? String(merged.document_through).trim() : null,
+      vehicle_number: merged.vehicle_number ? String(merged.vehicle_number).trim() : null,
+      eway_bill_no: merged.eway_bill_no ? String(merged.eway_bill_no).trim() : null,
       items: sanitizedItems,
       subtotal: Number(merged.subtotal) || 0,
       tax_type: merged.tax_type || 'intra_state',
@@ -2420,12 +2433,12 @@ export const dataService = {
       igst_rate: Number(merged.igst_rate) || 0,
       igst_amount: Number(merged.igst_amount) || 0,
       total_amount: Number(merged.total_amount) || 0,
-      rupees_in_words: merged.rupees_in_words?.trim() || '',
-      bank_name: merged.bank_name?.trim() || 'STATE BANK OF INDIA',
-      bank_account_name: merged.bank_account_name?.trim() || 'Murthi Machin Works',
-      bank_account_no: merged.bank_account_no?.trim() || '44117451637',
-      bank_ifsc: merged.bank_ifsc?.trim() || 'SBIN0021453',
-      bank_branch: merged.bank_branch?.trim() || 'Avarampalayam',
+      rupees_in_words: merged.rupees_in_words ? String(merged.rupees_in_words).trim() : '',
+      bank_name: merged.bank_name ? String(merged.bank_name).trim() : 'STATE BANK OF INDIA',
+      bank_account_name: merged.bank_account_name ? String(merged.bank_account_name).trim() : 'Murthi Machin Works',
+      bank_account_no: merged.bank_account_no ? String(merged.bank_account_no).trim() : '44117451637',
+      bank_ifsc: merged.bank_ifsc ? String(merged.bank_ifsc).trim() : 'SBIN0021453',
+      bank_branch: merged.bank_branch ? String(merged.bank_branch).trim() : 'Avarampalayam',
       updated_at: nowIso
     };
 
@@ -2533,6 +2546,13 @@ export const dataService = {
   },
 
   async createQuotation(qData: Omit<Quotation, 'id' | 'created_at' | 'updated_at'> & { id?: string }): Promise<Quotation> {
+    const localList = getLocalQuotations();
+    const existing = (qData.id ? localList.find(q => q.id === qData.id) : null)
+      || (qData.quotation_number ? localList.find(q => q.quotation_number?.trim().toLowerCase() === qData.quotation_number?.trim().toLowerCase()) : null);
+    if (existing) {
+      return this.updateQuotation(existing.id, qData);
+    }
+
     const currentUser = getActiveUser();
     const nowIso = new Date().toISOString();
     const quotationId = qData.id || `qtn-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;

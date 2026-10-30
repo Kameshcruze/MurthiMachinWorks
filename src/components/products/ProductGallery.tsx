@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ProductImage } from '../../types';
 import { formatImageUrl } from '../../utils/helpers';
-import { Maximize2, ChevronLeft, ChevronRight, X, ShieldCheck } from 'lucide-react';
+import { Maximize2, ChevronLeft, ChevronRight, X, ShieldCheck, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ProductGalleryProps {
@@ -10,9 +10,7 @@ interface ProductGalleryProps {
 }
 
 export const ProductGallery: React.FC<ProductGalleryProps> = ({ images, productName }) => {
-  const defaultList: ProductImage[] = images && images.length > 0 ? images : [
-    { id: 'default-1', image_url: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=85', sort_order: 1, is_primary: true }
-  ];
+  const defaultList: ProductImage[] = images && images.length > 0 ? images : [];
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -21,6 +19,20 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images, productN
     y: 0,
     isHovering: false,
   });
+
+  if (defaultList.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="relative aspect-4/3 sm:aspect-16/11 bg-slate-100 rounded-xl border border-slate-200 flex flex-col items-center justify-center text-slate-400 select-none shadow-xs p-6 text-center">
+          <ImageIcon className="w-14 h-14 text-slate-300 mb-2" />
+          <p className="text-sm font-bold text-slate-700">No Machinery Photos Uploaded</p>
+          <p className="text-xs text-slate-400 mt-1 max-w-sm">
+            Contact sales for technical drawings, inspection reports, and workshop machine pictures.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const activeImage = defaultList[activeIndex] || defaultList[0];
   const activeImageUrl = formatImageUrl(activeImage?.image_url);

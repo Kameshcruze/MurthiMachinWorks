@@ -45,7 +45,7 @@ export const AdminCategories: React.FC = () => {
     name: '',
     slug: '',
     description: '',
-    image_url: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80',
+    image_url: '',
     keywords: [] as string[],
     is_active: true
   });
@@ -123,7 +123,7 @@ export const AdminCategories: React.FC = () => {
       name: '',
       slug: '',
       description: '',
-      image_url: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80',
+      image_url: '',
       keywords: [],
       is_active: true
     });
@@ -139,7 +139,7 @@ export const AdminCategories: React.FC = () => {
       name: cat.name,
       slug: cat.slug,
       description: cat.description || '',
-      image_url: cat.image_url || 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80',
+      image_url: cat.image_url || '',
       keywords: Array.isArray(cat.keywords) ? [...cat.keywords] : [],
       is_active: cat.is_active
     });
@@ -584,12 +584,18 @@ export const AdminCategories: React.FC = () => {
                 <tr key={cat.id} className="hover:bg-slate-50 transition">
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
-                      <img
-                        src={formatImageUrl(cat.image_url)}
-                        alt={cat.name}
-                        className="w-12 h-10 rounded-md object-cover border border-slate-200 shrink-0"
-                        referrerPolicy="no-referrer"
-                      />
+                      {cat.image_url ? (
+                        <img
+                          src={formatImageUrl(cat.image_url)}
+                          alt={cat.name}
+                          className="w-12 h-10 rounded-md object-cover border border-slate-200 shrink-0"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="w-12 h-10 rounded-md border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0 text-slate-400">
+                          <ImageIcon className="w-5 h-5 text-slate-400" />
+                        </div>
+                      )}
                       <div>
                         <span className="font-heading font-bold text-slate-900 block">
                           {cat.name}

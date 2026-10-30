@@ -18,7 +18,7 @@ export const WhatsAppFloatingButton: React.FC = () => {
   ];
 
   const handleSend = (text?: string) => {
-    const defaultText = `Hello Murthi Machin Works, I am looking for machinery details & quotation.`;
+    const defaultText = `Hello Murthi Machine Works, I am looking for machinery details & quotation.`;
     const textToSend = text || customMsg.trim() || defaultText;
     const url = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(textToSend)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -48,7 +48,7 @@ export const WhatsAppFloatingButton: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="font-heading font-black text-sm text-white tracking-wide">
-                    Murthi Machin Works
+                    Murthi Machine Works
                   </h4>
                   <p className="text-[11px] text-[#F5A623] font-medium flex items-center gap-1">
                     <span>Direct Technical Support</span>

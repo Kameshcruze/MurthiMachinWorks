@@ -74,7 +74,7 @@ export const AdminSettings: React.FC = () => {
   const handleAddBranch = () => {
     const newBranch: BranchLocation = {
       id: `branch-${Date.now()}`,
-      name: 'MURTHI MACHIN WORKS - ',
+      name: 'MURTHI MACHINE WORKS - ',
       address: '',
       google_maps_url: '',
       phone: '98422 66521',
@@ -401,7 +401,7 @@ export const AdminSettings: React.FC = () => {
                       type="text"
                       value={branch.name}
                       onChange={e => handleBranchChange(index, 'name', e.target.value)}
-                      placeholder="e.g. MURTHI MACHIN WORKS - ONDIPUDUR"
+                      placeholder="e.g. MURTHI MACHINE WORKS - ONDIPUDUR"
                       className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 font-semibold text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                       required
                     />

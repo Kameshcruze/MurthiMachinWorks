@@ -133,7 +133,7 @@ export const CartPage: React.FC = () => {
                 Reference Order / RFQ Number: <strong className="text-slate-900">{submittedEnquiryId}</strong>
               </p>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Thank you for your enquiry. Murthi Machin Works engineering estimation team has logged your requirement and will share complete technical specifications and pricing breakdown.
+                Thank you for your enquiry. Murthi Machine Works engineering estimation team has logged your requirement and will share complete technical specifications and pricing breakdown.
               </p>
             </div>
 

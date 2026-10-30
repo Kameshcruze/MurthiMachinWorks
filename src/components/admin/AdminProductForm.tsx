@@ -41,7 +41,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
     slug: productToEdit?.slug || '',
     sku: productToEdit?.sku || '',
     category_id: productToEdit?.category_id || '',
-    brand: productToEdit?.brand || 'Murthi Machin Works',
+    brand: productToEdit?.brand || 'Murthi Machine Works',
     short_description: productToEdit?.short_description || '',
     description: productToEdit?.description || '',
     price: productToEdit?.price || 0,
@@ -100,15 +100,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
           sort_order: img.sort_order ?? idx + 1,
           caption: img.caption || ''
         }))
-      : [
-          {
-            id: 'img-1',
-            image_url: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=85',
-            is_primary: true,
-            sort_order: 1,
-            caption: 'Primary Machinery Photo'
-          }
-        ]
+      : []
   );
 
   // Downloads
@@ -232,7 +224,9 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
         short_description: formData.short_description.trim(),
         description: formData.description.trim(),
         price: Number(formData.price) || 0,
-        sale_price: formData.sale_price ? Number(formData.sale_price) : undefined,
+        sale_price: (formData.sale_price !== undefined && formData.sale_price !== null && formData.sale_price !== '') 
+          ? Number(formData.sale_price) 
+          : null,
         show_price: formData.show_price,
         stock_status: formData.stock_status as any,
         is_featured: formData.is_featured,
@@ -380,7 +374,7 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
               type="text"
               value={formData.brand}
               onChange={e => setFormData({ ...formData, brand: e.target.value })}
-              placeholder="Murthi Machin Works"
+              placeholder="Murthi Machine Works"
               className="w-full p-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
@@ -538,16 +532,30 @@ export const AdminProductForm: React.FC<AdminProductFormProps> = ({
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-800 block mb-1">
-              Special / Sale Price (INR Optional)
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-slate-800">
+                Special / Sale Price (INR Optional)
+              </label>
+              {formData.sale_price !== null && formData.sale_price !== undefined && formData.sale_price !== '' && (
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, sale_price: null }))}
+                  className="text-[10px] text-amber-700 hover:text-rose-600 font-semibold underline transition"
+                >
+                  Remove Sale Price (Revert to Base)
+                </button>
+              )}
+            </div>
             <input
               type="number"
-              value={formData.sale_price || ''}
-              onChange={e => setFormData({ ...formData, sale_price: e.target.value ? Number(e.target.value) : undefined })}
-              placeholder="450000"
+              value={formData.sale_price === null || formData.sale_price === undefined ? '' : formData.sale_price}
+              onChange={e => setFormData({ ...formData, sale_price: e.target.value.trim() ? Number(e.target.value) : null })}
+              placeholder="Leave blank to use Base Price"
               className="w-full p-2.5 text-xs font-mono bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
+            <span className="text-[10px] text-slate-400 mt-0.5 block">
+              Clear this box or click remove to restore the base price.
+            </span>
           </div>
 
           <div>

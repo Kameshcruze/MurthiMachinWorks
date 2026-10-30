@@ -420,7 +420,7 @@ export const AdminEnquiries: React.FC = () => {
                       {cleanPhone && (
                         <a
                           href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent(
-                            `Hello ${enq.customer_name},\n\nThis is regarding your machine quotation enquiry with Murthi Machin Works.`
+                            `Hello ${enq.customer_name},\n\nThis is regarding your machine quotation enquiry with Murthi Machine Works.`
                           )}`}
                           target="_blank"
                           rel="noopener noreferrer"

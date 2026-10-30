@@ -231,7 +231,7 @@ export const Header: React.FC = () => {
 
             <div>
               <h1 className="font-heading font-black text-sm sm:text-lg md:text-xl xl:text-2xl tracking-tight text-slate-950 leading-tight group-hover:text-[#C81E1E] transition-colors whitespace-nowrap">
-                {settings?.business_name ? settings.business_name.toUpperCase() : 'MURTHI MACHIN WORKS'}
+                {settings?.business_name ? settings.business_name.toUpperCase() : 'MURTHI MACHINE WORKS'}
               </h1>
               <p className="text-[9px] sm:text-[10px] md:text-[11px] font-bold text-slate-700 tracking-tight whitespace-nowrap">
                 {settings?.tagline || 'All New and Old Machinery Sales & Service'}

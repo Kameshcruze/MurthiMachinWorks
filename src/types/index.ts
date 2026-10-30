@@ -267,6 +267,8 @@ export interface QuotationItem {
   quantity: number;
   rate: number;
   amount: number;
+  hsn_code?: string;
+  serial_number?: string;
 }
 
 export interface Quotation {

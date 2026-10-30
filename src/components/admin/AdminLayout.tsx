@@ -229,7 +229,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   : activeSection.replace('-', ' ')}
               </h1>
               <p className="text-[11px] text-slate-500 mt-0.5 hidden sm:block">
-                Murthi Machin Works • Industrial Portal Control
+                Murthi Machine Works • Industrial Portal Control
               </p>
             </div>
           </div>
@@ -243,22 +243,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 {user?.id || 'emp-101'}
               </span>
             </div>
-
-            {/* Audit Logs button visible ONLY to Admin */}
-            {isAdmin && (
-              <button
-                onClick={() => onSelectSection('audit-logs')}
-                className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition ${
-                  activeSection === 'audit-logs'
-                    ? 'bg-amber-500 text-slate-950 border-amber-500 font-bold'
-                    : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-                }`}
-                title="View Audit Logs (Admin Only)"
-              >
-                <Activity className="w-4 h-4 text-amber-600 shrink-0" />
-                <span className="hidden sm:inline">Audit Logs</span>
-              </button>
-            )}
           </div>
         </header>
 

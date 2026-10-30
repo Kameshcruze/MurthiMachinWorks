@@ -93,7 +93,7 @@ export const exportMachineryToExcel = (
       'Machine Name': p.name || '',
       'SKU / Model Code': p.sku || '',
       'Category': categoryName,
-      'Brand / Manufacturer': p.brand || 'Murthi Machin Works',
+      'Brand / Manufacturer': p.brand || 'Murthi Machine Works',
       'Stock Availability': formatStockStatus(p.stock_status),
       'Base Catalog Price (₹)': p.price ?? 0,
       'Sale / Offer Price (₹)': p.sale_price !== undefined && p.sale_price !== null ? p.sale_price : '',
@@ -245,7 +245,7 @@ export const exportMachineryToExcel = (
 
   // Generate filename with company name and timestamp
   const dateStr = new Date().toISOString().slice(0, 10);
-  const fileName = `Murthi_Machin_Works_All_Machinery_Catalog_${dateStr}.xlsx`;
+  const fileName = `Murthi_Machine_Works_All_Machinery_Catalog_${dateStr}.xlsx`;
 
   // Write and trigger download in browser
   XLSX.writeFile(wb, fileName);
@@ -303,7 +303,7 @@ export const exportCategoriesToExcel = (categories: Category[]) => {
   XLSX.utils.book_append_sheet(wb, ws, 'Machinery Categories');
 
   const dateStr = new Date().toISOString().slice(0, 10);
-  const fileName = `Murthi_Machin_Works_Categories_${dateStr}.xlsx`;
+  const fileName = `Murthi_Machine_Works_Categories_${dateStr}.xlsx`;
   XLSX.writeFile(wb, fileName);
 };
 
@@ -443,7 +443,7 @@ export const exportEnquiriesToExcel = (enquiries: Enquiry[]) => {
   }
 
   const dateStr = new Date().toISOString().slice(0, 10);
-  const fileName = `Murthi_Machin_Works_Enquiries_${dateStr}.xlsx`;
+  const fileName = `Murthi_Machine_Works_Enquiries_${dateStr}.xlsx`;
   XLSX.writeFile(wb, fileName);
 };
 

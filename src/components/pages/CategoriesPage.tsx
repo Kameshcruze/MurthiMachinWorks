@@ -3,7 +3,7 @@ import { useNavigation } from '../../context/NavigationContext';
 import { Category, Product } from '../../types';
 import { dataService, DATA_CHANGE_EVENT } from '../../services/dataService';
 import { formatImageUrl } from '../../utils/helpers';
-import { ArrowRight, ChevronRight, Layers, Cog, ShieldCheck } from 'lucide-react';
+import { ArrowRight, ChevronRight, Layers, Cog, ShieldCheck, FolderTree } from 'lucide-react';
 
 export const CategoriesPage: React.FC = () => {
   const { navigateTo } = useNavigation();
@@ -94,16 +94,20 @@ export const CategoriesPage: React.FC = () => {
                   className="group bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-xl hover:border-amber-400 transition-all duration-300 cursor-pointer flex flex-col justify-between"
                 >
                   <div className="relative aspect-16/10 bg-slate-100 overflow-hidden">
-                    <img
-                      src={formatImageUrl(cat.image_url)}
-                      alt={cat.name}
-                      className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500"
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/hero-banner.webp';
-                      }}
-                    />
+                    {formatImageUrl(cat.image_url) ? (
+                      <img
+                        src={formatImageUrl(cat.image_url)}
+                        alt={cat.name}
+                        className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-slate-400 p-4">
+                        <FolderTree className="w-10 h-10 text-amber-500/80 mb-2" />
+                        <span className="text-xs font-semibold text-slate-300">Category Catalog</span>
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white">
                       <h3 className="font-heading font-bold text-lg text-white">

@@ -129,14 +129,7 @@ export const AdminProducts: React.FC = () => {
         'Headstock gears made of EN-353 steel',
         'ISO 9001:2015 tested spindle runout < 0.005mm'
       ],
-      images: [
-        {
-          id: 'img-1',
-          image_url: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=80',
-          sort_order: 1,
-          is_primary: true
-        }
-      ]
+      images: []
     });
     setIsModalOpen(true);
   };
@@ -282,6 +275,9 @@ export const AdminProducts: React.FC = () => {
 
       const payload = {
         ...formData,
+        sale_price: (formData.sale_price !== undefined && formData.sale_price !== null && formData.sale_price !== '') 
+          ? Number(formData.sale_price) 
+          : null,
         keywords: finalKeywords
       };
 
@@ -483,12 +479,19 @@ export const AdminProducts: React.FC = () => {
                 >
                   {/* Top Image with Badges */}
                   <div className="relative aspect-4/3 bg-slate-100 overflow-hidden border-b border-slate-100">
-                    <img
-                      src={formatImageUrl(primaryImg)}
-                      alt={p.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                      referrerPolicy="no-referrer"
-                    />
+                    {formatImageUrl(primaryImg) ? (
+                      <img
+                        src={formatImageUrl(primaryImg)}
+                        alt={p.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400">
+                        <ImageIcon className="w-10 h-10 text-slate-300 mb-1" />
+                        <span className="text-[11px] font-semibold text-slate-400">No Image</span>
+                      </div>
+                    )}
                     <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded border backdrop-blur-xs shadow-2xs ${stockBadge.bg}`}>
                         {stockBadge.label}
@@ -613,12 +616,18 @@ export const AdminProducts: React.FC = () => {
                     <tr key={p.id} className="hover:bg-slate-50/70 transition">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <img
-                            src={formatImageUrl(primaryImg)}
-                            alt={p.name}
-                            className="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0"
-                            referrerPolicy="no-referrer"
-                          />
+                          {formatImageUrl(primaryImg) ? (
+                            <img
+                              src={formatImageUrl(primaryImg)}
+                              alt={p.name}
+                              className="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0 text-slate-400">
+                              <ImageIcon className="w-5 h-5 text-slate-400" />
+                            </div>
+                          )}
                           <div className="min-w-0">
                             <p className="font-bold text-slate-900 line-clamp-1">{p.name}</p>
                             <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500">
@@ -815,14 +824,28 @@ export const AdminProducts: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-800 block mb-1">Sale / Offer Price (₹)</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="font-bold text-slate-800">Sale / Offer Price (₹)</label>
+                    {formData.sale_price !== null && formData.sale_price !== undefined && formData.sale_price !== '' && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, sale_price: null }))}
+                        className="text-[10px] text-amber-700 hover:text-rose-600 font-semibold underline transition"
+                      >
+                        Remove (Revert to Base)
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="number"
-                    value={formData.sale_price || ''}
-                    onChange={e => setFormData({ ...formData, sale_price: e.target.value ? Number(e.target.value) : undefined })}
-                    placeholder="Optional discounted price"
+                    value={formData.sale_price === null || formData.sale_price === undefined ? '' : formData.sale_price}
+                    onChange={e => setFormData({ ...formData, sale_price: e.target.value.trim() ? Number(e.target.value) : null })}
+                    placeholder="Leave blank to use Base Price"
                     className="w-full p-2 bg-white border border-slate-300 rounded-lg font-mono focus:ring-2 focus:ring-amber-500"
                   />
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">
+                    Clear this box or click remove to revert to Base Price.
+                  </span>
                 </div>
 
                 <div className="flex flex-col justify-end space-y-2">

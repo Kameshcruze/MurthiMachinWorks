@@ -1,6 +1,6 @@
 import React from 'react';
 import { Bill } from '../../../types';
-import { splitRupeesPaise } from '../../../utils/helpers';
+import { splitRupeesPaise, formatDateIndian } from '../../../utils/helpers';
 import {
   Phone,
   MapPin,
@@ -255,7 +255,7 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
           <div className="flex items-baseline gap-2 flex-1 max-w-[300px] justify-end">
             <span className="font-bold text-slate-950 shrink-0">Date :</span>
             <div className="border-b border-slate-700 min-w-[200px] pb-0.5 text-center font-bold font-mono text-[11.5px] text-slate-950">
-              {bill.invoice_date || new Date().toISOString().slice(0, 10)}
+              {formatDateIndian(bill.invoice_date || new Date().toISOString().slice(0, 10))}
             </div>
           </div>
         </div>
@@ -321,7 +321,7 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
               <Calendar className="w-3.5 h-3.5 text-[#082138] shrink-0" />
               <span className="font-bold text-[#082138] shrink-0">Dated :</span>
               <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-bold text-slate-900 font-mono text-[10px]">
-                {bill.order_date || ''}
+                {formatDateIndian(bill.order_date)}
               </div>
             </div>
 
@@ -353,7 +353,7 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
             <div className="col-span-3 flex items-center gap-1.5">
               <span className="font-bold text-[#082138] shrink-0 pl-4">Dated :</span>
               <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-bold text-slate-900 font-mono text-[10px]">
-                {bill.delivery_note_date || ''}
+                {formatDateIndian(bill.delivery_note_date)}
               </div>
             </div>
 
@@ -630,15 +630,12 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
             SECTION 7: TERMS & CONDITIONS DISCLAIMER (Exact 3 lines)
            ======================================================================= */}
         <div
-          className="rounded-lg p-2.5 flex items-center gap-3 mb-2"
+          className="rounded-lg p-2.5 mb-2"
           style={{
             border: '1.4px solid #9CCBF0',
             backgroundColor: '#F4F9FD'
           }}
         >
-          <div className="w-8 h-8 rounded-lg bg-white border border-[#9CCBF0] text-[#082138] flex items-center justify-center shrink-0">
-            <FileText className="w-4 h-4 text-[#008CD6]" />
-          </div>
           <p className="text-[8.5px] text-slate-800 leading-[1.3] font-medium">
             Goods once sold cannot be taken back. Our Responsibility ceases after the goods have been delivered to the carriers on claim for breakage &amp; shortage during transit entertained interest at 12% will be charged if amount is not paid within 30 days after presentation.
           </p>

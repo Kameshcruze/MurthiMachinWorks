@@ -273,6 +273,8 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
       {
         id: `qtn-item-${Date.now()}-${prev.length + 1}`,
         product_description: '',
+        hsn_code: '84581100',
+        serial_number: '',
         quantity: 1,
         rate: 0,
         amount: 0
@@ -312,7 +314,9 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
       const copy = [...prev];
       const target = {
         ...copy[index],
-        product_description: `${prod.name.toUpperCase()}${prod.condition ? ` (${prod.condition.toUpperCase()})` : ''}`,
+        product_description: `${prod.name.toUpperCase()}${prod.stock_status ? ` (${prod.stock_status.toUpperCase().replace('_', ' ')})` : ''}`,
+        hsn_code: '84581100',
+        serial_number: prod.sku || '',
         rate: prod.price || 0,
         amount: (copy[index].quantity || 1) * (prod.price || 0)
       };
@@ -433,8 +437,16 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
 
       let saved: Quotation;
 
-      if (viewMode === 'edit' && selectedQuotation?.id) {
-        saved = await dataService.updateQuotation(selectedQuotation.id, payload);
+      // Duplicate prevention:
+      // Check if updating existing record by selectedQuotation.id OR matching quotation_number
+      const existingRecord =
+        (selectedQuotation?.id ? quotations.find(q => q.id === selectedQuotation.id) : null) ||
+        quotations.find(
+          q => q.quotation_number?.trim().toLowerCase() === validQuotationNumber.toLowerCase()
+        );
+
+      if (existingRecord) {
+        saved = await dataService.updateQuotation(existingRecord.id, payload);
         if (showNotification) {
           showToast('Quotation Updated', `Quotation ${validQuotationNumber} saved successfully`, 'success');
         }
@@ -475,8 +487,10 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
       setIsGeneratingImage(true);
       showToast('Generating Image', 'Rendering A4-sized high-resolution quotation image...', 'info');
 
-      // Auto-save in background
-      await handleSaveQuotationRecord(false, false);
+      // Auto-save in background only if editing or creating in form
+      if (viewMode === 'edit' || viewMode === 'create') {
+        await handleSaveQuotationRecord(false, false);
+      }
 
       // Clone element into off-screen container without CSS transforms
       const cloneContainer = document.createElement('div');
@@ -596,15 +610,15 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
             <div>
               <div className="flex items-center gap-2">
-                <span className="p-2 bg-rose-50 text-rose-700 rounded-xl border border-rose-100">
-                  <FileText className="w-5 h-5" />
+                <span className="p-2 bg-[#082138] text-white rounded-xl shadow-xs">
+                  <FileText className="w-5 h-5 text-cyan-300" />
                 </span>
-                <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+                <h1 className="text-xl font-black text-[#082138] tracking-tight">
                   Quotation Management
                 </h1>
               </div>
               <p className="text-sm text-slate-500 mt-1 pl-11">
-                Create, print, and export high-resolution commercial quotations for machinery buyers with official letterhead styling.
+                Create, print, and export high-resolution commercial quotations for machinery buyers matching the official tax invoice styling.
               </p>
             </div>
 
@@ -612,19 +626,19 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
               <button
                 type="button"
                 onClick={loadData}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                 title="Refresh Quotations"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-slate-600' : ''}`} />
                 <span>Refresh</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleOpenCreateNew}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.99] shadow-sm transition-all"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-[#082138] hover:bg-[#0b2f50] active:scale-[0.99] shadow flex items-center transition-all cursor-pointer"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4 text-cyan-400" />
                 <span>Create Quotation</span>
               </button>
             </div>
@@ -633,7 +647,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
           {/* Quick Metrics Bar */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex items-center gap-4">
-              <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
+              <div className="w-11 h-11 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-[#008CD6]">
                 <FileText className="w-5 h-5" />
               </div>
               <div>
@@ -685,7 +699,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                   placeholder="Search by QTN#, Client, Machine..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-rose-500 focus:ring-1 focus:ring-rose-500 outline-none transition-all"
+                  className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] focus:ring-1 focus:ring-[#008CD6] outline-none transition-all"
                 />
               </div>
 
@@ -876,7 +890,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                 type="button"
                 disabled={isGeneratingImage}
                 onClick={() => handleDownloadA4Image()}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>{isGeneratingImage ? 'Rendering...' : 'Download Image'}</span>
@@ -885,9 +899,9 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
               <button
                 type="button"
                 onClick={() => handleSaveQuotationRecord(true, true)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#082138] hover:bg-[#0b2f50] shadow-sm transition-all cursor-pointer"
               >
-                <Save className="w-4 h-4" />
+                <Save className="w-4 h-4 text-cyan-400" />
                 <span>Save Quotation</span>
               </button>
             </div>
@@ -904,14 +918,14 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
               {/* Section 1: Quotation Details */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <Hash className="w-4 h-4 text-rose-600" />
+                  <h3 className="text-sm font-bold text-[#082138] flex items-center gap-2">
+                    <Hash className="w-4 h-4 text-[#008CD6]" />
                     Quotation Header &amp; Reference
                   </h3>
                   <button
                     type="button"
                     onClick={() => setQuotationNumber(generateNextQuotationNo(quotations))}
-                    className="text-xs text-rose-600 hover:text-rose-700 font-semibold inline-flex items-center gap-1"
+                    className="text-xs text-[#008CD6] hover:text-[#0077B6] font-semibold inline-flex items-center gap-1 cursor-pointer"
                   >
                     <RefreshCw className="w-3 h-3" />
                     Auto Next Sequence
@@ -928,7 +942,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                       value={quotationNumber}
                       onChange={e => setQuotationNumber(e.target.value)}
                       placeholder="MMW/QTN/2026-27/001"
-                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-rose-500 outline-none font-mono"
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none font-mono font-bold"
                       required
                     />
                   </div>
@@ -941,7 +955,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                       type="date"
                       value={quotationDate}
                       onChange={e => setQuotationDate(e.target.value)}
-                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-rose-500 outline-none"
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none"
                       required
                     />
                   </div>
@@ -953,7 +967,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                     <select
                       value={quotationStatus}
                       onChange={e => setQuotationStatus(e.target.value as any)}
-                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-rose-500 outline-none"
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none"
                     >
                       <option value="draft">Draft</option>
                       <option value="sent">Sent</option>
@@ -968,9 +982,9 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
               {/* Section 2: Customer / Buyer Details */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                 <div className="border-b border-slate-100 pb-3">
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-rose-600" />
-                    Buyer / Customer Details (&quot;To,&quot;)
+                  <h3 className="text-sm font-bold text-[#082138] flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-[#008CD6]" />
+                    Buyer / Customer Details (&quot;Messers. / To,&quot;)
                   </h3>
                 </div>
 
@@ -984,7 +998,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                       value={customerName}
                       onChange={e => setCustomerName(e.target.value)}
                       placeholder="e.g. S. S ENGINEERING"
-                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-rose-500 outline-none font-bold uppercase"
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none font-bold uppercase"
                       required
                     />
                   </div>
@@ -998,7 +1012,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                       value={customerAddress}
                       onChange={e => setCustomerAddress(e.target.value)}
                       placeholder="SF NO 12/13, New Street, Suriya Nagar,&#10;Kamatchipuram, Ondipudur,&#10;Coimbatore - 641016"
-                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-rose-500 outline-none"
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none"
                     />
                   </div>
 
@@ -1012,7 +1026,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                         value={customerGstin}
                         onChange={e => setCustomerGstin(e.target.value.toUpperCase())}
                         placeholder="33ABVFS0964K1ZK"
-                        className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-rose-500 outline-none font-mono"
+                        className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none font-mono"
                       />
                     </div>
 
@@ -1025,7 +1039,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                         value={customerPhone}
                         onChange={e => setCustomerPhone(e.target.value)}
                         placeholder="98422 66521"
-                        className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-rose-500 outline-none"
+                        className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none"
                       />
                     </div>
                   </div>
@@ -1035,28 +1049,33 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
               {/* Section 3: Quotation Items (Machines) */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-rose-600" />
+                  <h3 className="text-sm font-bold text-[#082138] flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-[#008CD6]" />
                     Quotation Line Items (Machinery &amp; Equipment)
                   </h3>
                   <button
                     type="button"
                     onClick={handleAddItem}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/60 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-[#082138] bg-sky-50 hover:bg-sky-100 border border-sky-200/80 transition-colors cursor-pointer"
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add Item</span>
+                    <Plus className="w-3.5 h-3.5 text-[#008CD6]" />
+                    <span>Add Machine Item</span>
                   </button>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {items.map((item, idx) => (
                     <div
                       key={item.id}
-                      className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/70 space-y-3 relative group"
+                      className="p-4 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-3 relative group"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-black text-slate-700">Item #{idx + 1}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-black px-2.5 py-1 rounded-md bg-[#082138] text-white tracking-wide">
+                            Sl.No #{idx + 1}
+                          </span>
+                          <span className="text-xs font-bold text-slate-700">Machinery Specification</span>
+                        </div>
                         <div className="flex items-center gap-2">
                           {/* Quick catalog dropdown */}
                           <select
@@ -1078,7 +1097,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                             <button
                               type="button"
                               onClick={() => handleRemoveItem(idx)}
-                              className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors"
+                              className="p-1 text-slate-400 hover:text-red-600 rounded transition-colors"
                               title="Remove Item"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -1089,21 +1108,34 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
 
                       <div>
                         <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                          Product Description *
+                          Particulars / Machinery Description *
                         </label>
-                        <input
-                          type="text"
+                        <textarea
+                          rows={2}
                           value={item.product_description}
                           onChange={e =>
                             handleItemChange(idx, 'product_description', e.target.value.toUpperCase())
                           }
-                          placeholder="e.g. VISWAKALA POWER PRESS (10 TON CAPACITY)"
-                          className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-rose-500 outline-none font-bold uppercase"
+                          placeholder="e.g. VISWAKALA POWER PRESS (10 TON CAPACITY, 2HP MOTOR, ADJUSTABLE STROKE)"
+                          className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-[#008CD6] outline-none font-bold uppercase"
                           required
                         />
                       </div>
 
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                            HSN Code
+                          </label>
+                          <input
+                            type="text"
+                            value={item.hsn_code || '84581100'}
+                            onChange={e => handleItemChange(idx, 'hsn_code', e.target.value)}
+                            placeholder="84581100"
+                            className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-[#008CD6] outline-none font-mono"
+                          />
+                        </div>
+
                         <div>
                           <label className="block text-[11px] font-semibold text-slate-600 mb-1">
                             Quantity
@@ -1115,13 +1147,13 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                             onChange={e =>
                               handleItemChange(idx, 'quantity', parseInt(e.target.value) || 1)
                             }
-                            className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-rose-500 outline-none font-mono text-center"
+                            className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-[#008CD6] outline-none font-mono text-center font-bold"
                           />
                         </div>
 
                         <div>
                           <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                            Rate per Qty (₹)
+                            Rate per Unit (₹)
                           </label>
                           <input
                             type="number"
@@ -1131,15 +1163,15 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                             onChange={e =>
                               handleItemChange(idx, 'rate', parseFloat(e.target.value) || 0)
                             }
-                            className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-rose-500 outline-none font-mono text-right"
+                            className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-[#008CD6] outline-none font-mono text-right font-bold"
                           />
                         </div>
 
                         <div>
                           <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                            Total (₹)
+                            Amount (₹)
                           </label>
-                          <div className="px-3 py-1.5 text-xs bg-slate-100/80 border border-slate-200 rounded-lg font-mono font-bold text-slate-900 text-right">
+                          <div className="px-3 py-1.5 text-xs bg-slate-100/90 border border-slate-200 rounded-lg font-mono font-black text-[#082138] text-right">
                             ₹{item.amount?.toLocaleString('en-IN') || 0}
                           </div>
                         </div>
@@ -1152,8 +1184,8 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
               {/* Section 4: Tax and Calculations */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                 <div className="border-b border-slate-100 pb-3">
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-rose-600" />
+                  <h3 className="text-sm font-bold text-[#082138] flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-[#008CD6]" />
                     GST Tax &amp; Summary
                   </h3>
                 </div>
@@ -1166,7 +1198,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                     <select
                       value={taxType}
                       onChange={e => setTaxType(e.target.value as any)}
-                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-rose-500 outline-none"
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none"
                     >
                       <option value="intra_state">Intra-State (CGST 9% + SGST 9%)</option>
                       <option value="inter_state">Inter-State (IGST 18%)</option>
@@ -1208,9 +1240,9 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                       </div>
                     )}
 
-                    <div className="border-t border-slate-200 pt-2 flex justify-between text-sm font-black text-slate-950">
-                      <span>Grand Total:</span>
-                      <span className="font-mono text-rose-700">
+                    <div className="border-t border-slate-200 pt-2 flex justify-between text-sm font-black text-[#082138]">
+                      <span>Quotation Total:</span>
+                      <span className="font-mono text-[#008CD6] text-base">
                         ₹{overallTotal.toLocaleString('en-IN')}
                       </span>
                     </div>
@@ -1221,8 +1253,8 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
               {/* Section 5: Terms & Conditions */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                 <div className="border-b border-slate-100 pb-3">
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <Info className="w-4 h-4 text-rose-600" />
+                  <h3 className="text-sm font-bold text-[#082138] flex items-center gap-2">
+                    <Info className="w-4 h-4 text-[#008CD6]" />
                     Terms &amp; Conditions
                   </h3>
                 </div>
@@ -1230,12 +1262,12 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                 <div className="space-y-2">
                   {terms.map((term, i) => (
                     <div key={i} className="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-xl text-xs">
-                      <span className="font-bold text-slate-700">{i + 1})</span>
+                      <span className="font-bold text-[#082138]">{i + 1})</span>
                       <span className="flex-1 text-slate-800 font-medium">{term}</span>
                       <button
                         type="button"
                         onClick={() => handleRemoveTerm(i)}
-                        className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors"
+                        className="p-1 text-slate-400 hover:text-red-600 rounded transition-colors"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1254,12 +1286,12 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                         }
                       }}
                       placeholder="Add custom term (e.g. Delivery within 10 days...)"
-                      className="flex-1 px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-rose-500 outline-none"
+                      className="flex-1 px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none"
                     />
                     <button
                       type="button"
                       onClick={handleAddTerm}
-                      className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                      className="px-3 py-1.5 text-xs font-bold text-[#082138] bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-xl transition-colors cursor-pointer"
                     >
                       Add
                     </button>
@@ -1271,12 +1303,12 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
             {/* Live Preview Column */}
             {showLivePreviewInForm && (
               <div className="lg:col-span-5 sticky top-24 space-y-4">
-                <div className="bg-slate-900 text-white px-4 py-2.5 rounded-2xl flex items-center justify-between text-xs shadow-md">
+                <div className="bg-[#082138] text-white px-4 py-2.5 rounded-2xl flex items-center justify-between text-xs shadow-md">
                   <span className="font-semibold flex items-center gap-1.5">
-                    <Eye className="w-3.5 h-3.5 text-rose-400" />
+                    <Eye className="w-3.5 h-3.5 text-cyan-400" />
                     Live Quotation A4 Render
                   </span>
-                  <span className="text-[11px] text-slate-400">Updates as you type</span>
+                  <span className="text-[11px] text-cyan-200 font-mono">Updates as you type</span>
                 </div>
 
                 <div
@@ -1313,14 +1345,14 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
               <button
                 type="button"
                 onClick={() => setViewMode('list')}
-                className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
+                className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
                 <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
                   <span>Quotation:</span>
-                  <span className="font-mono text-rose-700">{selectedQuotation.quotation_number}</span>
+                  <span className="font-mono text-[#008CD6]">{selectedQuotation.quotation_number}</span>
                 </h2>
                 <p className="text-xs text-slate-500">
                   {selectedQuotation.customer_name} • ₹
@@ -1356,7 +1388,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
               <button
                 type="button"
                 onClick={() => handleEditQuotation(selectedQuotation)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 <Edit3 className="w-4 h-4" />
                 <span>Edit</span>
@@ -1365,7 +1397,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
               <button
                 type="button"
                 onClick={handlePrint}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 <Printer className="w-4 h-4" />
                 <span>Print</span>
@@ -1374,7 +1406,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
               <button
                 type="button"
                 onClick={() => handleConvertToBill(selectedQuotation)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 transition-colors cursor-pointer"
                 title="Convert this quotation to a commercial tax invoice"
               >
                 <ArrowRight className="w-4 h-4 text-emerald-700" />
@@ -1385,9 +1417,9 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                 type="button"
                 disabled={isGeneratingImage}
                 onClick={() => handleDownloadA4Image(selectedQuotation)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition-all disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#082138] hover:bg-[#0b2f50] shadow-sm transition-all disabled:opacity-50 cursor-pointer"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4 text-cyan-300" />
                 <span>{isGeneratingImage ? 'Rendering...' : 'Download A4 Image'}</span>
               </button>
             </div>

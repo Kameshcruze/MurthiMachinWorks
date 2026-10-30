@@ -1,11 +1,11 @@
 /**
- * Helper utility functions for Murthi Machin Works
+ * Helper utility functions for Murthi Machine Works
  */
 
 // Convert Google Drive share links to direct renderable image URLs
 export function formatImageUrl(url: string | undefined | null): string {
-  if (!url || typeof url !== 'string') {
-    return 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80';
+  if (!url || typeof url !== 'string' || !url.trim()) {
+    return '';
   }
 
   const trimmed = url.trim();
@@ -50,7 +50,7 @@ export function generateWhatsAppProductLink(
   whatsappNumber: string,
   productName: string,
   sku: string,
-  customBusinessName: string = 'Murthi Machin Works'
+  customBusinessName: string = 'Murthi Machine Works'
 ): string {
   const cleanNumber = whatsappNumber.replace(/[^0-9]/g, '');
   const message = `Hello ${customBusinessName},
@@ -70,7 +70,7 @@ export function generateWhatsAppCartLink(
   whatsappNumber: string,
   items: { productName: string; sku: string; quantity: number }[],
   customerInfo?: { name?: string; company?: string; location?: string },
-  customBusinessName: string = 'Murthi Machin Works'
+  customBusinessName: string = 'Murthi Machine Works'
 ): string {
   const cleanNumber = whatsappNumber.replace(/[^0-9]/g, '');
   
@@ -284,21 +284,51 @@ export function generateNextQuotationNo(existingQuotations: Array<{ quotation_nu
 }
 
 /**
- * Format date string (YYYY-MM-DD or ISO) to DD/MM/YYYY
+ * Format date string (YYYY-MM-DD, DD-MM-YYYY, or ISO) to DD/MM/YYYY
  */
 export function formatDateIndian(dateStr?: string | null): string {
-  if (!dateStr) return '';
-  // Check if already in DD/MM/YYYY
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return dateStr;
+  if (!dateStr || typeof dateStr !== 'string') return '';
+  const clean = dateStr.trim();
+  if (!clean) return '';
+
+  // Already in DD/MM/YYYY
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(clean)) return clean;
+
+  // Format DD-MM-YYYY -> DD/MM/YYYY
+  if (/^\d{2}-\d{2}-\d{4}$/.test(clean)) {
+    return clean.replace(/-/g, '/');
+  }
+
+  // Handle YYYY-MM-DD or ISO timestamp
   try {
-    const parts = dateStr.split('T')[0].split('-');
-    if (parts.length === 3) {
-      const [year, month, day] = parts;
-      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    const datePart = clean.split('T')[0];
+    const separator = datePart.includes('-') ? '-' : datePart.includes('/') ? '/' : null;
+    if (separator) {
+      const parts = datePart.split(separator);
+      if (parts.length === 3) {
+        if (parts[0].length === 4) {
+          // YYYY-MM-DD
+          const [y, m, d] = parts;
+          return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
+        } else if (parts[2].length === 4) {
+          // DD-MM-YYYY
+          const [d, m, y] = parts;
+          return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
+        }
+      }
+    }
+
+    const dt = new Date(clean);
+    if (!isNaN(dt.getTime())) {
+      const d = String(dt.getDate()).padStart(2, '0');
+      const m = String(dt.getMonth() + 1).padStart(2, '0');
+      const y = dt.getFullYear();
+      return `${d}/${m}/${y}`;
     }
   } catch {
     // fallback
   }
-  return dateStr;
+
+  return clean;
 }
 

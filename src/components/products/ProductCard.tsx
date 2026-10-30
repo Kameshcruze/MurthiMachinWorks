@@ -5,7 +5,7 @@ import { useCart } from '../../context/CartContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
 import { formatImageUrl, formatPrice, getStockStatusBadge, generateWhatsAppProductLink } from '../../utils/helpers';
-import { MessageSquare, Plus, Check, Eye, ShieldCheck } from 'lucide-react';
+import { MessageSquare, Plus, Check, Eye, ShieldCheck, Image as ImageIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface ProductCardProps {
@@ -44,16 +44,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, featuredBadge
     >
       {/* Top Image Section */}
       <div className="relative aspect-4/3 bg-slate-100 overflow-hidden border-b border-slate-100">
-        <img
-          src={displayImage}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
-          referrerPolicy="no-referrer"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80';
-          }}
-        />
+        {displayImage ? (
+          <img
+            src={displayImage}
+            alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 p-4 select-none">
+            <ImageIcon className="w-10 h-10 text-slate-300 mb-1" />
+            <span className="text-[11px] font-semibold text-slate-400">No Image Available</span>
+          </div>
+        )}
 
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
