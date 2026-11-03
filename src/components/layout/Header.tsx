@@ -71,7 +71,6 @@ export const Header: React.FC = () => {
     { label: 'ABOUT US', page: 'about' as const },
     { label: 'SERVICES', page: 'services' as const },
     { label: 'MACHINERY', page: 'products' as const, hasDropdown: true },
-    { label: 'GALLERY', page: 'gallery' as const },
     { label: 'SERVICE AREA', page: 'service-area' as const },
     { label: 'CONTACT US', page: 'contact' as const },
   ];

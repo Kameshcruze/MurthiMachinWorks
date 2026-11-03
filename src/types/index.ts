@@ -309,6 +309,7 @@ export interface CustomerReview {
   name: string; // Mandatory customer name
   company?: string;
   location?: string;
+  avatar_url?: string; // Optional reviewer avatar
   rating: number; // 1 to 5 stars
   comment: string;
   photos?: string[]; // Array of WebP image URLs

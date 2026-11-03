@@ -168,11 +168,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="w-7 h-7 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-xs font-bold font-heading shrink-0">
-                  {user?.name?.charAt(0).toUpperCase() || 'A'}
+                  {user?.name?.charAt(0).toUpperCase() || 'M'}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold text-white truncate">
-                    {user?.name || 'Murthi User'}
+                    {user?.name && user.name !== 'Murthi User' && !user.name.includes('Murthi Admin') ? user.name : 'Maruthachala Murthi P'}
                   </p>
                   <p className="text-[10px] text-amber-400 font-mono truncate">
                     ID: {user?.id || 'emp-101'}

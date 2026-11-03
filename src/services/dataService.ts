@@ -149,9 +149,18 @@ function getLocalCategories(): Category[] {
     return INITIAL_CATEGORIES;
   }
   try {
-    const cats: Category[] = JSON.parse(data);
-    // Auto-heal any broken legacy Unsplash 404 URLs
+    let cats: Category[] = JSON.parse(data);
     let modified = false;
+
+    // Ensure any newly added initial categories (e.g. CNC, Grinding, Accessories) are present
+    for (const initCat of INITIAL_CATEGORIES) {
+      if (!cats.some(c => c.id === initCat.id || c.slug === initCat.slug)) {
+        cats.push(initCat);
+        modified = true;
+      }
+    }
+
+    // Auto-heal any broken legacy Unsplash 404 URLs
     const healed = cats.map(c => {
       if (c.image_url?.includes('photo-1504917599217-d4dc5ebe6122')) {
         modified = true;
@@ -232,6 +241,23 @@ function getLocalSettings(): SiteSettings {
     if (!parsed.branches || !Array.isArray(parsed.branches) || parsed.branches.length === 0) {
       parsed.branches = INITIAL_BRANCHES;
       changed = true;
+    } else {
+      parsed.branches.forEach((b: any) => {
+        if (b.name && b.name.includes('MACHIN')) {
+          b.name = b.name.replace(/\bMACHIN\b/g, 'MACHINE');
+          changed = true;
+        }
+        if (b.id === 'branch-ondipudur' || b.address?.includes('215/4C1')) {
+          if (!b.address?.includes('1700')) {
+            b.address = 'SF NO 1700, IRUGUR MAIN ROAD, ONDIPUTHUR, MEENA FURNITURE OPP, COIMBATORE -641016';
+            changed = true;
+          }
+        }
+      });
+    }
+    if (parsed.address?.includes('215/4C1') || !parsed.address?.includes('1700')) {
+      parsed.address = 'SF NO 1700, IRUGUR MAIN ROAD, ONDIPUTHUR, MEENA FURNITURE OPP, COIMBATORE -641016';
+      changed = true;
     }
     if (parsed.business_name && (parsed.business_name.toLowerCase().includes('machin works') || parsed.business_name === 'Murthi Machin Works')) {
       parsed.business_name = 'Murthi Machine Works';
@@ -278,7 +304,22 @@ function getLocalEmployees(): EmployeeUser[] {
     return INITIAL_EMPLOYEES;
   }
   try {
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    let updated = false;
+    if (Array.isArray(parsed)) {
+      parsed.forEach((emp: any) => {
+        if (emp.id === 'emp-101' || emp.email === 'admin@murthimachineworks.com') {
+          if (emp.name !== 'Maruthachala Murthi P') {
+            emp.name = 'Maruthachala Murthi P';
+            updated = true;
+          }
+        }
+      });
+      if (updated) {
+        localStorage.setItem(STORAGE_KEYS.EMPLOYEES, JSON.stringify(parsed));
+      }
+    }
+    return parsed;
   } catch {
     return INITIAL_EMPLOYEES;
   }
@@ -446,7 +487,18 @@ function getLocalReviews(): CustomerReview[] {
     return INITIAL_REVIEWS;
   }
   try {
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed)) {
+      if (parsed.length < 3) {
+        const existingNames = new Set(parsed.map((r: any) => (r.name || '').toLowerCase().trim()));
+        const missing = INITIAL_REVIEWS.filter(r => !existingNames.has((r.name || '').toLowerCase().trim()));
+        const merged = [...parsed, ...missing];
+        localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(merged));
+        return merged;
+      }
+      return parsed;
+    }
+    return parsed;
   } catch {
     return INITIAL_REVIEWS;
   }

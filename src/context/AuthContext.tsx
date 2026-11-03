@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser({
               id: session.user.id,
               email: session.user.email || 'admin@murthimachineworks.com',
-              name: session.user.user_metadata?.name || 'Administrator',
+              name: session.user.user_metadata?.name || 'Maruthachala Murthi P',
               role: (session.user.user_metadata?.role as any) || 'super_admin',
               department: session.user.user_metadata?.department || 'Executive'
             });
@@ -49,7 +49,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedUser = localStorage.getItem(AUTH_STORAGE_KEY);
       if (savedUser) {
         try {
-          setUser(JSON.parse(savedUser));
+          const parsed = JSON.parse(savedUser);
+          if (parsed.email === 'admin@murthimachineworks.com' || parsed.id === 'emp-101' || parsed.name?.includes('Murthi Admin') || parsed.name === 'Administrator' || parsed.name === 'Murthi User') {
+            parsed.name = 'Maruthachala Murthi P';
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(parsed));
+          }
+          setUser(parsed);
         } catch {
           localStorage.removeItem(AUTH_STORAGE_KEY);
         }
@@ -75,7 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const adminUser: AdminUser = {
             id: data.user.id,
             email: data.user.email || cleanEmail,
-            name: data.user.user_metadata?.name || 'Administrator',
+            name: data.user.user_metadata?.name || 'Maruthachala Murthi P',
             role: (data.user.user_metadata?.role as any) || 'super_admin',
             department: data.user.user_metadata?.department || 'Administration'
           };

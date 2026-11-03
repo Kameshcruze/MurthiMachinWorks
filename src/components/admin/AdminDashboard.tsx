@@ -113,8 +113,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
-      <div className="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-800">
-        <div className="space-y-2">
+      <div className="bg-slate-900 text-white rounded-2xl p-5 sm:p-7 shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 sm:gap-6 border border-slate-800">
+        <div className="space-y-1.5">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-xs font-mono text-amber-400 font-bold uppercase tracking-wider">
@@ -126,7 +126,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
           </h2>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
           <button
             onClick={() => onNavigateTab('bills')}
             className="px-4 py-2.5 bg-[#0088CC] hover:bg-[#0077B6] text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5 transition cursor-pointer"
@@ -160,104 +160,104 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
         </div>
       </div>
 
-      {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+      {/* Metric Cards Grid - Responsive columns to prevent squishing when screen size reduces */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 2xl:grid-cols-6 gap-3.5 sm:gap-4">
         <div
           onClick={() => onNavigateTab('bills')}
-          className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:border-[#0088CC] transition cursor-pointer flex items-center justify-between"
+          className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-[#0088CC] hover:shadow-sm transition cursor-pointer flex items-center justify-between gap-3 min-w-0"
         >
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tax Invoices</p>
-            <p className="font-heading font-extrabold text-2xl text-[#082138]">{bills.length}</p>
-            <p className="text-[11px] text-[#0088CC] font-medium">A4 Printable Bills</p>
+          <div className="space-y-1 min-w-0 flex-1">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Tax Invoices</p>
+            <p className="font-heading font-extrabold text-2xl text-[#082138] leading-tight">{bills.length}</p>
+            <p className="text-[11px] text-[#0088CC] font-medium truncate">A4 Printable Bills</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-blue-50 text-[#0088CC] flex items-center justify-center">
-            <ReceiptText className="w-6 h-6" />
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-blue-50 text-[#0088CC] flex items-center justify-center shrink-0">
+            <ReceiptText className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         <div
           onClick={() => onNavigateTab('quotations')}
-          className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:border-rose-500 transition cursor-pointer flex items-center justify-between"
+          className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-rose-500 hover:shadow-sm transition cursor-pointer flex items-center justify-between gap-3 min-w-0"
         >
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Quotations</p>
-            <p className="font-heading font-extrabold text-2xl text-rose-700">{quotations.length}</p>
-            <p className="text-[11px] text-rose-600 font-medium">Commercial RFQs</p>
+          <div className="space-y-1 min-w-0 flex-1">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Quotations</p>
+            <p className="font-heading font-extrabold text-2xl text-rose-700 leading-tight">{quotations.length}</p>
+            <p className="text-[11px] text-rose-600 font-medium truncate">Commercial RFQs</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-            <FileText className="w-6 h-6" />
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+            <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         <div
           onClick={() => onNavigateTab('products')}
-          className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:border-amber-500 transition cursor-pointer flex items-center justify-between"
+          className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-amber-500 hover:shadow-sm transition cursor-pointer flex items-center justify-between gap-3 min-w-0"
         >
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Machinery</p>
-            <p className="font-heading font-extrabold text-2xl text-slate-900">{products.length}</p>
-            <p className="text-[11px] text-emerald-600 font-medium">Active in Catalog</p>
+          <div className="space-y-1 min-w-0 flex-1">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Total Machinery</p>
+            <p className="font-heading font-extrabold text-2xl text-slate-900 leading-tight">{products.length}</p>
+            <p className="text-[11px] text-emerald-600 font-medium truncate">Active in Catalog</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-            <Package className="w-6 h-6" />
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <Package className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         <div
           onClick={() => onNavigateTab('categories')}
-          className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:border-amber-500 transition cursor-pointer flex items-center justify-between"
+          className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-blue-500 hover:shadow-sm transition cursor-pointer flex items-center justify-between gap-3 min-w-0"
         >
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Categories</p>
-            <p className="font-heading font-extrabold text-2xl text-slate-900">{categories.length}</p>
-            <p className="text-[11px] text-slate-500">Machine Tool Divisions</p>
+          <div className="space-y-1 min-w-0 flex-1">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Categories</p>
+            <p className="font-heading font-extrabold text-2xl text-slate-900 leading-tight">{categories.length}</p>
+            <p className="text-[11px] text-slate-500 font-medium truncate">Machine Tool Divisions</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-            <FolderTree className="w-6 h-6" />
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <FolderTree className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         <div
           onClick={() => onNavigateTab('enquiries')}
-          className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:border-amber-500 transition cursor-pointer flex items-center justify-between"
+          className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-emerald-500 hover:shadow-sm transition cursor-pointer flex items-center justify-between gap-3 min-w-0"
         >
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Enquiries</p>
-            <p className="font-heading font-extrabold text-2xl text-slate-900">{enquiries.length}</p>
-            <p className="text-[11px] text-slate-500">Customer Quotation RFQs</p>
+          <div className="space-y-1 min-w-0 flex-1">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Total Enquiries</p>
+            <p className="font-heading font-extrabold text-2xl text-slate-900 leading-tight">{enquiries.length}</p>
+            <p className="text-[11px] text-slate-500 font-medium truncate">Customer Quotation RFQs</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <FileSpreadsheet className="w-6 h-6" />
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <FileSpreadsheet className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         {isAdmin ? (
           <div
             onClick={() => onNavigateTab('team')}
-            className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:border-amber-500 transition cursor-pointer flex items-center justify-between"
+            className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-purple-500 hover:shadow-sm transition cursor-pointer flex items-center justify-between gap-3 min-w-0"
           >
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Staff Logins</p>
-              <p className="font-heading font-extrabold text-2xl text-purple-600">{employees.length}</p>
-              <p className="text-[11px] text-purple-600 font-medium">Active Staff Access</p>
+            <div className="space-y-1 min-w-0 flex-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Staff Logins</p>
+              <p className="font-heading font-extrabold text-2xl text-purple-600 leading-tight">{employees.length}</p>
+              <p className="text-[11px] text-purple-600 font-medium truncate">Active Staff Access</p>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
-              <Users className="w-6 h-6" />
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
           </div>
         ) : (
           <div
             onClick={() => onNavigateTab('enquiries')}
-            className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:border-amber-500 transition cursor-pointer flex items-center justify-between"
+            className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-xs hover:border-amber-500 hover:shadow-sm transition cursor-pointer flex items-center justify-between gap-3 min-w-0"
           >
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending RFQs</p>
-              <p className="font-heading font-extrabold text-2xl text-amber-600">{pendingEnquiries.length}</p>
-              <p className="text-[11px] text-amber-600 font-medium">Require Quotation</p>
+            <div className="space-y-1 min-w-0 flex-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Pending RFQs</p>
+              <p className="font-heading font-extrabold text-2xl text-amber-600 leading-tight">{pendingEnquiries.length}</p>
+              <p className="text-[11px] text-amber-600 font-medium truncate">Require Quotation</p>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Clock className="w-6 h-6" />
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
           </div>
         )}

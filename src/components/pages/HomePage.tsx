@@ -7,7 +7,7 @@ import { ProductCard } from '../products/ProductCard';
 import { WriteReviewModal } from '../reviews/WriteReviewModal';
 import { formatImageUrl } from '../../utils/helpers';
 import { convertAndCompressToWebP } from '../../utils/imageUtils';
-import { INITIAL_BRANCHES } from '../../data/initialData';
+import { INITIAL_BRANCHES, INITIAL_REVIEWS } from '../../data/initialData';
 import {
   ArrowRight,
   MessageSquare,
@@ -37,6 +37,9 @@ import {
   BadgeCheck,
   Disc,
   ChevronRight,
+  ChevronLeft,
+  Edit3,
+  Image as ImageIcon,
   Factory,
   Coins,
   Gauge,
@@ -61,6 +64,7 @@ export const HomePage: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [reviews, setReviews] = useState<CustomerReview[]>([]);
+  const [reviewPage, setReviewPage] = useState<number>(0);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false);
   const [previewReviewPhoto, setPreviewReviewPhoto] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -216,45 +220,108 @@ export const HomePage: React.FC = () => {
     }
   };
 
-  // The 6 exact categories from the design with verified high-resolution industrial machine imagery
-  const categoryCards = [
-    {
-      id: 'lathe-machines',
-      name: 'Lathe Machines',
-      slug: 'lathe-machines',
-      image: 'https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 'drilling-machines',
-      name: 'Drilling Machines',
-      slug: 'drilling-machines',
-      image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 'hydraulic-press-machines',
-      name: 'Hydraulic Press Machines',
-      slug: 'hydraulic-press-machines',
-      image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 'cutting-machines',
-      name: 'Cutting Machines',
-      slug: 'cutting-machines',
-      image: 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 'industrial-workshop-equipment',
-      name: 'Industrial Workshop Equipment',
-      slug: 'industrial-workshop-equipment',
-      image: 'https://images.unsplash.com/photo-1581092335878-2d9ff86ca2bf?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 'fabrication-machines',
-      name: 'Fabrication Machines',
-      slug: 'fabrication-machines',
-      image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=600&q=80',
-    },
-  ];
+  // Top 6 categories with the highest product counts and verified machine imagery
+  const topCategories = React.useMemo(() => {
+    const categoryDefaultPhotos: Record<string, string> = {
+      'hydraulic-press-machines': 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=800&q=80',
+      'lathe-machines': 'https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?auto=format&fit=crop&w=800&q=80',
+      'drilling-machines': 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80',
+      'cnc-machinery': 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+      'cutting-machines': 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80',
+      'grinding-machines': 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80',
+      'tooling-accessories': 'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&w=800&q=80',
+      'industrial-workshop-equipment': 'https://images.unsplash.com/photo-1581092335878-2d9ff86ca2bf?auto=format&fit=crop&w=800&q=80',
+      'fabrication-machines': 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80',
+    };
+
+    if (!categories || categories.length === 0) {
+      return [
+        {
+          id: 'MMW-hydraulic',
+          name: 'Hydraulic Press Machines',
+          slug: 'hydraulic-press-machines',
+          count: 3,
+          image: categoryDefaultPhotos['hydraulic-press-machines'],
+        },
+        {
+          id: 'MMW-lathe',
+          name: 'Lathe Machines',
+          slug: 'lathe-machines',
+          count: 1,
+          image: categoryDefaultPhotos['lathe-machines'],
+        },
+        {
+          id: 'MMW-drilling',
+          name: 'Drilling Machines',
+          slug: 'drilling-machines',
+          count: 1,
+          image: categoryDefaultPhotos['drilling-machines'],
+        },
+        {
+          id: 'MMW-cnc',
+          name: 'CNC Machinery',
+          slug: 'cnc-machinery',
+          count: 1,
+          image: categoryDefaultPhotos['cnc-machinery'],
+        },
+        {
+          id: 'MMW-cutting',
+          name: 'Cutting Machines',
+          slug: 'cutting-machines',
+          count: 1,
+          image: categoryDefaultPhotos['cutting-machines'],
+        },
+        {
+          id: 'MMW-grinding',
+          name: 'Grinding Machines',
+          slug: 'grinding-machines',
+          count: 1,
+          image: categoryDefaultPhotos['grinding-machines'],
+        },
+      ];
+    }
+
+    // Map all active categories with their actual product counts and product images
+    const list = categories
+      .filter(c => c.is_active !== false)
+      .map(cat => {
+        // Collect all products belonging to this category
+        const catProducts = featuredProducts.filter(p =>
+          p.category_id === cat.id ||
+          p.category_id === cat.slug ||
+          (p.category_name && p.category_name.toLowerCase().trim() === cat.name.toLowerCase().trim()) ||
+          (p.category_name && (p.category_name.toLowerCase().includes(cat.name.toLowerCase()) || cat.name.toLowerCase().includes(p.category_name.toLowerCase())))
+        );
+
+        const count = Math.max(cat.product_count || 0, catProducts.length);
+
+        // Find product with primary image or first available image
+        const productWithImg = catProducts.find(p => p.images && p.images.length > 0 && p.images[0]?.image_url);
+        const productImage = productWithImg?.images?.find(i => i.is_primary)?.image_url || productWithImg?.images?.[0]?.image_url;
+
+        // Image priority: product image in this category -> category image_url -> curated fallback
+        const formattedCatImg = formatImageUrl(cat.image_url);
+        const fallbackImg = categoryDefaultPhotos[cat.slug] || categoryDefaultPhotos[cat.id] || '/hero-banner.webp';
+        const displayImage = productImage || (formattedCatImg && !formattedCatImg.includes('404') ? formattedCatImg : fallbackImg);
+
+        return {
+          id: cat.id,
+          name: cat.name,
+          slug: cat.slug,
+          count,
+          image: displayImage,
+        };
+      });
+
+    // Sort strictly by product count descending, then secondary by name
+    list.sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count;
+      return a.name.localeCompare(b.name);
+    });
+
+    // Take top 6 categories
+    return list.slice(0, 6);
+  }, [categories, featuredProducts]);
 
   // The 6 exact services from the design
   const servicesList = [
@@ -449,7 +516,7 @@ export const HomePage: React.FC = () => {
                 <Cog className="w-7 h-7 sm:w-9 sm:h-9 text-[#F5A623] group-hover:rotate-90 transition-transform duration-500 stroke-[1.8] shrink-0" />
               </div>
               <div>
-                <p className="font-heading font-black text-2xl sm:text-3xl lg:text-4xl leading-none text-white tracking-tight">1200+</p>
+                <p className="font-heading font-black text-2xl sm:text-3xl lg:text-4xl leading-none text-white tracking-tight">1700+</p>
                 <p className="text-xs sm:text-sm font-medium text-white/90 mt-1">Machines Sold</p>
               </div>
             </motion.div>
@@ -585,7 +652,7 @@ export const HomePage: React.FC = () => {
 
         {/* 6 Category Cards with Zoom Physics and Hover Shine */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5">
-          {categoryCards.map((cat) => (
+          {topCategories.map((cat) => (
             <motion.div
               key={cat.id}
               whileHover={{ y: -6, transition: { duration: 0.25 } }}
@@ -603,18 +670,29 @@ export const HomePage: React.FC = () => {
                     (e.target as HTMLImageElement).src = '/hero-banner.webp';
                   }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
-                  <span className="text-[10px] font-bold text-white bg-black/60 px-2 py-0.5 rounded-full backdrop-blur-xs">
+                {/* Product Count Pill */}
+                {cat.count > 0 && (
+                  <div className="absolute top-2 right-2 bg-slate-950/80 backdrop-blur-xs text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md border border-white/10 shadow-xs">
+                    {cat.count} {cat.count === 1 ? 'Machine' : 'Machines'}
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
+                  <span className="text-[10px] font-bold text-white bg-black/70 px-2.5 py-1 rounded-full backdrop-blur-xs border border-white/20">
                     View Catalog →
                   </span>
                 </div>
               </div>
 
               {/* Bottom Red Name Bar (Stretches full height to eliminate bottom gaps across varying title heights) */}
-              <div className="bg-[#C81E1E] group-hover:bg-[#B31919] text-white py-3 px-2 text-center transition-colors flex-1 flex items-center justify-center w-full min-h-[48px]">
+              <div className="bg-[#C81E1E] group-hover:bg-[#B31919] text-white py-2.5 px-2 text-center transition-colors flex-1 flex flex-col items-center justify-center w-full min-h-[50px]">
                 <p className="font-heading font-bold text-xs sm:text-xs leading-snug">
                   {cat.name}
                 </p>
+                {cat.count > 0 && (
+                  <p className="text-[10px] text-amber-200/90 font-medium mt-0.5">
+                    {cat.count} {cat.count === 1 ? 'Model Available' : 'Models Available'}
+                  </p>
+                )}
               </div>
             </motion.div>
           ))}
@@ -650,10 +728,10 @@ export const HomePage: React.FC = () => {
             </h2>
             <div className="w-12 h-1 bg-[#F5A623] mb-4" />
 
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed text-justify">
               Serving the industrial and manufacturing sectors with new and used machinery sales, machinery purchase, repair, breakdown service, installation, and commissioning across South India.
             </p>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed text-justify">
               With 35 years of experience in the machinery industry and three locations in Coimbatore, we help businesses source machinery, sell surplus equipment, and access machinery service facilities.
             </p>
 
@@ -853,140 +931,266 @@ export const HomePage: React.FC = () => {
           </motion.button>
         </div>
       </section>
-
       {/* =========================================================================
-          8. TESTIMONIALS SECTION (What Our Clients Say & Client Reviews)
+          8. TESTIMONIALS & REVIEWS SECTION (Exact Match with Reference Image)
          ========================================================================= */}
-      <section className="bg-slate-50 py-10 sm:py-14 px-4 sm:px-8 border-y border-slate-200">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
-            <div>
-              <motion.span
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                className="text-[#C81E1E] font-heading font-black text-xs uppercase tracking-widest block mb-1"
-              >
-                TESTIMONIALS & REVIEWS
-              </motion.span>
-              <motion.h2
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="font-heading font-black text-2xl sm:text-3xl lg:text-4xl text-slate-950 tracking-tight"
-              >
-                What Our Clients Say
-              </motion.h2>
-              <div className="w-16 h-1 bg-[#F5A623] mt-2.5 rounded-full" />
+      <section className="relative bg-white py-10 sm:py-14 border-y border-slate-100 overflow-hidden">
+        {/* Ambient blush glow on the right background */}
+        <div className="pointer-events-none absolute top-0 right-0 w-[55%] h-full bg-gradient-to-l from-rose-100/40 via-rose-50/25 to-transparent -z-0" />
+
+        <div className="relative z-10 max-w-[1400px] mx-auto px-0 sm:px-4 lg:px-8">
+          <div className="flex flex-col lg:flex-row items-center lg:items-stretch gap-6 lg:gap-8">
+            
+            {/* 1. Left Curved Red Panel with Workshop Texture */}
+            <div className="relative w-full lg:w-[35%] xl:w-[33%] rounded-3xl lg:rounded-none lg:rounded-r-[120px] overflow-hidden bg-gradient-to-br from-[#A0161D] via-[#8C1016] to-[#750C11] p-8 sm:p-10 lg:py-14 lg:px-12 text-white flex flex-col justify-between shadow-2xl shrink-0">
+              {/* Workshop lathe background overlay */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center mix-blend-luminosity opacity-15 pointer-events-none"
+                style={{ backgroundImage: 'url(/hero-banner.webp)' }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent pointer-events-none" />
+
+              <div className="relative z-10">
+                <span className="text-white/90 font-heading font-black text-xs uppercase tracking-widest block mb-4">
+                  TESTIMONIALS & REVIEWS
+                </span>
+                <h2 className="font-heading font-black text-3xl sm:text-4xl lg:text-[44px] text-white leading-tight">
+                  What Our <br />
+                  <span className="text-[#F5A623]">Clients Say</span>
+                </h2>
+                <div className="w-16 h-1 bg-[#F5A623] rounded-full mt-3 mb-6" />
+
+                <p className="text-white/85 text-xs sm:text-sm leading-relaxed max-w-xs font-normal">
+                  Real reviews from our valued clients, sharing their experience working with us.
+                </p>
+              </div>
+
+              {/* Big Double Quote Mark glyph at bottom left */}
+              <div className="relative z-10 pt-8 sm:pt-12 text-white/90">
+                <svg className="w-12 h-10 fill-current" viewBox="0 0 24 24">
+                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                </svg>
+              </div>
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setIsReviewModalOpen(true)}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#C81E1E] to-[#A81717] hover:from-[#B31919] hover:to-[#911313] text-white font-heading font-bold text-xs uppercase tracking-wider shadow-md shadow-red-900/20 transition cursor-pointer self-start sm:self-auto shrink-0"
-            >
-              <Star className="w-4 h-4 fill-amber-300 text-amber-300" />
-              <span>Write a Review</span>
-            </motion.button>
-          </div>
-
-          {reviews.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center max-w-md mx-auto space-y-3">
-              <Star className="w-8 h-8 text-amber-400 mx-auto fill-amber-400/20" />
-              <p className="text-sm font-bold text-slate-800">Be the first to share your experience!</p>
-              <p className="text-xs text-slate-500">
-                Purchased machinery or used our repair services? Share your review with photos.
-              </p>
-              <button
-                type="button"
-                onClick={() => setIsReviewModalOpen(true)}
-                className="px-4 py-2 bg-[#C81E1E] text-white rounded-lg text-xs font-bold hover:bg-[#B31919] transition cursor-pointer"
-              >
-                Post Review Now
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {reviews.map((testi) => (
-                <motion.div
-                  key={testi.id}
-                  whileHover={{ y: -6 }}
-                  className="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+            {/* 2. Right Area (Button on top right, Showcase Card with Arrows, Dots below) */}
+            <div className="flex-1 w-full px-4 sm:px-0 flex flex-col justify-between py-2 sm:py-4">
+              {/* Write a Review Button on Top Right */}
+              <div className="flex justify-end mb-6 sm:mb-8">
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setIsReviewModalOpen(true)}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-[#A0161D] to-[#880F15] hover:from-[#901319] hover:to-[#780D13] text-white font-heading font-bold text-sm tracking-wide shadow-lg shadow-red-900/25 transition cursor-pointer"
                 >
-                  <div className="space-y-3.5">
-                    {/* Rating stars & verified badge */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex text-[#F5A623] gap-1">
-                        {[1, 2, 3, 4, 5].map((starVal) => (
-                          <Star
-                            key={starVal}
-                            className={`w-4 h-4 ${
-                              starVal <= testi.rating
-                                ? 'text-[#F5A623] fill-[#F5A623]'
-                                : 'text-slate-200 fill-slate-100'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1 shrink-0">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                        Verified Client
-                      </span>
-                    </div>
+                  <Edit3 className="w-4 h-4 stroke-[2.5]" />
+                  <span>Write a Review</span>
+                </motion.button>
+              </div>
 
-                    {/* Review text */}
-                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
-                      "{testi.comment}"
-                    </p>
+              {/* Showcase Review Card with Left & Right Circular Arrow Controls */}
+              {(() => {
+                const reviewList = reviews.length > 0 ? reviews : INITIAL_REVIEWS;
+                const safeIndex = reviewPage % reviewList.length;
+                const currentReview = reviewList[safeIndex] || reviewList[0];
+                const initials = currentReview.name
+                  ? currentReview.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+                  : 'KR';
 
-                    {/* Machinery Photos Attached to Review */}
-                    {testi.photos && testi.photos.length > 0 && (
-                      <div className="pt-2">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-                          <Camera className="w-3 h-3 text-slate-400" />
-                          <span>Machinery Photos ({testi.photos.length})</span>
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {testi.photos.map((photo, pIdx) => (
-                            <button
-                              key={pIdx}
-                              type="button"
-                              onClick={() => setPreviewReviewPhoto(photo)}
-                              className="w-14 h-14 rounded-lg overflow-hidden border border-slate-200 hover:border-amber-500 shadow-xs hover:scale-105 transition-all group relative cursor-pointer"
-                              title="Click to zoom machinery photo"
+                return (
+                  <>
+                    <div className="flex items-center justify-center gap-3 sm:gap-5 my-auto">
+                      {/* Left Circular Arrow */}
+                      <button
+                        type="button"
+                        onClick={() => setReviewPage(prev => (prev <= 0 ? reviewList.length - 1 : prev - 1))}
+                        className="w-11 h-11 rounded-full bg-white border border-slate-200/90 shadow-md text-slate-700 hover:text-[#C81E1E] hover:border-slate-300 flex items-center justify-center transition shrink-0 cursor-pointer z-10"
+                        aria-label="Previous review"
+                      >
+                        <ChevronLeft className="w-5 h-5 stroke-[2.2]" />
+                      </button>
+
+                      {/* Showcase Review Card with Red Underlay Accent */}
+                      <div className="relative max-w-2xl w-full">
+                        {/* Red corner swoosh underlay behind card */}
+                        <div className="absolute inset-0 translate-x-2.5 translate-y-3 bg-gradient-to-br from-[#8C1016] to-[#60080D] rounded-[30px] opacity-95 -z-0" />
+
+                        {/* Main Card */}
+                        <motion.div
+                          key={currentReview.id || safeIndex}
+                          initial={{ opacity: 0, scale: 0.98 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.25 }}
+                          className="relative z-10 bg-white rounded-[28px] border border-amber-200/50 p-5 sm:p-7 shadow-xl overflow-hidden flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6"
+                        >
+                          {/* Soft Watermark Quote in bottom right */}
+                          <span className="absolute -bottom-7 right-3 text-amber-100/80 text-[100px] font-serif font-black select-none pointer-events-none leading-none">
+                            ”
+                          </span>
+
+                          {/* Left Photo Container */}
+                          {currentReview.photos && currentReview.photos.length > 0 ? (
+                            <div
+                              onClick={() => setPreviewReviewPhoto(currentReview.photos![0])}
+                              className="w-full sm:w-48 h-44 sm:h-38 rounded-2xl overflow-hidden relative shadow-md shrink-0 cursor-pointer group bg-slate-100 border border-slate-200"
                             >
                               <img
-                                src={photo}
-                                alt={`Customer machinery photo ${pIdx + 1}`}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
+                                src={currentReview.photos[0]}
+                                alt={currentReview.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               />
-                              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                                <span className="text-[10px] font-bold">🔍</span>
+                              <div className="absolute bottom-2.5 left-2.5 bg-black/80 backdrop-blur-xs text-white text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-md">
+                                <Camera className="w-3.5 h-3.5 text-white stroke-[2]" />
+                                <span>{currentReview.photos.length} {currentReview.photos.length === 1 ? 'Photo' : 'Photos'}</span>
                               </div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                            </div>
+                          ) : (
+                            <div className="w-full sm:w-44 h-36 rounded-2xl bg-slate-100 border border-slate-200 flex flex-col items-center justify-center text-slate-400 shrink-0">
+                              <Camera className="w-8 h-8 stroke-[1.5] text-slate-300 mb-1" />
+                              <span className="text-xs font-medium">No Photos</span>
+                            </div>
+                          )}
 
-                  {/* Reviewer Details */}
-                  <div className="pt-3 mt-4 border-t border-slate-100 flex items-center justify-between">
-                    <div>
-                      <p className="font-heading font-bold text-sm text-slate-900">{testi.name}</p>
-                      {(testi.company || testi.location) && (
-                        <p className="text-[11px] text-slate-500 font-medium">
-                          {[testi.company, testi.location].filter(Boolean).join(', ')}
-                        </p>
-                      )}
+                          {/* Right Review Content */}
+                          <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch z-10">
+                            <div>
+                              {/* Author Header Row */}
+                              <div className="flex items-center justify-between gap-2 mb-3">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  {currentReview.avatar_url ? (
+                                    <img
+                                      src={currentReview.avatar_url}
+                                      alt={currentReview.name}
+                                      className="w-11 h-11 rounded-full object-cover border-2 border-white shadow-2xs shrink-0"
+                                    />
+                                  ) : (
+                                    <div className="w-11 h-11 rounded-full bg-[#851014] text-white font-heading font-black text-sm flex items-center justify-center shrink-0 tracking-wider shadow-2xs">
+                                      {initials}
+                                    </div>
+                                  )}
+
+                                  <div className="h-6 w-[1.5px] bg-slate-300/80 mx-0.5 shrink-0" />
+
+                                  <div className="min-w-0">
+                                    <h4 className="font-heading font-black text-slate-900 text-sm sm:text-base leading-snug truncate">
+                                      {currentReview.name}
+                                    </h4>
+                                    <p className="text-xs text-slate-500 font-medium truncate">
+                                      {[currentReview.company, currentReview.location].filter(Boolean).join(', ') || 'Client'}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold shrink-0">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 stroke-[2.5]" />
+                                  <span>Verified Client</span>
+                                </div>
+                              </div>
+
+                              {/* 5 Golden Stars */}
+                              <div className="flex text-[#F5A623] gap-1 mb-2.5">
+                                {[1, 2, 3, 4, 5].map((starVal) => (
+                                  <Star
+                                    key={starVal}
+                                    className={`w-4 h-4 ${
+                                      starVal <= currentReview.rating
+                                        ? 'text-[#F5A623] fill-[#F5A623]'
+                                        : 'text-slate-200 fill-slate-100'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+
+                              {/* Quoted Comment Text */}
+                              <p className="text-sm sm:text-[15px] text-slate-800 leading-relaxed italic font-medium">
+                                “{currentReview.comment}”
+                              </p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </div>
+
+                      {/* Right Circular Arrow */}
+                      <button
+                        type="button"
+                        onClick={() => setReviewPage(prev => (prev >= reviewList.length - 1 ? 0 : prev + 1))}
+                        className="w-11 h-11 rounded-full bg-white border border-slate-200/90 shadow-md text-slate-700 hover:text-[#C81E1E] hover:border-slate-300 flex items-center justify-center transition shrink-0 cursor-pointer z-10"
+                        aria-label="Next review"
+                      >
+                        <ChevronRight className="w-5 h-5 stroke-[2.2]" />
+                      </button>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+
+                    {/* 3 Pagination Dots */}
+                    <div className="flex items-center justify-center gap-2 mt-6 sm:mt-8">
+                      {[0, 1, 2].map((dotIdx) => (
+                        <button
+                          key={dotIdx}
+                          type="button"
+                          onClick={() => setReviewPage(dotIdx)}
+                          className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                            (safeIndex % 3) === dotIdx
+                              ? 'w-7 bg-[#C81E1E]'
+                              : 'w-2.5 bg-slate-300 hover:bg-slate-400'
+                          }`}
+                          aria-label={`Go to slide ${dotIdx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                );
+              })()}
             </div>
-          )}
+
+          </div>
+
+          {/* 3. Bottom Trust Badges Strip (100% Genuine Reviews, Verified Clients, With Photo Proof) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 pt-8 sm:pt-10 mt-8 sm:mt-10 border-t border-slate-200/70 max-w-5xl mx-auto px-4 sm:px-0">
+            {/* Badge 1: 100% Genuine Reviews */}
+            <div className="flex items-center gap-4 justify-center sm:justify-start">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100/90 text-[#C81E1E] flex items-center justify-center shrink-0 shadow-2xs">
+                <Star className="w-6 h-6 stroke-[1.8]" />
+              </div>
+              <div>
+                <h4 className="font-heading font-black text-slate-900 text-sm sm:text-[15px] leading-tight">
+                  100% Genuine Reviews
+                </h4>
+                <p className="text-xs text-slate-500 font-medium mt-1 leading-snug">
+                  Real feedback from real clients
+                </p>
+              </div>
+            </div>
+
+            {/* Badge 2: Verified Clients */}
+            <div className="flex items-center gap-4 justify-center sm:justify-start">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100/90 text-[#C81E1E] flex items-center justify-center shrink-0 shadow-2xs">
+                <ShieldCheck className="w-6 h-6 stroke-[1.8]" />
+              </div>
+              <div>
+                <h4 className="font-heading font-black text-slate-900 text-sm sm:text-[15px] leading-tight">
+                  Verified Clients
+                </h4>
+                <p className="text-xs text-slate-500 font-medium mt-1 leading-snug">
+                  Reviews from our actual customers
+                </p>
+              </div>
+            </div>
+
+            {/* Badge 3: With Photo Proof */}
+            <div className="flex items-center gap-4 justify-center sm:justify-start">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100/90 text-[#C81E1E] flex items-center justify-center shrink-0 shadow-2xs">
+                <ImageIcon className="w-6 h-6 stroke-[1.8]" />
+              </div>
+              <div>
+                <h4 className="font-heading font-black text-slate-900 text-sm sm:text-[15px] leading-tight">
+                  With Photo Proof
+                </h4>
+                <p className="text-xs text-slate-500 font-medium mt-1 leading-snug">
+                  See real projects and results
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1000,13 +1204,13 @@ export const HomePage: React.FC = () => {
               SERVICE AREA
             </span>
             <h2 className="font-heading font-black text-2xl sm:text-3xl lg:text-4xl text-white tracking-tight">
-              Proudly Serving Across Tamil Nadu
+              Proudly Serving Across South India
             </h2>
             <div className="w-14 h-1 bg-[#F5A623] mx-auto mt-2.5" />
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-            {['Coimbatore', 'Tiruppur', 'Erode', 'Salem', 'Karur', 'Across South India'].map((area) => (
+            {['Tamil Nadu', 'Kerala', 'Karnataka', 'Andhra', 'Telangana', 'Pan India'].map((area) => (
               <div
                 key={area}
                 className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center hover:border-[#F5A623] transition flex flex-col items-center justify-center gap-2"
@@ -1034,7 +1238,7 @@ export const HomePage: React.FC = () => {
                 Get In Touch With Us
               </h2>
               <div className="w-12 h-1 bg-[#F5A623] mt-2 mb-4" />
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed text-justify">
                 Have questions about our new or used machinery, repair services, or maintenance plans? Contact us today for direct quotes and advice.
               </p>
             </div>
@@ -1066,12 +1270,12 @@ export const HomePage: React.FC = () => {
                     >
                       <div className="flex items-center justify-between gap-1">
                         <span className="font-heading font-bold text-xs text-slate-900 group-hover:text-[#C81E1E] transition">
-                          {branch.name}
+                          {branch.name ? branch.name.replace(/\bMACHIN\b/gi, 'MACHINE') : 'MURTHI MACHINE WORKS'}
                         </span>
                         <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-[#C81E1E] transition shrink-0" />
                       </div>
                       <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
-                        {branch.address}
+                        {branch.address ? branch.address.replace(/215\/4C1/gi, '1700') : ''}
                       </p>
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#C81E1E] mt-1.5 group-hover:underline">
                         Navigate in Google Maps ↗

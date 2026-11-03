@@ -4,7 +4,7 @@ export const INITIAL_BRANCHES: BranchLocation[] = [
   {
     id: 'branch-ondipudur',
     name: 'MURTHI MACHINE WORKS - ONDIPUDUR',
-    address: 'SF NO 215/4C1, IRUGUR MAIN ROAD, ONDIPUTHUR, MEENA FURNITURE OPP, COIMBATORE -641016',
+    address: 'SF NO 1700, IRUGUR MAIN ROAD, ONDIPUTHUR, MEENA FURNITURE OPP, COIMBATORE -641016',
     google_maps_url: 'https://maps.app.goo.gl/THnpY5ZuNNcjqyr26?g_st=aw',
     phone: '98422 66521',
     landmark: 'Meena Furniture Opposite',
@@ -36,7 +36,7 @@ export const INITIAL_SETTINGS: SiteSettings = {
   phone: '98422 66521',
   whatsapp: '98422 66521',
   email: 'murthimachinworks@gmail.com',
-  address: 'SF NO 215/4C1, IRUGUR MAIN ROAD, ONDIPUTHUR, MEENA FURNITURE OPP, COIMBATORE -641016',
+  address: 'SF NO 1700, IRUGUR MAIN ROAD, ONDIPUTHUR, MEENA FURNITURE OPP, COIMBATORE -641016',
   working_hours: '10:00 AM - 6:00 PM',
   google_maps_url: 'https://maps.app.goo.gl/THnpY5ZuNNcjqyr26?g_st=aw',
   branches: INITIAL_BRANCHES,
@@ -117,6 +117,36 @@ export const INITIAL_CATEGORIES: Category[] = [
     is_active: true,
     sort_order: 6,
     keywords: ['fabrication', 'shearing machine', 'press brake', 'bending machine', 'plate rolling', 'sheet metal']
+  },
+  {
+    id: 'MMW-cnc',
+    name: 'CNC Machinery',
+    slug: 'cnc-machinery',
+    description: 'High precision CNC slant bed turning centers, vertical machining centers (VMC), and multi-axis CNC lathes.',
+    image_url: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+    is_active: true,
+    sort_order: 7,
+    keywords: ['cnc', 'cnc machinery', 'turning center', 'slant bed', 'fanuc cnc', 'vmc', 'machining center']
+  },
+  {
+    id: 'MMW-grinding',
+    name: 'Grinding Machines',
+    slug: 'grinding-machines',
+    description: 'Precision hydraulic surface grinding machines, cylindrical grinders, and magnetic chuck tool finishing machinery.',
+    image_url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80',
+    is_active: true,
+    sort_order: 8,
+    keywords: ['grinding machine', 'surface grinder', 'hydraulic grinding', 'magnetic chuck', 'precision grinding']
+  },
+  {
+    id: 'MMW-accessories',
+    name: 'Tooling & Accessories',
+    slug: 'tooling-accessories',
+    description: 'Heavy duty 3-jaw self-centering lathe chucks, machine vises, rotary tables, and tooling accessories.',
+    image_url: 'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&w=800&q=80',
+    is_active: true,
+    sort_order: 9,
+    keywords: ['lathe chuck', '3 jaw chuck', 'scroll chuck', 'machinery tooling', 'turning accessory']
   }
 ];
 
@@ -604,7 +634,7 @@ export const INITIAL_ENQUIRIES: Enquiry[] = [
 export const INITIAL_EMPLOYEES: any[] = [
   {
     id: 'emp-101',
-    name: 'Murthi Admin (Master)',
+    name: 'Maruthachala Murthi P',
     email: 'admin@murthimachineworks.com',
     password: 'admin123',
     role: 'super_admin',
@@ -689,7 +719,7 @@ export const INITIAL_AUDIT_LOGS: any[] = [
     target_name: 'Heavy Duty All-Geared Precision Lathe Machine',
     user_id: 'emp-101',
     user_email: 'admin@murthimachineworks.com',
-    user_name: 'Murthi Admin (Master)',
+    user_name: 'Maruthachala Murthi P',
     user_role: 'Super Administrator',
     ip_address: '157.48.21.14',
     details: 'Updated base quotation price and adjusted lead-time delivery schedule.',
@@ -724,7 +754,7 @@ export const INITIAL_AUDIT_LOGS: any[] = [
     target_name: 'Tooling & Accessories',
     user_id: 'emp-101',
     user_email: 'admin@murthimachineworks.com',
-    user_name: 'Murthi Admin (Master)',
+    user_name: 'Maruthachala Murthi P',
     user_role: 'Super Administrator',
     ip_address: '157.48.21.14',
     details: 'Configured new equipment category with prefix MMW-accessories.',
@@ -738,39 +768,44 @@ export const INITIAL_AUDIT_LOGS: any[] = [
 export const INITIAL_REVIEWS: CustomerReview[] = [
   {
     id: 'rev-1',
-    name: 'Ramesh Kumar',
-    company: 'Precision Engineering',
-    location: 'Coimbatore',
+    name: 'Kamesh Ravichandran',
+    company: 'Elite Web Developers',
+    location: 'Karur',
     rating: 5,
-    comment: 'Purchased a heavy duty lathe machine for our Coimbatore workshop. Excellent machine quality and prompt installation service by their engineering team.',
+    comment: 'Had an wonderful exp! Thank you!',
     photos: [
-      'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=800&q=80'
     ],
     is_approved: true,
     created_at: new Date(Date.now() - 25 * 86400000).toISOString()
   },
   {
     id: 'rev-2',
-    name: 'Suresh Babu',
-    company: 'Auto Components Works',
-    location: 'Tiruppur',
+    name: 'Arun Prakash',
+    company: 'Production Manager, MM Works',
+    location: '',
+    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
     rating: 5,
-    comment: "We rely on Murthi Machine Works for our factory's hydraulic press repairs and annual maintenance. Their technicians are always dependable and fast.",
+    comment: 'Great service and professional support throughout the project. Highly recommended!',
     photos: [
-      'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=600&q=80'
     ],
     is_approved: true,
     created_at: new Date(Date.now() - 15 * 86400000).toISOString()
   },
   {
     id: 'rev-3',
-    name: 'Karthik Vel',
-    company: 'Vel Tool Tech',
-    location: 'Erode',
+    name: 'Divya S',
+    company: 'Operations, CatZone',
+    location: '',
+    avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80',
     rating: 5,
-    comment: 'Got a certified used milling machine at a great price. Machine is performing accurately with zero issues. Highly recommend for any machine shop.',
+    comment: 'Loved the quality and on-time delivery. The team was very supportive and responsive.',
     photos: [
-      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=600&q=80'
     ],
     is_approved: true,
     created_at: new Date(Date.now() - 5 * 86400000).toISOString()

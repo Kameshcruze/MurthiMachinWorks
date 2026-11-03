@@ -433,7 +433,7 @@ export const AdminSettings: React.FC = () => {
                       rows={2}
                       value={branch.address}
                       onChange={e => handleBranchChange(index, 'address', e.target.value)}
-                      placeholder="SF NO 215/4C1, IRUGUR MAIN ROAD, ONDIPUTHUR, MEENA FURNITURE OPP, COIMBATORE -641016"
+                      placeholder="SF NO 1700, IRUGUR MAIN ROAD, ONDIPUTHUR, MEENA FURNITURE OPP, COIMBATORE -641016"
                       className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 leading-relaxed font-sans text-xs sm:text-sm"
                       required
                     />

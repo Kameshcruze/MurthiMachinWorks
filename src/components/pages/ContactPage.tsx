@@ -221,14 +221,14 @@ export const ContactPage: React.FC = () => {
                           <MapPin className="w-3.5 h-3.5" />
                         </div>
                         <h4 className="font-heading font-bold text-xs text-slate-900 group-hover:text-[#C81E1E] transition leading-tight">
-                          {branch.name}
+                          {branch.name ? branch.name.replace(/\bMACHIN\b/gi, 'MACHINE') : 'MURTHI MACHINE WORKS'}
                         </h4>
                       </div>
                       <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#C81E1E] transition shrink-0" />
                     </div>
 
                     <p className="text-[11px] text-slate-600 mt-2 ml-8 leading-relaxed">
-                      {branch.address}
+                      {branch.address ? branch.address.replace(/215\/4C1/gi, '1700') : ''}
                     </p>
 
                     <div className="mt-2.5 ml-8 flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60 text-[10px]">

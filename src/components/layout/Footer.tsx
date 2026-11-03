@@ -75,7 +75,7 @@ export const Footer: React.FC = () => {
               <Cog className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-heading font-black text-white text-sm">15+ Years Experience</h4>
+              <h4 className="font-heading font-black text-white text-sm">35+ Years Experience</h4>
               <p className="text-xs text-slate-400">Trusted Coimbatore machine tool experts</p>
             </div>
           </div>
@@ -120,8 +120,8 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Murthi Machine Works is one of Coimbatore's trusted machinery sales and service providers, offering both new and used industrial machinery with complete maintenance and support.
+          <p className="text-xs text-slate-400 leading-relaxed text-justify">
+            Murthi Machine Works is one of Coimbatore's trusted machinery sales and service providers with 35 years of experience in the machinery industry and three locations in Coimbatore, we help businesses source machinery, sell surplus equipment, and access machinery service facilities.
           </p>
 
           {/* Quick Action Button */}
