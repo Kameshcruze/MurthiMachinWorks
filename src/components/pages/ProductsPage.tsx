@@ -12,6 +12,8 @@ import {
   List,
   SlidersHorizontal,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   RotateCcw,
   Sparkles,
   PackageOpen,
@@ -26,6 +28,7 @@ export const ProductsPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
 
   const initialCategorySlug = params.categorySlug || '';
 
@@ -43,6 +46,7 @@ export const ProductsPage: React.FC = () => {
   useEffect(() => {
     if (params.categorySlug !== undefined) {
       setFilters(prev => ({ ...prev, category: params.categorySlug || '' }));
+      setIsDescExpanded(false);
     }
   }, [params.categorySlug]);
 
@@ -177,21 +181,39 @@ export const ProductsPage: React.FC = () => {
             )}
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
+          <div className="space-y-2.5">
+            <div className="w-full space-y-2.5">
+              {/* Category Name */}
               <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-white tracking-tight">
                 {currentCategoryObj ? currentCategoryObj.name : 'Industrial Machinery Catalog'}
               </h1>
-              <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl text-justify">
-                {currentCategoryObj
-                  ? currentCategoryObj.description
-                  : 'Precision lathe machines, universal milling, high-speed CNC machining centers, and heavy engineering tools.'}
-              </p>
-            </div>
 
-            <div className="flex items-center gap-2 bg-slate-800/80 px-3.5 py-1.5 rounded-lg border border-slate-700 text-xs text-slate-300">
-              <span className="font-bold text-amber-400">{filteredProducts.length}</span>
-              <span>Machinery Models Available</span>
+              {/* Full Length Description with Mobile 2-line clamp & Show More button */}
+              <div className="w-full">
+                <p
+                  className={`text-xs sm:text-sm text-slate-300 mt-1 w-full text-justify leading-relaxed transition-all ${
+                    isDescExpanded ? '' : 'line-clamp-2 sm:line-clamp-none'
+                  }`}
+                >
+                  {currentCategoryObj
+                    ? currentCategoryObj.description
+                    : 'Precision lathe machines, universal milling, high-speed CNC machining centers, and heavy engineering tools.'}
+                </p>
+
+                {/* Mobile Show More / Show Less Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsDescExpanded(!isDescExpanded)}
+                  className="sm:hidden mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 active:text-amber-500 transition-colors py-0.5"
+                >
+                  <span>{isDescExpanded ? 'Show Less' : 'Show More'}</span>
+                  {isDescExpanded ? (
+                    <ChevronUp className="w-3.5 h-3.5" />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
