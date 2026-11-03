@@ -103,14 +103,14 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images, productN
           <>
             <button
               onClick={handlePrev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 hover:bg-white text-slate-900 shadow-md opacity-0 group-hover:opacity-100 transition duration-200"
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-md opacity-85 sm:opacity-0 sm:group-hover:opacity-100 transition duration-200 z-10"
               aria-label="Previous image"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={handleNext}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 hover:bg-white text-slate-900 shadow-md opacity-0 group-hover:opacity-100 transition duration-200"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-md opacity-85 sm:opacity-0 sm:group-hover:opacity-100 transition duration-200 z-10"
               aria-label="Next image"
             >
               <ChevronRight className="w-4 h-4" />

@@ -14,7 +14,8 @@ import {
   ChevronRight,
   RotateCcw,
   Sparkles,
-  PackageOpen
+  PackageOpen,
+  X
 } from 'lucide-react';
 
 export const ProductsPage: React.FC = () => {
@@ -181,7 +182,7 @@ export const ProductsPage: React.FC = () => {
               <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-white tracking-tight">
                 {currentCategoryObj ? currentCategoryObj.name : 'Industrial Machinery Catalog'}
               </h1>
-              <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+              <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl text-justify">
                 {currentCategoryObj
                   ? currentCategoryObj.description
                   : 'Precision lathe machines, universal milling, high-speed CNC machining centers, and heavy engineering tools.'}
@@ -198,44 +199,112 @@ export const ProductsPage: React.FC = () => {
 
       {/* Main Content Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-8">
-        {/* Top Search & Controls Bar */}
-        <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 mb-6 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
-          {/* Search Input */}
-          <div className="relative w-full sm:max-w-md">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={filters.searchQuery}
-              onChange={e => handleFilterChange({ searchQuery: e.target.value })}
-              placeholder="Search machinery by name, SKU, or specs..."
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
-            />
-          </div>
+        {/* Top Sticky Search & Filter Controls Bar */}
+        <div
+          className="sticky z-30 bg-slate-50/95 backdrop-blur-md pt-2 pb-3 mb-6 border-b border-slate-200/90 shadow-xs -mx-4 px-4 sm:-mx-8 sm:px-8 transition-all"
+          style={{ top: 'var(--header-height, 88px)' }}
+        >
+          <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-3.5 shadow-xs space-y-2.5">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+              {/* Search Input */}
+              <div className="relative w-full sm:max-w-md">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={filters.searchQuery}
+                  onChange={e => handleFilterChange({ searchQuery: e.target.value })}
+                  placeholder="Search machinery by name, SKU, or specs..."
+                  className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+                {filters.searchQuery && (
+                  <button
+                    onClick={() => handleFilterChange({ searchQuery: '' })}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded transition"
+                    title="Clear search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
 
-          {/* Right Controls */}
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-            {/* Mobile Filter Toggle */}
-            <button
-              onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
-              className="lg:hidden px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition"
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-              <span>Filters</span>
-            </button>
+              {/* Right Controls: Filters, Sort, Reset */}
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                {/* Active Filter Reset */}
+                {(filters.category || filters.brand || filters.stockStatus || filters.searchQuery) && (
+                  <button
+                    onClick={handleResetFilters}
+                    className="text-xs text-amber-600 hover:text-amber-700 font-semibold flex items-center gap-1 transition px-2.5 py-1.5 rounded-lg hover:bg-amber-50 shrink-0"
+                    title="Reset all filters"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span className="hidden sm:inline">Reset</span>
+                  </button>
+                )}
 
-            {/* Desktop Sort Dropdown */}
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-slate-500 font-medium hidden md:inline">Sort:</span>
-              <select
-                value={filters.sortBy}
-                onChange={e => handleFilterChange({ sortBy: e.target.value as any })}
-                className="py-2 px-3 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                {/* Mobile Filter Toggle */}
+                <button
+                  onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+                  className="lg:hidden px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition shrink-0"
+                >
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-slate-700" />
+                  <span>Filters</span>
+                  {(filters.category || filters.brand || filters.stockStatus) && (
+                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                  )}
+                </button>
+
+                {/* Desktop Sort Dropdown */}
+                <div className="flex items-center gap-2 text-xs shrink-0">
+                  <span className="text-slate-500 font-medium hidden md:inline">Sort:</span>
+                  <select
+                    value={filters.sortBy}
+                    onChange={e => handleFilterChange({ sortBy: e.target.value as any })}
+                    className="py-2 px-3 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  >
+                    <option value="featured">Featured First</option>
+                    <option value="newest">Newest First</option>
+                    <option value="name_asc">Name: A to Z</option>
+                    <option value="name_desc">Name: Z to A</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Category Filter Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none text-xs border-t border-slate-100 pt-2">
+              <button
+                onClick={() => handleFilterChange({ category: '' })}
+                className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-bold text-xs transition shrink-0 ${
+                  !filters.category
+                    ? 'bg-amber-500 text-slate-950 shadow-xs'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
               >
-                <option value="featured">Featured First</option>
-                <option value="newest">Newest First</option>
-                <option value="name_asc">Name: A to Z</option>
-                <option value="name_desc">Name: Z to A</option>
-              </select>
+                All Machinery ({products.length})
+              </button>
+              {categories.filter(c => c.is_active).map(cat => {
+                const isSelected = filters.category === cat.slug || filters.category === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleFilterChange({ category: isSelected ? '' : cat.slug })}
+                    className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-semibold text-xs transition shrink-0 flex items-center gap-1.5 ${
+                      isSelected
+                        ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    <span>{cat.name}</span>
+                    {typeof cat.product_count === 'number' && (
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                        isSelected ? 'bg-slate-950 text-white' : 'bg-slate-200 text-slate-600'
+                      }`}>
+                        {cat.product_count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -244,7 +313,14 @@ export const ProductsPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Desktop Filters Sidebar */}
           <div className="hidden lg:block lg:col-span-1">
-            <div className="sticky top-24">
+            <div
+              className="sticky transition-all"
+              style={{
+                top: 'calc(var(--header-height, 88px) + 120px)',
+                maxHeight: 'calc(100vh - var(--header-height, 88px) - 135px)',
+                overflowY: 'auto'
+              }}
+            >
               <ProductFilters
                 categories={categories}
                 filters={filters}

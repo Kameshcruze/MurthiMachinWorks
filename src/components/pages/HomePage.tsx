@@ -69,6 +69,28 @@ export const HomePage: React.FC = () => {
   const [previewReviewPhoto, setPreviewReviewPhoto] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // Touch swipe support for mobile review carousel
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+  const handleReviewTouchStart = (e: React.TouchEvent) => {
+    setTouchEndX(null);
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+  const handleReviewTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+  const handleReviewTouchEnd = (reviewCount: number) => {
+    if (touchStartX === null || touchEndX === null) return;
+    const diff = touchStartX - touchEndX;
+    if (diff > 45) {
+      // Swiped left -> Next
+      setReviewPage(prev => (prev >= reviewCount - 1 ? 0 : prev + 1));
+    } else if (diff < -45) {
+      // Swiped right -> Previous
+      setReviewPage(prev => (prev <= 0 ? reviewCount - 1 : prev - 1));
+    }
+  };
+
   // Quick Enquiry Form state
   const [enquiryForm, setEnquiryForm] = useState({
     user_type: 'buyer' as UserEnquiryRole,
@@ -220,14 +242,14 @@ export const HomePage: React.FC = () => {
     }
   };
 
-  // Top 6 categories with the highest product counts and verified machine imagery
+  // 6 categories ordered from Lathe Machines to Industrial Workshop Equipment
   const topCategories = React.useMemo(() => {
     const categoryDefaultPhotos: Record<string, string> = {
-      'hydraulic-press-machines': 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=800&q=80',
       'lathe-machines': 'https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?auto=format&fit=crop&w=800&q=80',
       'drilling-machines': 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80',
-      'cnc-machinery': 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+      'hydraulic-press-machines': 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=800&q=80',
       'cutting-machines': 'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80',
+      'cnc-machinery': 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
       'grinding-machines': 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80',
       'tooling-accessories': 'https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&w=800&q=80',
       'industrial-workshop-equipment': 'https://images.unsplash.com/photo-1581092335878-2d9ff86ca2bf?auto=format&fit=crop&w=800&q=80',
@@ -236,13 +258,6 @@ export const HomePage: React.FC = () => {
 
     if (!categories || categories.length === 0) {
       return [
-        {
-          id: 'MMW-hydraulic',
-          name: 'Hydraulic Press Machines',
-          slug: 'hydraulic-press-machines',
-          count: 3,
-          image: categoryDefaultPhotos['hydraulic-press-machines'],
-        },
         {
           id: 'MMW-lathe',
           name: 'Lathe Machines',
@@ -258,11 +273,11 @@ export const HomePage: React.FC = () => {
           image: categoryDefaultPhotos['drilling-machines'],
         },
         {
-          id: 'MMW-cnc',
-          name: 'CNC Machinery',
-          slug: 'cnc-machinery',
-          count: 1,
-          image: categoryDefaultPhotos['cnc-machinery'],
+          id: 'MMW-hydraulic',
+          name: 'Hydraulic Press Machines',
+          slug: 'hydraulic-press-machines',
+          count: 3,
+          image: categoryDefaultPhotos['hydraulic-press-machines'],
         },
         {
           id: 'MMW-cutting',
@@ -272,14 +287,36 @@ export const HomePage: React.FC = () => {
           image: categoryDefaultPhotos['cutting-machines'],
         },
         {
-          id: 'MMW-grinding',
-          name: 'Grinding Machines',
-          slug: 'grinding-machines',
+          id: 'MMW-cnc',
+          name: 'CNC Machinery',
+          slug: 'cnc-machinery',
           count: 1,
-          image: categoryDefaultPhotos['grinding-machines'],
+          image: categoryDefaultPhotos['cnc-machinery'],
+        },
+        {
+          id: 'MMW-workshop',
+          name: 'Industrial Workshop Equipment',
+          slug: 'industrial-workshop-equipment',
+          count: 1,
+          image: categoryDefaultPhotos['industrial-workshop-equipment'],
         },
       ];
     }
+
+    // Explicit order rank starting from Lathe Machine to Other Industrial Machine (Industrial Workshop Equipment)
+    const getOrderRank = (slug: string, name: string): number => {
+      const s = (slug || '').toLowerCase();
+      const n = (name || '').toLowerCase();
+      if (s.includes('lathe') || n.includes('lathe')) return 1;
+      if (s.includes('drill') || n.includes('drill')) return 2;
+      if (s.includes('hydraulic') || n.includes('hydraulic') || s.includes('press') || n.includes('press')) return 3;
+      if (s.includes('cut') || n.includes('cut') || s.includes('saw') || n.includes('saw')) return 4;
+      if (s.includes('cnc') || n.includes('cnc')) return 5;
+      if (s.includes('workshop') || n.includes('workshop') || s.includes('other') || n.includes('other') || s.includes('industrial-workshop') || n.includes('industrial workshop')) return 6;
+      if (s.includes('fabricat') || n.includes('fabricat')) return 7;
+      if (s.includes('grind') || n.includes('grind')) return 8;
+      return 99;
+    };
 
     // Map all active categories with their actual product counts and product images
     const list = categories
@@ -313,9 +350,11 @@ export const HomePage: React.FC = () => {
         };
       });
 
-    // Sort strictly by product count descending, then secondary by name
+    // Sort strictly by custom sequence order (Lathe -> Drilling -> Hydraulic -> Cutting -> CNC -> Other Ind Machine)
     list.sort((a, b) => {
-      if (b.count !== a.count) return b.count - a.count;
+      const rankA = getOrderRank(a.slug, a.name);
+      const rankB = getOrderRank(b.slug, b.name);
+      if (rankA !== rankB) return rankA - rankB;
       return a.name.localeCompare(b.name);
     });
 
@@ -670,12 +709,6 @@ export const HomePage: React.FC = () => {
                     (e.target as HTMLImageElement).src = '/hero-banner.webp';
                   }}
                 />
-                {/* Product Count Pill */}
-                {cat.count > 0 && (
-                  <div className="absolute top-2 right-2 bg-slate-950/80 backdrop-blur-xs text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md border border-white/10 shadow-xs">
-                    {cat.count} {cat.count === 1 ? 'Machine' : 'Machines'}
-                  </div>
-                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
                   <span className="text-[10px] font-bold text-white bg-black/70 px-2.5 py-1 rounded-full backdrop-blur-xs border border-white/20">
                     View Catalog →
@@ -684,15 +717,10 @@ export const HomePage: React.FC = () => {
               </div>
 
               {/* Bottom Red Name Bar (Stretches full height to eliminate bottom gaps across varying title heights) */}
-              <div className="bg-[#C81E1E] group-hover:bg-[#B31919] text-white py-2.5 px-2 text-center transition-colors flex-1 flex flex-col items-center justify-center w-full min-h-[50px]">
-                <p className="font-heading font-bold text-xs sm:text-xs leading-snug">
+              <div className="bg-[#C81E1E] group-hover:bg-[#B31919] text-white py-2.5 px-2.5 transition-colors flex-1 flex items-center justify-center w-full min-h-[46px]">
+                <p className="font-heading font-bold text-xs sm:text-xs leading-snug text-center w-full">
                   {cat.name}
                 </p>
-                {cat.count > 0 && (
-                  <p className="text-[10px] text-amber-200/90 font-medium mt-0.5">
-                    {cat.count} {cat.count === 1 ? 'Model Available' : 'Models Available'}
-                  </p>
-                )}
               </div>
             </motion.div>
           ))}
@@ -999,21 +1027,21 @@ export const HomePage: React.FC = () => {
 
                 return (
                   <>
-                    <div className="flex items-center justify-center gap-3 sm:gap-5 my-auto">
+                    <div className="relative max-w-2xl w-full mx-auto my-auto px-3 sm:px-6 md:px-0">
                       {/* Left Circular Arrow */}
                       <button
                         type="button"
                         onClick={() => setReviewPage(prev => (prev <= 0 ? reviewList.length - 1 : prev - 1))}
-                        className="w-11 h-11 rounded-full bg-white border border-slate-200/90 shadow-md text-slate-700 hover:text-[#C81E1E] hover:border-slate-300 flex items-center justify-center transition shrink-0 cursor-pointer z-10"
+                        className="absolute left-0 sm:-left-5 md:-left-6 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-slate-200/90 shadow-lg hover:shadow-xl text-slate-700 hover:text-[#C81E1E] hover:border-slate-300 flex items-center justify-center transition-all shrink-0 cursor-pointer z-30 active:scale-95"
                         aria-label="Previous review"
                       >
                         <ChevronLeft className="w-5 h-5 stroke-[2.2]" />
                       </button>
 
                       {/* Showcase Review Card with Red Underlay Accent */}
-                      <div className="relative max-w-2xl w-full">
+                      <div className="relative w-full">
                         {/* Red corner swoosh underlay behind card */}
-                        <div className="absolute inset-0 translate-x-2.5 translate-y-3 bg-gradient-to-br from-[#8C1016] to-[#60080D] rounded-[30px] opacity-95 -z-0" />
+                        <div className="absolute inset-0 translate-x-2 sm:translate-x-2.5 translate-y-2.5 sm:translate-y-3 bg-gradient-to-br from-[#8C1016] to-[#60080D] rounded-[24px] sm:rounded-[30px] opacity-95 -z-0" />
 
                         {/* Main Card */}
                         <motion.div
@@ -1021,7 +1049,10 @@ export const HomePage: React.FC = () => {
                           initial={{ opacity: 0, scale: 0.98 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ duration: 0.25 }}
-                          className="relative z-10 bg-white rounded-[28px] border border-amber-200/50 p-5 sm:p-7 shadow-xl overflow-hidden flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6"
+                          onTouchStart={handleReviewTouchStart}
+                          onTouchMove={handleReviewTouchMove}
+                          onTouchEnd={() => handleReviewTouchEnd(reviewList.length)}
+                          className="relative z-10 bg-white rounded-[24px] sm:rounded-[28px] border border-amber-200/50 p-4 sm:p-7 shadow-xl overflow-hidden flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6"
                         >
                           {/* Soft Watermark Quote in bottom right */}
                           <span className="absolute -bottom-7 right-3 text-amber-100/80 text-[100px] font-serif font-black select-none pointer-events-none leading-none">
@@ -1114,28 +1145,48 @@ export const HomePage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setReviewPage(prev => (prev >= reviewList.length - 1 ? 0 : prev + 1))}
-                        className="w-11 h-11 rounded-full bg-white border border-slate-200/90 shadow-md text-slate-700 hover:text-[#C81E1E] hover:border-slate-300 flex items-center justify-center transition shrink-0 cursor-pointer z-10"
+                        className="absolute right-0 sm:-right-5 md:-right-6 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-slate-200/90 shadow-lg hover:shadow-xl text-slate-700 hover:text-[#C81E1E] hover:border-slate-300 flex items-center justify-center transition-all shrink-0 cursor-pointer z-30 active:scale-95"
                         aria-label="Next review"
                       >
                         <ChevronRight className="w-5 h-5 stroke-[2.2]" />
                       </button>
                     </div>
 
-                    {/* 3 Pagination Dots */}
-                    <div className="flex items-center justify-center gap-2 mt-6 sm:mt-8">
-                      {[0, 1, 2].map((dotIdx) => (
-                        <button
-                          key={dotIdx}
-                          type="button"
-                          onClick={() => setReviewPage(dotIdx)}
-                          className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
-                            (safeIndex % 3) === dotIdx
-                              ? 'w-7 bg-[#C81E1E]'
-                              : 'w-2.5 bg-slate-300 hover:bg-slate-400'
-                          }`}
-                          aria-label={`Go to slide ${dotIdx + 1}`}
-                        />
-                      ))}
+                    {/* Pagination Dots with Mobile Navigation Arrows */}
+                    <div className="flex items-center justify-center gap-3 mt-6 sm:mt-8">
+                      <button
+                        type="button"
+                        onClick={() => setReviewPage(prev => (prev <= 0 ? reviewList.length - 1 : prev - 1))}
+                        className="sm:hidden w-8 h-8 rounded-full bg-white border border-slate-200 shadow-xs text-slate-700 hover:text-[#C81E1E] flex items-center justify-center transition active:scale-90 cursor-pointer"
+                        aria-label="Previous review"
+                      >
+                        <ChevronLeft className="w-4 h-4 stroke-[2.2]" />
+                      </button>
+
+                      <div className="flex items-center gap-2">
+                        {reviewList.slice(0, 5).map((_, dotIdx) => (
+                          <button
+                            key={dotIdx}
+                            type="button"
+                            onClick={() => setReviewPage(dotIdx)}
+                            className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                              (safeIndex % Math.min(5, reviewList.length)) === dotIdx
+                                ? 'w-7 bg-[#C81E1E]'
+                                : 'w-2.5 bg-slate-300 hover:bg-slate-400'
+                            }`}
+                            aria-label={`Go to slide ${dotIdx + 1}`}
+                          />
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setReviewPage(prev => (prev >= reviewList.length - 1 ? 0 : prev + 1))}
+                        className="sm:hidden w-8 h-8 rounded-full bg-white border border-slate-200 shadow-xs text-slate-700 hover:text-[#C81E1E] flex items-center justify-center transition active:scale-90 cursor-pointer"
+                        aria-label="Next review"
+                      >
+                        <ChevronRight className="w-4 h-4 stroke-[2.2]" />
+                      </button>
                     </div>
                   </>
                 );

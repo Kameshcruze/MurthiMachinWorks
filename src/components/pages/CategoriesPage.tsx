@@ -58,7 +58,7 @@ export const CategoriesPage: React.FC = () => {
               <h1 className="font-heading font-extrabold text-2xl sm:text-4xl text-white tracking-tight">
                 Machinery Classification & Tooling Range
               </h1>
-              <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+              <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl text-justify">
                 Browse our comprehensive manufacturing range: Precision Heavy Lathes, Universal Milling, CNC Machining Centers, Radial Drills, Surface Grinders, and Hydraulic Presses.
               </p>
             </div>
@@ -120,7 +120,7 @@ export const CategoriesPage: React.FC = () => {
                   </div>
 
                   <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                    <p className="text-xs text-slate-600 leading-relaxed text-justify">
                       {cat.description}
                     </p>
 

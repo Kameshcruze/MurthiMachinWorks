@@ -109,7 +109,7 @@ const AppContent: React.FC = () => {
 
   // PUBLIC STOREFRONT ROUTING
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 selection:bg-amber-500 selection:text-slate-950 font-sans antialiased pb-16 md:pb-0 overflow-x-hidden w-full">
+    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 selection:bg-amber-500 selection:text-slate-950 font-sans antialiased pb-16 md:pb-0 overflow-x-clip w-full">
       <Header />
 
       <main className="flex-grow">

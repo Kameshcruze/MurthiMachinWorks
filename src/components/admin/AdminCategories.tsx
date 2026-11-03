@@ -608,7 +608,7 @@ export const AdminCategories: React.FC = () => {
                   </td>
 
                   <td className="py-3.5 px-4 max-w-xs sm:max-w-md">
-                    <p className="text-slate-600 line-clamp-2 mb-1.5">{cat.description || '—'}</p>
+                    <p className="text-slate-600 line-clamp-2 mb-1.5 text-justify">{cat.description || '—'}</p>
                     {Array.isArray(cat.keywords) && cat.keywords.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {cat.keywords.slice(0, 5).map((kw, i) => (
