@@ -1,5 +1,5 @@
-import { Category, Product, SiteSettings, Enquiry, EnquiryItem, EnquiryStatus, AuditLog, AuditFieldChange, EmployeeUser, BranchLocation, Bill, BillItem, Quotation, QuotationItem } from '../types';
-import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_ENQUIRIES, INITIAL_SETTINGS, INITIAL_EMPLOYEES, INITIAL_AUDIT_LOGS, INITIAL_BRANCHES } from '../data/initialData';
+import { Category, Product, SiteSettings, Enquiry, EnquiryItem, EnquiryStatus, AuditLog, AuditFieldChange, EmployeeUser, BranchLocation, Bill, BillItem, Quotation, QuotationItem, CustomerReview } from '../types';
+import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_ENQUIRIES, INITIAL_SETTINGS, INITIAL_EMPLOYEES, INITIAL_AUDIT_LOGS, INITIAL_BRANCHES, INITIAL_REVIEWS } from '../data/initialData';
 import { getSupabaseClient, isSupabaseConfigured } from './supabase';
 import { slugify, generateNextInvoiceNo, generateNextQuotationNo } from '../utils/helpers';
 import { getClientIp, getCachedIpSync } from '../utils/ipService';
@@ -14,6 +14,7 @@ const STORAGE_KEYS = {
   EMPLOYEES: 'mmw_db_employees_v1',
   BILLS: 'mmw_db_bills_v1',
   QUOTATIONS: 'mmw_db_quotations_v1',
+  REVIEWS: 'mmw_db_reviews_v1',
 };
 
 // Event bus for live synchronization across components
@@ -435,6 +436,26 @@ function saveLocalQuotations(quotations: Quotation[], notify = true): void {
   if (typeof localStorage === 'undefined') return;
   localStorage.setItem(STORAGE_KEYS.QUOTATIONS, JSON.stringify(quotations));
   if (notify) notifyDataChanged('quotations');
+}
+
+function getLocalReviews(): CustomerReview[] {
+  if (typeof localStorage === 'undefined') return INITIAL_REVIEWS;
+  const data = localStorage.getItem(STORAGE_KEYS.REVIEWS);
+  if (!data) {
+    localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(INITIAL_REVIEWS));
+    return INITIAL_REVIEWS;
+  }
+  try {
+    return JSON.parse(data);
+  } catch {
+    return INITIAL_REVIEWS;
+  }
+}
+
+function saveLocalReviews(reviews: CustomerReview[], notify = true): void {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(reviews));
+  if (notify) notifyDataChanged('reviews');
 }
 
 
@@ -2772,6 +2793,145 @@ export const dataService = {
     return true;
   },
 
+  // CUSTOMER REVIEWS MANAGEMENT (Supabase + Offline Local Storage)
+  async getReviews(approvedOnly = true): Promise<CustomerReview[]> {
+    const supabase = getSupabaseClient();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        let query = supabase
+          .from('reviews')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (approvedOnly) {
+          query = query.eq('is_approved', true);
+        }
+
+        const { data, error } = await query;
+        if (!error && Array.isArray(data)) {
+          if (data.length > 0) {
+            const mapped: CustomerReview[] = data.map((r: any) => ({
+              ...r,
+              photos: Array.isArray(r.photos)
+                ? r.photos
+                : typeof r.photos === 'string'
+                ? JSON.parse(r.photos)
+                : []
+            }));
+            saveLocalReviews(mapped, false);
+            return mapped;
+          }
+        } else if (error) {
+          console.warn('Supabase getReviews query notice:', error.message);
+        }
+      } catch (err) {
+        console.warn('Supabase getReviews query fallback:', err);
+      }
+    }
+    const local = getLocalReviews();
+    return approvedOnly ? local.filter(r => r.is_approved) : local;
+  },
+
+  async createReview(reviewData: Omit<CustomerReview, 'id' | 'created_at'>): Promise<CustomerReview> {
+    const newId = `rev-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const newReview: CustomerReview = {
+      id: newId,
+      name: String(reviewData.name || '').trim(),
+      company: reviewData.company?.trim() || '',
+      location: reviewData.location?.trim() || '',
+      rating: Number(reviewData.rating) || 5,
+      comment: String(reviewData.comment || '').trim(),
+      photos: Array.isArray(reviewData.photos) ? reviewData.photos : [],
+      is_approved: reviewData.is_approved !== undefined ? reviewData.is_approved : true, // By default posted immediately
+      created_at: new Date().toISOString()
+    };
+
+    const localReviews = getLocalReviews();
+    const updated = [newReview, ...localReviews.filter(r => r.id !== newId)];
+    saveLocalReviews(updated, true);
+
+    const supabase = getSupabaseClient();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase.from('reviews').insert([{
+          id: newReview.id,
+          name: newReview.name,
+          company: newReview.company,
+          location: newReview.location,
+          rating: newReview.rating,
+          comment: newReview.comment,
+          photos: newReview.photos,
+          is_approved: newReview.is_approved,
+          created_at: newReview.created_at
+        }]);
+        if (error) {
+          console.warn('Supabase insert review notice:', error.message);
+        }
+      } catch (err) {
+        console.warn('Supabase createReview error:', err);
+      }
+    }
+
+    return newReview;
+  },
+
+  async updateReview(id: string, updates: Partial<CustomerReview>): Promise<CustomerReview> {
+    const localReviews = getLocalReviews();
+    const existing = localReviews.find(r => r.id === id);
+    if (!existing) {
+      throw new Error(`Review with ID "${id}" not found.`);
+    }
+
+    const merged: CustomerReview = {
+      ...existing,
+      ...updates,
+      updated_at: new Date().toISOString()
+    };
+
+    const updated = localReviews.map(r => r.id === id ? merged : r);
+    saveLocalReviews(updated, true);
+
+    const supabase = getSupabaseClient();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase.from('reviews').update({
+          name: merged.name,
+          company: merged.company,
+          location: merged.location,
+          rating: merged.rating,
+          comment: merged.comment,
+          photos: merged.photos,
+          is_approved: merged.is_approved,
+          updated_at: merged.updated_at
+        }).eq('id', id);
+
+        if (error) console.warn('Supabase updateReview error:', error.message);
+      } catch (err) {
+        console.warn('Supabase updateReview exception:', err);
+      }
+    }
+
+    return merged;
+  },
+
+  async deleteReview(id: string): Promise<boolean> {
+    const localReviews = getLocalReviews();
+    const filtered = localReviews.filter(r => r.id !== id);
+    saveLocalReviews(filtered, true);
+
+    const supabase = getSupabaseClient();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase.from('reviews').delete().eq('id', id);
+        if (error) console.warn('Supabase deleteReview error:', error.message);
+      } catch (err) {
+        console.warn('Supabase deleteReview exception:', err);
+      }
+    }
+
+    return true;
+  },
+
   // RESET TO DEMO DATA
   resetToDemoData(): void {
     localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCTS));
@@ -2782,6 +2942,7 @@ export const dataService = {
     localStorage.setItem(STORAGE_KEYS.EMPLOYEES, JSON.stringify(INITIAL_EMPLOYEES));
     localStorage.setItem(STORAGE_KEYS.BILLS, JSON.stringify(INITIAL_BILLS));
     localStorage.setItem(STORAGE_KEYS.QUOTATIONS, JSON.stringify(INITIAL_QUOTATIONS));
+    localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(INITIAL_REVIEWS));
     notifyDataChanged('all');
   },
 

@@ -37,6 +37,7 @@ import { AdminAuditLogs } from './components/admin/AdminAuditLogs';
 import { AdminTeam } from './components/admin/AdminTeam';
 import { AdminBilling } from './components/admin/bill/AdminBilling';
 import { AdminQuotation } from './components/admin/quotation/AdminQuotation';
+import { AdminReviews } from './components/admin/AdminReviews';
 
 const AppContent: React.FC = () => {
   const { currentPage, navigateTo } = useNavigation();
@@ -83,6 +84,8 @@ const AppContent: React.FC = () => {
       AdminView = <AdminCategories />;
     } else if (activeAdminSection === 'enquiries') {
       AdminView = <AdminEnquiries />;
+    } else if (activeAdminSection === 'reviews' || activeAdminSection === 'testimonials') {
+      AdminView = <AdminReviews />;
     } else if (activeAdminSection === 'audit-logs' || activeAdminSection === 'audit') {
       AdminView = <AdminAuditLogs />;
     } else if (activeAdminSection === 'team' || activeAdminSection === 'employees' || activeAdminSection === 'users') {

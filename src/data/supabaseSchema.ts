@@ -593,5 +593,58 @@ CREATE INDEX IF NOT EXISTS idx_quotations_customer_name ON public.quotations(cus
 CREATE INDEX IF NOT EXISTS idx_quotations_created_at ON public.quotations(created_at DESC);
 `;
 
+export const SUPABASE_REVIEWS_SETUP_SQL = `-- ==============================================================================
+-- MURTHI MACHINE WORKS - CUSTOMER REVIEWS & TESTIMONIALS TABLE (SUPABASE)
+-- Run this in your Supabase SQL Editor to enable public review posting & photo storage!
+-- ==============================================================================
 
+-- 1. Ensure UUID Extension is available
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- 2. Create Reviews Table
+CREATE TABLE IF NOT EXISTS public.reviews (
+    id TEXT PRIMARY KEY DEFAULT ('rev-' || uuid_generate_v4()::text),
+    name TEXT NOT NULL,
+    company TEXT,
+    location TEXT,
+    rating INTEGER DEFAULT 5 CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT NOT NULL,
+    photos JSONB DEFAULT '[]'::jsonb,
+    is_approved BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. Enable Row Level Security (RLS)
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
+
+-- 4. RLS Policy: Anyone can read reviews
+CREATE POLICY "Allow public read access for reviews" 
+ON public.reviews 
+FOR SELECT 
+USING (true);
+
+-- 5. RLS Policy: Anyone can post a review
+CREATE POLICY "Allow public insert for reviews" 
+ON public.reviews 
+FOR INSERT 
+WITH CHECK (true);
+
+-- 6. RLS Policy: Full access for updating reviews (admin moderation)
+CREATE POLICY "Allow update access for reviews" 
+ON public.reviews 
+FOR UPDATE 
+USING (true)
+WITH CHECK (true);
+
+-- 7. RLS Policy: Full access for deleting reviews (admin deletion)
+CREATE POLICY "Allow delete access for reviews" 
+ON public.reviews 
+FOR DELETE 
+USING (true);
+
+-- 8. Fast Lookup Indexes
+CREATE INDEX IF NOT EXISTS idx_reviews_is_approved ON public.reviews(is_approved);
+CREATE INDEX IF NOT EXISTS idx_reviews_created_at ON public.reviews(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_reviews_rating ON public.reviews(rating);
+`;

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { SUPABASE_SCHEMA_SQL, SUPABASE_STORAGE_SETUP_SQL, SUPABASE_ENQUIRIES_MIGRATION_SQL, SUPABASE_BILLS_SETUP_SQL, SUPABASE_QUOTATIONS_SETUP_SQL } from '../../data/supabaseSchema';
+import { SUPABASE_SCHEMA_SQL, SUPABASE_STORAGE_SETUP_SQL, SUPABASE_ENQUIRIES_MIGRATION_SQL, SUPABASE_BILLS_SETUP_SQL, SUPABASE_QUOTATIONS_SETUP_SQL, SUPABASE_REVIEWS_SETUP_SQL } from '../../data/supabaseSchema';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
 import { getSupabaseConfig, isSupabaseConfigured, setCustomSupabaseConfig, clearCustomSupabaseConfig, getSupabaseClient } from '../../services/supabase';
 import { dataService } from '../../services/dataService';
-import { Database, Copy, Check, ShieldCheck, Terminal, ExternalLink, Key, CheckCircle2, RefreshCw, AlertCircle, ArrowRight, Lock, Image as ImageIcon, FolderArchive, Layers, FileText } from 'lucide-react';
+import { Database, Copy, Check, ShieldCheck, Terminal, ExternalLink, Key, CheckCircle2, RefreshCw, AlertCircle, ArrowRight, Lock, Image as ImageIcon, FolderArchive, Layers, FileText, Star } from 'lucide-react';
 
 export const AdminDatabaseSetup: React.FC = () => {
   const { showToast } = useSettings();
@@ -14,6 +14,7 @@ export const AdminDatabaseSetup: React.FC = () => {
   const [migrationCopied, setMigrationCopied] = useState(false);
   const [billsCopied, setBillsCopied] = useState(false);
   const [quotationsCopied, setQuotationsCopied] = useState(false);
+  const [reviewsCopied, setReviewsCopied] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
   const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [testMessage, setTestMessage] = useState('');
@@ -465,6 +466,46 @@ export const AdminDatabaseSetup: React.FC = () => {
 
         <div className="bg-slate-950 rounded-lg p-3 text-[11px] font-mono text-rose-200 overflow-x-auto">
           <pre>{SUPABASE_QUOTATIONS_SETUP_SQL.trim()}</pre>
+        </div>
+      </div>
+
+      {/* Customer Reviews Table Card */}
+      <div className="bg-slate-900 border border-amber-500/30 rounded-xl p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
+              <Star className="w-5 h-5 fill-amber-400/20" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                Customer Reviews & Testimonials Table
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  public.reviews
+                </span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Execute in Supabase SQL editor to create the reviews table with public posting, photo support, and admin moderation RLS policies.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard.writeText(SUPABASE_REVIEWS_SETUP_SQL);
+              setReviewsCopied(true);
+              showToast('Reviews SQL Copied', 'Copied customer reviews SQL script to clipboard.', 'success');
+              setTimeout(() => setReviewsCopied(false), 3000);
+            }}
+            className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg shadow-xs transition flex items-center gap-1.5 shrink-0 cursor-pointer"
+          >
+            {reviewsCopied ? <Check className="w-3.5 h-3.5 text-slate-950" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{reviewsCopied ? 'Copied Reviews SQL' : 'Copy Reviews SQL'}</span>
+          </button>
+        </div>
+
+        <div className="bg-slate-950 rounded-lg p-3 text-[11px] font-mono text-amber-200 overflow-x-auto">
+          <pre>{SUPABASE_REVIEWS_SETUP_SQL.trim()}</pre>
         </div>
       </div>
 

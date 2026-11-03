@@ -304,3 +304,16 @@ export interface Quotation {
   updated_at?: string;
 }
 
+export interface CustomerReview {
+  id: string;
+  name: string; // Mandatory customer name
+  company?: string;
+  location?: string;
+  rating: number; // 1 to 5 stars
+  comment: string;
+  photos?: string[]; // Array of WebP image URLs
+  is_approved: boolean; // default true (publicly visible)
+  created_at: string;
+  updated_at?: string;
+}
+

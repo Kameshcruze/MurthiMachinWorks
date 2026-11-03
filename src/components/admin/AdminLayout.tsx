@@ -21,7 +21,8 @@ import {
   Lock,
   Cog,
   ReceiptText,
-  FileText
+  FileText,
+  Star
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -48,6 +49,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'products', label: 'Machinery Catalog', icon: Package, adminOnly: false },
     { id: 'categories', label: 'Categories', icon: FolderTree, adminOnly: false },
     { id: 'enquiries', label: 'Enquiries / RFQ Leads', icon: FileSpreadsheet, adminOnly: false },
+    { id: 'reviews', label: 'Customer Reviews', icon: Star, adminOnly: false },
     { id: 'audit-logs', label: 'Audit Logs', icon: Activity, adminOnly: true },
     { id: 'team', label: 'Employee Access & Roles', icon: Users, adminOnly: true },
     { id: 'settings', label: 'Website Settings', icon: Settings, adminOnly: true },
@@ -226,6 +228,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   ? 'Audit & Activity Logs'
                   : activeSection === 'team'
                   ? 'Employee Access & User Management'
+                  : activeSection === 'reviews' || activeSection === 'testimonials'
+                  ? 'Customer Reviews & Feedback'
                   : activeSection.replace('-', ' ')}
               </h1>
               <p className="text-[11px] text-slate-500 mt-0.5 hidden sm:block">

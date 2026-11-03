@@ -1,4 +1,4 @@
-import { Category, Product, SiteSettings, Enquiry, BranchLocation } from '../types';
+import { Category, Product, SiteSettings, Enquiry, BranchLocation, CustomerReview } from '../types';
 
 export const INITIAL_BRANCHES: BranchLocation[] = [
   {
@@ -44,7 +44,7 @@ export const INITIAL_SETTINGS: SiteSettings = {
   hero_description: 'New Machinery • Used Machinery • Repairs • Maintenance • Reconditioning',
   hero_image: '/hero-banner.webp',
   featured_heading: 'Our Best Selling Machines',
-  about_content: "Murthi Machine Works is one of Coimbatore's trusted machinery sales and service providers, offering both new and used industrial machinery with complete maintenance and support. With over 15 years of experience, we have built a strong reputation for quality, reliability, and customer satisfaction. Our team of skilled technicians ensures the best service and support for all types of industrial machinery.",
+  about_content: "Serving the industrial and manufacturing sectors with new and used machinery sales, machinery purchase, repair, breakdown service, installation, and commissioning across South India. With 35 years of experience in the machinery industry and three locations in Coimbatore, we help businesses source machinery, sell surplus equipment, and access machinery service facilities.",
   currency_symbol: '₹',
   gstin: '33AABCM1234F1Z8',
   established_year: '2008',
@@ -732,6 +732,48 @@ export const INITIAL_AUDIT_LOGS: any[] = [
       { field: 'id', old_value: null, new_value: 'MMW-accessories', field_label: 'Category ID' }
     ],
     created_at: new Date(Date.now() - 3600000 * 36).toISOString()
+  }
+];
+
+export const INITIAL_REVIEWS: CustomerReview[] = [
+  {
+    id: 'rev-1',
+    name: 'Ramesh Kumar',
+    company: 'Precision Engineering',
+    location: 'Coimbatore',
+    rating: 5,
+    comment: 'Purchased a heavy duty lathe machine for our Coimbatore workshop. Excellent machine quality and prompt installation service by their engineering team.',
+    photos: [
+      'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80'
+    ],
+    is_approved: true,
+    created_at: new Date(Date.now() - 25 * 86400000).toISOString()
+  },
+  {
+    id: 'rev-2',
+    name: 'Suresh Babu',
+    company: 'Auto Components Works',
+    location: 'Tiruppur',
+    rating: 5,
+    comment: "We rely on Murthi Machine Works for our factory's hydraulic press repairs and annual maintenance. Their technicians are always dependable and fast.",
+    photos: [
+      'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=800&q=80'
+    ],
+    is_approved: true,
+    created_at: new Date(Date.now() - 15 * 86400000).toISOString()
+  },
+  {
+    id: 'rev-3',
+    name: 'Karthik Vel',
+    company: 'Vel Tool Tech',
+    location: 'Erode',
+    rating: 5,
+    comment: 'Got a certified used milling machine at a great price. Machine is performing accurately with zero issues. Highly recommend for any machine shop.',
+    photos: [
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80'
+    ],
+    is_approved: true,
+    created_at: new Date(Date.now() - 5 * 86400000).toISOString()
   }
 ];
 
