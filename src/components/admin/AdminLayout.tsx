@@ -139,7 +139,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               (item.id === 'sql-setup' && (activeSection === 'database' || activeSection === 'supabase')) ||
               (item.id === 'database' && activeSection === 'sql-setup') ||
               (item.id === 'bills' && (activeSection === 'billing' || activeSection === 'bill')) ||
-              (item.id === 'quotations' && activeSection === 'quotation');
+              (item.id === 'quotations' && activeSection === 'quotation') ||
+              (item.id === 'reviews' && activeSection === 'testimonials');
             return (
               <button
                 key={item.id}

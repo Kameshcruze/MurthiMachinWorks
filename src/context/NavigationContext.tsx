@@ -20,6 +20,8 @@ export type PageRoute =
   | 'admin-product-edit'
   | 'admin-categories'
   | 'admin-enquiries'
+  | 'admin-reviews'
+  | 'admin-testimonials'
   | 'admin-customers'
   | 'admin-audit-logs'
   | 'admin-team'
@@ -65,6 +67,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       else if (sub === 'products') setCurrentPage('admin-products');
       else if (sub === 'categories') setCurrentPage('admin-categories');
       else if (sub === 'enquiries') setCurrentPage('admin-enquiries');
+      else if (sub === 'reviews' || sub === 'testimonials') setCurrentPage('admin-reviews');
       else if (sub === 'customers') setCurrentPage('admin-customers');
       else if (sub === 'audit-logs' || sub === 'audit') setCurrentPage('admin-audit-logs');
       else if (sub === 'team' || sub === 'employees' || sub === 'users') setCurrentPage('admin-team');
@@ -134,6 +137,10 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       case 'admin/quotation':
         setCurrentPage('admin-quotations');
         break;
+      case 'admin/reviews':
+      case 'admin/testimonials':
+        setCurrentPage('admin-reviews');
+        break;
       case 'admin/sql-setup':
       case 'admin/database':
       case 'admin/supabase':
@@ -192,6 +199,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     else if (page === 'admin-product-edit') hash = `admin/products/edit/${newParams.productId}`;
     else if (page === 'admin-categories') hash = 'admin/categories';
     else if (page === 'admin-enquiries') hash = 'admin/enquiries';
+    else if (page === 'admin-reviews' || page === 'admin-testimonials') hash = 'admin/reviews';
     else if (page === 'admin-customers') hash = 'admin/customers';
     else if (page === 'admin-audit-logs') hash = 'admin/audit-logs';
     else if (page === 'admin-team') hash = 'admin/team';

@@ -256,6 +256,7 @@ export const AdminBilling: React.FC = () => {
 
   // Machinery Item handlers
   const handleAddItem = () => {
+    const newIndex = items.length;
     setItems(prev => [
       ...prev,
       {
@@ -269,6 +270,18 @@ export const AdminBilling: React.FC = () => {
         amount: 0
       }
     ]);
+
+    // Navigate/scroll smoothly to the new item and focus Product Name input
+    setTimeout(() => {
+      const targetElement = document.getElementById(`bill-item-${newIndex}`);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      const targetInput = document.getElementById(`bill-item-name-${newIndex}`) as HTMLInputElement | null;
+      if (targetInput) {
+        targetInput.focus();
+      }
+    }, 80);
   };
 
   const handleRemoveItem = (index: number) => {
@@ -998,7 +1011,8 @@ export const AdminBilling: React.FC = () => {
                   {items.map((item, index) => (
                     <div
                       key={item.id || index}
-                      className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-3 relative"
+                      id={`bill-item-${index}`}
+                      className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-3 relative transition-all duration-300 focus-within:border-[#0088CC] focus-within:ring-2 focus-within:ring-[#0088CC]/20"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -1058,12 +1072,13 @@ export const AdminBilling: React.FC = () => {
                             Product Name <span className="text-rose-500">*</span>
                           </label>
                           <input
+                            id={`bill-item-name-${index}`}
                             type="text"
                             required
                             value={item.product_name}
                             onChange={e => handleItemChange(index, 'product_name', e.target.value)}
                             placeholder="e.g. Heavy Duty Precision Lathe Machine 6.5ft Bed"
-                            className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-[#0088CC]"
+                            className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-[#0088CC] bg-white"
                           />
                         </div>
 
@@ -1147,6 +1162,15 @@ export const AdminBilling: React.FC = () => {
                       </div>
                     </div>
                   ))}
+
+                  <button
+                    type="button"
+                    onClick={handleAddItem}
+                    className="w-full py-2.5 border-2 border-dashed border-slate-300 hover:border-[#0088CC] hover:bg-sky-50/50 text-slate-600 hover:text-[#0088CC] text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4 text-[#0088CC]" />
+                    <span>Add Another Machinery Item</span>
+                  </button>
                 </div>
               </div>
 

@@ -354,30 +354,30 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
       <div className="overflow-hidden bg-white mb-2" style={{ border: '1.6px solid #082138' }}>
         {/* Table Header */}
         <div className="bg-[#082138] text-white font-bold h-[34px] flex items-stretch text-[10px]">
-          <div className="w-[50px] border-r border-white/40 flex items-center justify-center font-bold">
+          <div className="w-[50px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold">
             Sl.No
           </div>
-          <div className="w-[305px] border-r border-white/40 flex items-center justify-center font-bold">
+          <div className="w-[305px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold">
             Particulars
           </div>
-          <div className="w-[78px] border-r border-white/40 flex items-center justify-center font-bold">
+          <div className="w-[78px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold">
             HSN Code
           </div>
-          <div className="w-[108px] border-r border-white/40 flex flex-col justify-center text-center">
+          <div className="w-[108px] shrink-0 border-r border-white/40 flex flex-col justify-center text-center">
             <div className="border-b border-white/40 pb-0.5 font-bold">Rate</div>
-            <div className="grid grid-cols-2 text-[9px] pt-0.5">
-              <span className="border-r border-white/40 font-semibold">Rs.</span>
-              <span className="font-semibold">Ps.</span>
+            <div className="flex items-stretch text-[9px] pt-0.5 h-[16px]">
+              <span className="w-[68px] shrink-0 border-r border-white/40 font-semibold flex items-center justify-center">Rs.</span>
+              <span className="w-[40px] shrink-0 font-semibold flex items-center justify-center">Ps.</span>
             </div>
           </div>
-          <div className="w-[55px] border-r border-white/40 flex items-center justify-center font-bold">
+          <div className="w-[55px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold">
             Qty
           </div>
           <div className="flex-1 flex flex-col justify-center text-center">
             <div className="border-b border-white/40 pb-0.5 font-bold">Amount</div>
-            <div className="grid grid-cols-2 text-[9px] pt-0.5">
-              <span className="border-r border-white/40 font-semibold">Rs.</span>
-              <span className="font-semibold">Ps.</span>
+            <div className="flex items-stretch text-[9px] pt-0.5 h-[16px]">
+              <span className="flex-1 border-r border-white/40 font-semibold flex items-center justify-center">Rs.</span>
+              <span className="w-[42px] shrink-0 font-semibold flex items-center justify-center">Ps.</span>
             </div>
           </div>
         </div>
@@ -393,10 +393,10 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
                 key={item.id || idx}
                 className="flex items-stretch border-b border-slate-200 min-h-[30px]"
               >
-                <div className="w-[50px] border-r border-slate-300 flex items-center justify-center font-bold text-slate-900 text-[10.5px] py-1.5 shrink-0 bg-white">
+                <div className="w-[50px] shrink-0 border-r border-slate-300 flex items-center justify-center font-bold text-slate-900 text-[10.5px] py-1.5 bg-white">
                   {startIdx + idx + 1}
                 </div>
-                <div className="w-[305px] border-r border-slate-300 px-2.5 py-1.5 flex flex-col justify-center text-left min-w-0 bg-white">
+                <div className="w-[305px] shrink-0 border-r border-slate-300 px-2.5 py-1.5 flex flex-col justify-center text-left min-w-0 bg-white">
                   <span className="font-bold text-slate-950 text-[10.5px] leading-snug">
                     {item.product_description}
                   </span>
@@ -406,25 +406,25 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
                     </span>
                   )}
                 </div>
-                <div className="w-[78px] border-r border-slate-300 flex items-center justify-center font-mono text-[9.5px] text-slate-800 font-medium py-1.5 shrink-0 bg-white">
+                <div className="w-[78px] shrink-0 border-r border-slate-300 flex items-center justify-center font-mono text-[9.5px] text-slate-800 font-medium py-1.5 bg-white">
                   {item.hsn_code || '84581100'}
                 </div>
-                <div className="w-[108px] border-r border-slate-300 flex items-stretch shrink-0 bg-white">
-                  <div className="w-[68px] border-r border-slate-300 pr-2 py-1.5 flex items-center justify-end font-mono font-bold text-slate-900 text-[10px]">
+                <div className="w-[108px] shrink-0 border-r border-slate-300 flex items-stretch bg-white">
+                  <div className="w-[68px] shrink-0 border-r border-slate-300 pr-2 py-1.5 flex items-center justify-end font-mono font-bold text-slate-900 text-[10px] whitespace-nowrap">
                     {rateParts.rs}
                   </div>
-                  <div className="w-[40px] py-1.5 flex items-center justify-center font-mono text-[9px] text-slate-600">
+                  <div className="w-[40px] shrink-0 py-1.5 flex items-center justify-center font-mono text-[9px] text-slate-600">
                     {rateParts.ps}
                   </div>
                 </div>
-                <div className="w-[55px] border-r border-slate-300 flex items-center justify-center font-mono font-bold text-slate-950 text-[10px] py-1.5 shrink-0 bg-white">
+                <div className="w-[55px] shrink-0 border-r border-slate-300 flex items-center justify-center font-mono font-bold text-slate-950 text-[10px] py-1.5 bg-white">
                   {item.quantity}
                 </div>
                 <div className="flex-1 flex items-stretch bg-white">
-                  <div className="flex-1 pr-2 py-1.5 flex items-center justify-end font-mono font-bold text-slate-900 text-[10.5px]">
+                  <div className="flex-1 pr-2 py-1.5 flex items-center justify-end font-mono font-bold text-slate-900 text-[10.5px] whitespace-nowrap">
                     {amountParts.rs}
                   </div>
-                  <div className="w-[42px] border-l border-slate-300 py-1.5 flex items-center justify-center font-mono text-[9px] text-slate-600 shrink-0">
+                  <div className="w-[42px] shrink-0 border-l border-slate-300 py-1.5 flex items-center justify-center font-mono text-[9px] text-slate-600">
                     {amountParts.ps}
                   </div>
                 </div>
@@ -434,17 +434,17 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
 
           {/* Continuous Vertical Lines Filler */}
           <div className="flex-1 flex items-stretch" style={{ minHeight: `${fillerHeightPx}px` }}>
-            <div className="w-[50px] border-r border-slate-300 shrink-0" />
-            <div className="w-[305px] border-r border-slate-300" />
-            <div className="w-[78px] border-r border-slate-300 shrink-0" />
-            <div className="w-[108px] border-r border-slate-300 flex items-stretch shrink-0">
-              <div className="w-[68px] border-r border-slate-300" />
-              <div className="w-[40px]" />
+            <div className="w-[50px] shrink-0 border-r border-slate-300" />
+            <div className="w-[305px] shrink-0 border-r border-slate-300" />
+            <div className="w-[78px] shrink-0 border-r border-slate-300" />
+            <div className="w-[108px] shrink-0 border-r border-slate-300 flex items-stretch">
+              <div className="w-[68px] shrink-0 border-r border-slate-300" />
+              <div className="w-[40px] shrink-0" />
             </div>
-            <div className="w-[55px] border-r border-slate-300 shrink-0" />
+            <div className="w-[55px] shrink-0 border-r border-slate-300" />
             <div className="flex-1 flex items-stretch">
               <div className="flex-1" />
-              <div className="w-[42px] border-l border-slate-300 shrink-0" />
+              <div className="w-[42px] shrink-0 border-l border-slate-300" />
             </div>
           </div>
         </div>
@@ -464,7 +464,7 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
   const renderTotalsAndTax = () => (
     <div className="flex items-stretch border-t border-slate-400 bg-white">
       <div
-        className="p-2.5 flex flex-col justify-between border-r border-slate-400 bg-white"
+        className="p-2.5 flex flex-col justify-between border-r border-slate-400 bg-white shrink-0"
         style={{ width: '433px' }}
       >
         <div>
@@ -482,61 +482,61 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
       <div className="flex-1 text-[9.5px]">
         {/* Row 1: Amount Before Tax */}
         <div className="flex items-stretch border-b border-slate-300 h-[26px]">
-          <div className="w-[163px] px-2 flex items-center font-bold text-slate-800 border-r border-slate-300">
+          <div className="w-[136px] shrink-0 px-2 flex items-center font-bold text-slate-800 border-r border-slate-300 text-[9px] leading-tight">
             Quotation Amount Before Tax
           </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-bold text-slate-950">
+          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-bold text-slate-950 whitespace-nowrap min-w-0">
             {subtotalParts.rs}
           </div>
-          <div className="w-[42px] border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
+          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
             {subtotalParts.ps}
           </div>
         </div>
         {/* Row 2: CGST */}
         <div className="flex items-stretch border-b border-slate-300 h-[24px] text-slate-800">
-          <div className="w-[163px] px-2 flex items-center justify-between border-r border-slate-300">
+          <div className="w-[136px] shrink-0 px-2 flex items-center justify-between border-r border-slate-300">
             <span className="font-semibold">CGST</span>
             <div className="flex items-center gap-1 text-[8.5px]">
               <span className="text-slate-500">@</span>
               <span className="font-bold">{quotation.cgst_rate || 9}%</span>
             </div>
           </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900">
+          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
             {hasTax && isIntraState ? cgstParts.rs : '0'}
           </div>
-          <div className="w-[42px] border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
+          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
             {hasTax && isIntraState ? cgstParts.ps : '00'}
           </div>
         </div>
         {/* Row 3: SGST */}
         <div className="flex items-stretch border-b border-slate-300 h-[24px] text-slate-800">
-          <div className="w-[163px] px-2 flex items-center justify-between border-r border-slate-300">
+          <div className="w-[136px] shrink-0 px-2 flex items-center justify-between border-r border-slate-300">
             <span className="font-semibold">SGST</span>
             <div className="flex items-center gap-1 text-[8.5px]">
               <span className="text-slate-500">@</span>
               <span className="font-bold">{quotation.sgst_rate || 9}%</span>
             </div>
           </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900">
+          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
             {hasTax && isIntraState ? sgstParts.rs : '0'}
           </div>
-          <div className="w-[42px] border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
+          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
             {hasTax && isIntraState ? sgstParts.ps : '00'}
           </div>
         </div>
         {/* Row 4: IGST */}
         <div className="flex items-stretch border-b border-slate-300 h-[24px] text-slate-800">
-          <div className="w-[163px] px-2 flex items-center justify-between border-r border-slate-300">
+          <div className="w-[136px] shrink-0 px-2 flex items-center justify-between border-r border-slate-300">
             <span className="font-semibold">IGST</span>
             <div className="flex items-center gap-1 text-[8.5px]">
               <span className="text-slate-500">@</span>
               <span className="font-bold">{quotation.igst_rate || 18}%</span>
             </div>
           </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900">
+          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
             {hasTax && isInterState ? igstParts.rs : '0'}
           </div>
-          <div className="w-[42px] border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
+          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
             {hasTax && isInterState ? igstParts.ps : '00'}
           </div>
         </div>
@@ -545,13 +545,16 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
           className="flex items-stretch h-[28px]"
           style={{ backgroundColor: '#CCE4F7', borderTop: '1.4px solid #082138' }}
         >
-          <div className="w-[163px] px-2 flex items-center font-black text-[#082138] text-[11px] border-r border-[#082138]">
+          <div className="w-[136px] shrink-0 px-2 flex items-center font-black text-[#082138] text-[10.5px] leading-tight border-r border-[#082138]">
             Quotation Total Amount
           </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-black text-[12px] text-[#082138]">
-            ₹ {totalParts.rs}
+          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-black text-[12px] text-[#082138] whitespace-nowrap min-w-0">
+            <span className="inline-flex items-center gap-1 whitespace-nowrap">
+              <span>₹</span>
+              <span>{totalParts.rs}</span>
+            </span>
           </div>
-          <div className="w-[42px] border-l border-[#082138] flex items-center justify-center font-mono text-[9px] font-bold text-[#082138]">
+          <div className="w-[42px] shrink-0 border-l border-[#082138] flex items-center justify-center font-mono text-[9px] font-bold text-[#082138]">
             {totalParts.ps}
           </div>
         </div>

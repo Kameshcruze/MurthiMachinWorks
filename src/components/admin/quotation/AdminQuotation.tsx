@@ -268,6 +268,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
 
   // Item handlers
   const handleAddItem = () => {
+    const newIndex = items.length;
     setItems(prev => [
       ...prev,
       {
@@ -280,6 +281,18 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
         amount: 0
       }
     ]);
+
+    // Navigate/scroll smoothly to the new item and focus description textarea
+    setTimeout(() => {
+      const targetElement = document.getElementById(`quotation-item-${newIndex}`);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      const targetInput = document.getElementById(`quotation-item-desc-${newIndex}`) as HTMLTextAreaElement | null;
+      if (targetInput) {
+        targetInput.focus();
+      }
+    }, 80);
   };
 
   const handleRemoveItem = (index: number) => {
@@ -1072,7 +1085,8 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                   {items.map((item, idx) => (
                     <div
                       key={item.id}
-                      className="p-4 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-3 relative group"
+                      id={`quotation-item-${idx}`}
+                      className="p-4 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-3 relative group transition-all duration-300 focus-within:border-[#008CD6] focus-within:ring-2 focus-within:ring-[#008CD6]/20"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -1116,6 +1130,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                           Particulars / Machinery Description *
                         </label>
                         <textarea
+                          id={`quotation-item-desc-${idx}`}
                           rows={2}
                           value={item.product_description}
                           onChange={e =>
@@ -1183,6 +1198,15 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                       </div>
                     </div>
                   ))}
+
+                  <button
+                    type="button"
+                    onClick={handleAddItem}
+                    className="w-full py-2.5 border-2 border-dashed border-slate-300 hover:border-[#008CD6] hover:bg-sky-50/50 text-slate-600 hover:text-[#008CD6] text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4 text-[#008CD6]" />
+                    <span>Add Another Machine Item</span>
+                  </button>
                 </div>
               </div>
 
