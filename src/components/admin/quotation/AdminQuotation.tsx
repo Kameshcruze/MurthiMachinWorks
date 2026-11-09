@@ -575,8 +575,13 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
   };
 
   // Print quotation
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = (qtn?: Quotation) => {
+    if (qtn && qtn.id) {
+      setSelectedQuotation(qtn);
+    }
+    setTimeout(() => {
+      window.print();
+    }, 50);
   };
 
   // Filter quotations
@@ -595,10 +600,10 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
   return (
     <div className="space-y-6">
       {/* =======================================================================
-          PRINT-ONLY OVERLAY (Standard browser print)
+          DEDICATED PRINT CONTAINER (Targeted exclusively by @media print)
          ======================================================================= */}
-      <div className="hidden print:block print:fixed print:inset-0 print:m-0 print:p-0 bg-white">
-        <QuotationTemplate quotation={selectedQuotation || currentPreviewQuotation} />
+      <div id="printable-a4-document" className="hidden print:block">
+        <QuotationTemplate quotation={selectedQuotation || currentPreviewQuotation || quotations[0]} />
       </div>
 
       {/* =======================================================================

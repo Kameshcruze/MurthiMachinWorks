@@ -29,6 +29,7 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({
     sizeFormatted: string;
   }[]>([]);
   const [isProcessingPhotos, setIsProcessingPhotos] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successSubmitted, setSuccessSubmitted] = useState(false);
@@ -37,9 +38,8 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const files = Array.from(e.target.files) as File[];
+  const processFiles = async (files: File[]) => {
+    if (files.length === 0) return;
 
     if (selectedPhotos.length + files.length > 5) {
       setErrorMessage('You can attach up to 5 photos with your review.');
@@ -52,7 +52,7 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({
     try {
       const processedList: { file: File; previewUrl: string; sizeFormatted: string }[] = [];
       for (const file of files) {
-        // Automatically convert to WebP and compress under 500 KB client-side
+        // Automatically convert to WebP and compress client-side
         const processed = await convertAndCompressToWebP(file, {
           maxSizeBytes: 500 * 1024,
           maxWidth: 1920,
@@ -73,6 +73,38 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({
       setIsProcessingPhotos(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const files = Array.from(e.target.files) as File[];
+    await processFiles(files);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
+    const files = (Array.from(e.dataTransfer.files) as File[]).filter(f => f.type.startsWith('image/'));
+    if (files.length === 0) {
+      setErrorMessage('Please drop valid image files (JPG, PNG, WebP, etc.).');
+      return;
+    }
+    await processFiles(files);
   };
 
   const handleRemovePhoto = (index: number) => {
@@ -219,10 +251,10 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({
               </div>
             </div>
 
-            {/* Name (Mandatory) */}
+            {/* Name */}
             <div>
               <label className="text-xs font-bold text-slate-800 block mb-1">
-                Your Full Name <span className="text-rose-500">* (Mandatory)</span>
+                Your Full Name <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -278,7 +310,7 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({
               />
             </div>
 
-            {/* Attach Photos Section (Auto-converted to WebP < 500 KB) */}
+            {/* Attach Photos Section */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
@@ -286,9 +318,6 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({
                   <span>Attach Machine / Workshop Photos</span>
                   <span className="text-slate-400 font-normal text-[11px]">(Optional • Up to 5 photos)</span>
                 </label>
-                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-mono font-bold">
-                  Auto WebP &lt;500KB
-                </span>
               </div>
 
               {/* Photo Previews */}
@@ -317,23 +346,36 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({
                 </div>
               )}
 
-              {/* Upload trigger */}
+              {/* Upload trigger with Drag and Drop */}
               {selectedPhotos.length < 5 && (
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
+                  onDragOver={handleDragOver}
+                  onDragEnter={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
                   disabled={isProcessingPhotos || isSubmitting}
-                  className="w-full py-2.5 px-3 border-2 border-dashed border-slate-300 hover:border-amber-500 rounded-lg flex items-center justify-center gap-2 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-50/50 hover:bg-amber-50/30 transition"
+                  className={`w-full py-3.5 px-3 border-2 border-dashed rounded-lg flex flex-col sm:flex-row items-center justify-center gap-2 text-xs font-semibold transition cursor-pointer ${
+                    isDragging
+                      ? 'border-amber-500 bg-amber-50 text-amber-900 scale-[1.01]'
+                      : 'border-slate-300 hover:border-amber-500 text-slate-600 hover:text-slate-900 bg-slate-50/50 hover:bg-amber-50/30'
+                  }`}
                 >
                   {isProcessingPhotos ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
-                      <span>Optimizing photo to WebP...</span>
+                      <span>Optimizing photo...</span>
+                    </>
+                  ) : isDragging ? (
+                    <>
+                      <Upload className="w-4 h-4 text-amber-500 animate-bounce" />
+                      <span className="font-bold text-amber-600">Drop photos here to attach</span>
                     </>
                   ) : (
                     <>
-                      <Upload className="w-4 h-4 text-amber-500" />
-                      <span>Click to attach photo from device</span>
+                      <Upload className="w-4 h-4 text-amber-500 shrink-0" />
+                      <span>Drag & drop photos here, or <span className="text-amber-600 underline">browse</span></span>
                     </>
                   )}
                 </button>

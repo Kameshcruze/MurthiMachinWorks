@@ -85,21 +85,99 @@
   }
 }
 
-/* Print Optimization for Tax Invoice / Bill */
+/* ==========================================================================
+   PRINT OPTIMIZATION FOR TAX INVOICE / BILL / QUOTATION
+   - Completely isolates the document (hiding all admin UI, sidebars, buttons)
+   - Guarantees strict A4 dimensions (210mm x 297mm)
+   - Splits multi-page bills/quotations onto separate physical/PDF sheets
+   ========================================================================== */
 @media print {
   @page {
     size: A4 portrait;
-    margin: 0;
+    margin: 0mm;
   }
-  body {
+
+  *, *::before, *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
     background: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* 1. Hide the entire application shell, admin console, sidebars, toolbars & buttons */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* 2. Make ONLY the printable document container and its descendants visible */
+  #printable-a4-document,
+  #printable-a4-document * {
+    visibility: visible !important;
+  }
+
+  /* 3. Anchor the printable container to top-left of the physical paper */
+  #printable-a4-document {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: none !important;
+    z-index: 999999 !important;
+  }
+
+  /* 4. Ensure each A4 sheet prints on its own separate sheet of paper */
+  .a4-page-sheet {
+    display: block !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 16mm 18mm 14mm 18mm !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    overflow: hidden !important;
+    position: relative !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  #a4-invoice-render {
+
+  /* Prevent trailing blank sheet after the last page */
+  .a4-page-sheet:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  /* Fallback selectors for any legacy render IDs */
+  #a4-invoice-render,
+  #a4-quotation-render,
+  #a4-invoice-render-preview,
+  #a4-quotation-render-preview {
     box-shadow: none !important;
     margin: 0 auto !important;
-    page-break-inside: avoid !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }

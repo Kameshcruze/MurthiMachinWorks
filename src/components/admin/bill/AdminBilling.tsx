@@ -565,8 +565,13 @@ export const AdminBilling: React.FC = () => {
   };
 
   // Browser Print
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = (bill?: Bill) => {
+    if (bill && bill.id) {
+      setSelectedBill(bill);
+    }
+    setTimeout(() => {
+      window.print();
+    }, 50);
   };
 
   // Filter bills in history list
@@ -583,6 +588,13 @@ export const AdminBilling: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* =======================================================================
+          DEDICATED PRINT CONTAINER (Targeted exclusively by @media print)
+         ======================================================================= */}
+      <div id="printable-a4-document" className="hidden print:block">
+        <BillInvoiceTemplate bill={selectedBill || currentPreviewBill || bills[0]} />
+      </div>
+
       {/* Top Header / Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
         <div>
