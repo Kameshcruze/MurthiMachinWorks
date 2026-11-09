@@ -290,75 +290,80 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
     nextPageNum?: number
   ) => {
     return (
-      <div className="overflow-hidden bg-white mb-2 flex-1 flex flex-col" style={{ border: '1.6px solid #082138' }}>
-        <div className="bg-[#082138] text-white font-bold h-[34px] flex items-stretch text-[10px] shrink-0">
-          <div className="w-[50px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold">
+      <div className="overflow-hidden bg-white mb-2 flex-1 flex flex-col min-h-0" style={{ border: '1.6px solid #082138' }}>
+        {/* Table Header: enlarged for crisp legibility */}
+        <div className="bg-[#082138] text-white font-bold h-[38px] flex items-stretch text-[11.5px] shrink-0">
+          <div className="w-[52px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold tracking-wide">
             Sl.No
           </div>
-          <div className="w-[305px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold">
+          <div className="w-[298px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold tracking-wide">
             Particulars
           </div>
-          <div className="w-[78px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold">
+          <div className="w-[80px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold tracking-wide">
             HSN Code
           </div>
-          <div className="w-[108px] shrink-0 border-r border-white/40 flex flex-col justify-center text-center">
-            <div className="border-b border-white/40 pb-0.5 font-bold">Rate</div>
-            <div className="flex items-stretch text-[9px] pt-0.5 h-[16px]">
-              <span className="w-[68px] shrink-0 border-r border-white/40 font-semibold flex items-center justify-center">Rs.</span>
+          <div className="w-[114px] shrink-0 border-r border-white/40 flex flex-col justify-center text-center">
+            <div className="border-b border-white/40 pb-0.5 font-bold tracking-wide">Rate</div>
+            <div className="flex items-stretch text-[10px] pt-0.5 h-[17px]">
+              <span className="w-[74px] shrink-0 border-r border-white/40 font-semibold flex items-center justify-center">Rs.</span>
               <span className="w-[40px] shrink-0 font-semibold flex items-center justify-center">Ps.</span>
             </div>
           </div>
-          <div className="w-[55px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold">
+          <div className="w-[54px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold tracking-wide">
             Qty
           </div>
           <div className="flex-1 flex flex-col justify-center text-center">
-            <div className="border-b border-white/40 pb-0.5 font-bold">Amount</div>
-            <div className="flex items-stretch text-[9px] pt-0.5 h-[16px]">
+            <div className="border-b border-white/40 pb-0.5 font-bold tracking-wide">Amount</div>
+            <div className="flex items-stretch text-[10px] pt-0.5 h-[17px]">
               <span className="flex-1 border-r border-white/40 font-semibold flex items-center justify-center">Rs.</span>
               <span className="w-[42px] shrink-0 font-semibold flex items-center justify-center">Ps.</span>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col bg-white">
+        {/* Table Body: exact uniform font size, height and padding across ALL pages */}
+        <div className="flex-1 flex flex-col bg-white min-h-0">
           {itemsList.map((item, idx) => {
             const rateParts = splitRupeesPaise(item.rate || 0);
             const amountParts = splitRupeesPaise(item.amount || 0);
 
             return (
-              <div key={item.id || idx} className="flex items-stretch border-b border-slate-200 min-h-[30px]">
-                <div className="w-[50px] shrink-0 border-r border-slate-300 flex items-center justify-center font-bold text-slate-900 text-[10.5px] py-1.5 bg-white">
+              <div
+                key={item.id || idx}
+                className="flex items-stretch border-b border-slate-200 min-h-[46px] shrink-0"
+              >
+                <div className="w-[52px] shrink-0 border-r border-slate-300 flex items-center justify-center font-bold text-slate-900 text-[13px] py-2.5 bg-white">
                   {startIdx + idx + 1}
                 </div>
-                <div className="w-[305px] shrink-0 border-r border-slate-300 px-2.5 py-1.5 flex flex-col justify-center text-left min-w-0 bg-white">
-                  <span className="font-bold text-slate-950 text-[10.5px] leading-snug">
+                <div className="w-[298px] shrink-0 border-r border-slate-300 px-3 py-2 flex flex-col justify-center text-left min-w-0 bg-white">
+                  <span className="font-extrabold text-slate-950 text-[13px] leading-snug">
                     {item.product_name}
                   </span>
                   {item.serial_number && (
-                    <span className="text-[8.5px] text-slate-600 font-mono mt-0.5">
+                    <span className="text-[11px] text-slate-600 font-mono font-medium mt-0.5">
                       S/N: {item.serial_number}
                     </span>
                   )}
                 </div>
-                <div className="w-[78px] shrink-0 border-r border-slate-300 flex items-center justify-center font-mono text-[9.5px] text-slate-800 font-medium py-1.5 bg-white">
+                <div className="w-[80px] shrink-0 border-r border-slate-300 flex items-center justify-center font-mono text-[12px] text-slate-800 font-semibold py-2.5 bg-white">
                   {item.hsn_code || '84581100'}
                 </div>
-                <div className="w-[108px] shrink-0 border-r border-slate-300 flex items-stretch bg-white">
-                  <div className="w-[68px] shrink-0 border-r border-slate-300 pr-2 py-1.5 flex items-center justify-end font-mono font-bold text-slate-900 text-[10px] whitespace-nowrap">
+                <div className="w-[114px] shrink-0 border-r border-slate-300 flex items-stretch bg-white">
+                  <div className="w-[74px] shrink-0 border-r border-slate-300 pr-2.5 py-2.5 flex items-center justify-end font-mono font-bold text-slate-900 text-[13px] whitespace-nowrap">
                     {rateParts.rs}
                   </div>
-                  <div className="w-[40px] shrink-0 py-1.5 flex items-center justify-center font-mono text-[9px] text-slate-600">
+                  <div className="w-[40px] shrink-0 py-2.5 flex items-center justify-center font-mono text-[11px] text-slate-600">
                     {rateParts.ps}
                   </div>
                 </div>
-                <div className="w-[55px] shrink-0 border-r border-slate-300 flex items-center justify-center font-mono font-bold text-slate-950 text-[10px] py-1.5 bg-white">
+                <div className="w-[54px] shrink-0 border-r border-slate-300 flex items-center justify-center font-mono font-bold text-slate-950 text-[13px] py-2.5 bg-white">
                   {item.quantity}
                 </div>
                 <div className="flex-1 flex items-stretch bg-white">
-                  <div className="flex-1 pr-2 py-1.5 flex items-center justify-end font-mono font-bold text-slate-900 text-[10.5px] whitespace-nowrap">
+                  <div className="flex-1 pr-2.5 py-2.5 flex items-center justify-end font-mono font-black text-slate-950 text-[13px] whitespace-nowrap">
                     {amountParts.rs}
                   </div>
-                  <div className="w-[42px] shrink-0 border-l border-slate-300 py-1.5 flex items-center justify-center font-mono text-[9px] text-slate-600">
+                  <div className="w-[42px] shrink-0 border-l border-slate-300 py-2.5 flex items-center justify-center font-mono text-[11px] text-slate-600">
                     {amountParts.ps}
                   </div>
                 </div>
@@ -366,15 +371,16 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
             );
           })}
 
-          <div className="flex-1 flex items-stretch min-h-[36px]">
-            <div className="w-[50px] shrink-0 border-r border-slate-300" />
-            <div className="w-[305px] shrink-0 border-r border-slate-300" />
-            <div className="w-[78px] shrink-0 border-r border-slate-300" />
-            <div className="w-[108px] shrink-0 border-r border-slate-300 flex items-stretch">
-              <div className="w-[68px] shrink-0 border-r border-slate-300" />
+          {/* Continuous Vertical Lines Filler (absorbs empty space on last page cleanly) */}
+          <div className="flex-1 flex items-stretch min-h-[30px]">
+            <div className="w-[52px] shrink-0 border-r border-slate-300" />
+            <div className="w-[298px] shrink-0 border-r border-slate-300" />
+            <div className="w-[80px] shrink-0 border-r border-slate-300" />
+            <div className="w-[114px] shrink-0 border-r border-slate-300 flex items-stretch">
+              <div className="w-[74px] shrink-0 border-r border-slate-300" />
               <div className="w-[40px] shrink-0" />
             </div>
-            <div className="w-[55px] shrink-0 border-r border-slate-300" />
+            <div className="w-[54px] shrink-0 border-r border-slate-300" />
             <div className="flex-1 flex items-stretch">
               <div className="flex-1" />
               <div className="w-[42px] shrink-0 border-l border-slate-300" />
@@ -383,9 +389,9 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
         </div>
 
         {showContinuationNotice && (
-          <div className="bg-[#082138] text-white px-4 py-1.5 flex items-center justify-between text-[10px] font-bold border-t border-slate-300 shrink-0">
+          <div className="bg-[#082138] text-white px-4 py-2 flex items-center justify-between text-[11px] font-bold border-t border-slate-300 shrink-0">
             <span className="tracking-wide">Items Continued on Sheet {nextPageNum || 2} →</span>
-            <span className="text-cyan-300 text-[9.5px] font-mono">This Sheet Items: {itemsList.length}</span>
+            <span className="text-cyan-300 text-[10.5px] font-mono">This Sheet Items: {itemsList.length}</span>
           </div>
         )}
       </div>
@@ -397,7 +403,7 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
     <div className="flex items-stretch border-t border-slate-400 bg-white">
       <div
         className="p-2.5 flex flex-col justify-between border-r border-slate-400 bg-white shrink-0"
-        style={{ width: '433px' }}
+        style={{ width: '430px' }}
       >
         <div>
           <span className="font-bold text-[#082138] text-[11.5px]">Rupees in Words :</span>
@@ -552,50 +558,27 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
     boxSizing: 'border-box'
   };
 
-  // Intelligent A4 Pagination for Bills
-  // Up to 11 items comfortably fit on a single A4 page with full corporate header,
-  // customer details, transport details, totals & tax, and bank/signatory.
+  // Strict Fixed A4 Pagination for Bills:
+  // - Fixed A4 size: 210mm x 297mm (794px x 1123px)
+  // - Maximum 10 items per page
+  // - 1–10 items: 1 page
+  // - 11–20 items: 2 pages
+  // - 21–30 items: 3 pages
+  // - 31–40 items: 4 pages
+  // - Never squeeze more than 10 items into one page.
+  const ITEMS_PER_PAGE = 10;
+
   const paginateBillItems = (itemList: BillItem[]): { pageItems: BillItem[]; startIdx: number }[] => {
-    if (itemList.length <= 11) {
-      return [{ pageItems: itemList, startIdx: 0 }];
+    if (itemList.length === 0) {
+      return [{ pageItems: [], startIdx: 0 }];
     }
 
     const pages: { pageItems: BillItem[]; startIdx: number }[] = [];
-    const total = itemList.length;
-
-    // For multi-page:
-    // Page 1 has customer & transport info, but no bottom totals.
-    let page1Count = 12;
-    if (total <= 14) {
-      page1Count = Math.ceil(total / 2);
-    } else if (total - page1Count < 3) {
-      page1Count = total - 3;
-    }
-
-    pages.push({
-      pageItems: itemList.slice(0, page1Count),
-      startIdx: 0
-    });
-
-    let currentIdx = page1Count;
-    while (currentIdx < total) {
-      const remainingCount = total - currentIdx;
-      // If remaining items fit on the final page (capacity up to 12 items with totals & signatory):
-      if (remainingCount <= 12) {
-        pages.push({
-          pageItems: itemList.slice(currentIdx),
-          startIdx: currentIdx
-        });
-        break;
-      }
-
-      // Intermediate page (capacity up to 15 items)
-      const nextChunk = Math.min(14, Math.ceil(remainingCount / 2));
+    for (let i = 0; i < itemList.length; i += ITEMS_PER_PAGE) {
       pages.push({
-        pageItems: itemList.slice(currentIdx, currentIdx + nextChunk),
-        startIdx: currentIdx
+        pageItems: itemList.slice(i, i + ITEMS_PER_PAGE),
+        startIdx: i
       });
-      currentIdx += nextChunk;
     }
 
     return pages;
@@ -603,7 +586,7 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
 
   const paginatedPages = paginateBillItems(items);
 
-  // Single Page Bill (up to 11 items)
+  // Single Page Bill (1 to 10 items)
   if (paginatedPages.length === 1) {
     return (
       <div
