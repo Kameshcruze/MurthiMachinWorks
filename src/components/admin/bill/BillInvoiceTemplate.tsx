@@ -151,45 +151,6 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
     </div>
   );
 
-  // Compact Continuation Header
-  const renderContinuationHeader = (pageNumber: number, totalPages: number) => (
-    <div className="flex items-center justify-between border-b-2 border-[#082138] pb-2 mb-3">
-      <div className="flex items-center gap-2.5">
-        <div className="w-[38px] h-[38px] shrink-0">
-          <svg viewBox="0 0 100 100" className="w-full h-full">
-            <circle cx="50" cy="50" r="45" fill="#082138" />
-            <circle cx="50" cy="50" r="33" fill="#008CD6" />
-            <circle cx="50" cy="50" r="28" fill="#ffffff" />
-            <circle cx="50" cy="50" r="25" fill="#082138" />
-            <text x="50" y="59" fill="#ffffff" fontSize="28" fontWeight="900" textAnchor="middle">
-              M
-            </text>
-          </svg>
-        </div>
-        <div>
-          <h2 className="font-black text-[18px] text-[#082138] leading-none">MURTHI MACHIN WORKS</h2>
-          <p className="text-[9px] font-bold text-[#008CD6] tracking-wider mt-0.5">
-            TAX INVOICE — CONTINUATION SHEET (PAGE {pageNumber} OF {totalPages})
-          </p>
-        </div>
-      </div>
-      <div className="text-right text-[9.5px] space-y-0.5 text-slate-800">
-        <div>
-          <span className="text-slate-500 font-semibold">Invoice No:</span>{' '}
-          <strong className="font-mono text-[#082138] font-bold">{bill.invoice_number}</strong>
-        </div>
-        <div>
-          <span className="text-slate-500 font-semibold">Messers:</span>{' '}
-          <strong className="text-slate-900">{bill.customer_name}</strong>
-        </div>
-        <div>
-          <span className="text-slate-500 font-semibold">Date:</span>{' '}
-          <strong className="font-mono text-slate-900">{formattedDate}</strong>
-        </div>
-      </div>
-    </div>
-  );
-
   // Invoice Banner Ribbon & GSTIN
   const renderInvoiceBanner = () => (
     <div className="relative flex items-center justify-between h-[46px] overflow-hidden rounded-xs mb-2">
@@ -324,17 +285,13 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
   const renderTable = (
     itemsList: BillItem[],
     startIdx: number,
-    minHeightPx: number,
-    isContinuationPage: boolean = false,
-    showContinuationNotice: boolean = false
+    minHeightPx: number = 200,
+    showContinuationNotice: boolean = false,
+    nextPageNum?: number
   ) => {
-    const estimatedRowHeightPx = 32;
-    const contentHeightPx = itemsList.length * estimatedRowHeightPx;
-    const fillerHeightPx = Math.max(0, minHeightPx - contentHeightPx);
-
     return (
-      <div className="overflow-hidden bg-white mb-2" style={{ border: '1.6px solid #082138' }}>
-        <div className="bg-[#082138] text-white font-bold h-[34px] flex items-stretch text-[10px]">
+      <div className="overflow-hidden bg-white mb-2 flex-1 flex flex-col" style={{ border: '1.6px solid #082138' }}>
+        <div className="bg-[#082138] text-white font-bold h-[34px] flex items-stretch text-[10px] shrink-0">
           <div className="w-[50px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold">
             Sl.No
           </div>
@@ -363,7 +320,7 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
           </div>
         </div>
 
-        <div className="flex flex-col bg-white" style={{ minHeight: `${minHeightPx}px` }}>
+        <div className="flex-1 flex flex-col bg-white">
           {itemsList.map((item, idx) => {
             const rateParts = splitRupeesPaise(item.rate || 0);
             const amountParts = splitRupeesPaise(item.amount || 0);
@@ -409,7 +366,7 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
             );
           })}
 
-          <div className="flex-1 flex items-stretch" style={{ minHeight: `${fillerHeightPx}px` }}>
+          <div className="flex-1 flex items-stretch min-h-[36px]">
             <div className="w-[50px] shrink-0 border-r border-slate-300" />
             <div className="w-[305px] shrink-0 border-r border-slate-300" />
             <div className="w-[78px] shrink-0 border-r border-slate-300" />
@@ -426,9 +383,9 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
         </div>
 
         {showContinuationNotice && (
-          <div className="bg-[#082138] text-white px-4 py-2 flex items-center justify-between text-[11px] font-bold border-t border-slate-300">
-            <span className="tracking-wide">Items Continued on Page 2 →</span>
-            <span className="text-cyan-300 text-[10px] font-mono">Page 1 Total Items: {itemsList.length}</span>
+          <div className="bg-[#082138] text-white px-4 py-1.5 flex items-center justify-between text-[10px] font-bold border-t border-slate-300 shrink-0">
+            <span className="tracking-wide">Items Continued on Sheet {nextPageNum || 2} →</span>
+            <span className="text-cyan-300 text-[9.5px] font-mono">This Sheet Items: {itemsList.length}</span>
           </div>
         )}
       </div>
@@ -595,37 +552,62 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
     boxSizing: 'border-box'
   };
 
-  // Case 1: Single Page Bill (5 items or fewer)
-  if (items.length <= 5) {
+  // Intelligent A4 Pagination for Bills
+  // Up to 11 items comfortably fit on a single A4 page with full corporate header,
+  // customer details, transport details, totals & tax, and bank/signatory.
+  const paginateBillItems = (itemList: BillItem[]): { pageItems: BillItem[]; startIdx: number }[] => {
+    if (itemList.length <= 11) {
+      return [{ pageItems: itemList, startIdx: 0 }];
+    }
+
+    const pages: { pageItems: BillItem[]; startIdx: number }[] = [];
+    const total = itemList.length;
+
+    // For multi-page:
+    // Page 1 has customer & transport info, but no bottom totals.
+    let page1Count = 12;
+    if (total <= 14) {
+      page1Count = Math.ceil(total / 2);
+    } else if (total - page1Count < 3) {
+      page1Count = total - 3;
+    }
+
+    pages.push({
+      pageItems: itemList.slice(0, page1Count),
+      startIdx: 0
+    });
+
+    let currentIdx = page1Count;
+    while (currentIdx < total) {
+      const remainingCount = total - currentIdx;
+      // If remaining items fit on the final page (capacity up to 12 items with totals & signatory):
+      if (remainingCount <= 12) {
+        pages.push({
+          pageItems: itemList.slice(currentIdx),
+          startIdx: currentIdx
+        });
+        break;
+      }
+
+      // Intermediate page (capacity up to 15 items)
+      const nextChunk = Math.min(14, Math.ceil(remainingCount / 2));
+      pages.push({
+        pageItems: itemList.slice(currentIdx, currentIdx + nextChunk),
+        startIdx: currentIdx
+      });
+      currentIdx += nextChunk;
+    }
+
+    return pages;
+  };
+
+  const paginatedPages = paginateBillItems(items);
+
+  // Single Page Bill (up to 11 items)
+  if (paginatedPages.length === 1) {
     return (
       <div
         id={id}
-        className="a4-page-sheet bg-white text-slate-900 select-none box-border shadow-2xl mx-auto overflow-hidden relative"
-        style={sheetStyle}
-      >
-        {renderSvgDecorations()}
-        <div className="relative z-10 h-full flex flex-col justify-start">
-          {renderFullBrandHeader()}
-          {renderInvoiceBanner()}
-          {renderNoAndDateRow()}
-          {renderCustomerBox()}
-          {renderTransportBox()}
-          {renderTable(items, 0, 290, false, false)}
-          {renderTotalsAndTax()}
-          {renderBankAndSignatory()}
-        </div>
-      </div>
-    );
-  }
-
-  // Case 2: Multi-Page Bill (> 5 items)
-  const page1Items = items.slice(0, 5);
-  const page2Items = items.slice(5);
-
-  return (
-    <div id={id} className="space-y-6 print:space-y-0">
-      {/* ===================== PAGE 1 ===================== */}
-      <div
         className="a4-page-sheet bg-white text-slate-900 select-none box-border shadow-2xl mx-auto overflow-hidden relative"
         style={sheetStyle}
       >
@@ -637,40 +619,74 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
             {renderNoAndDateRow()}
             {renderCustomerBox()}
             {renderTransportBox()}
-            {renderTable(page1Items, 0, 360, false, true)}
           </div>
-          <div className="pt-2 border-t border-slate-300 flex items-center justify-between text-[10px] text-slate-600 font-medium">
-            <span>Invoice: <strong className="font-mono text-slate-900">{bill.invoice_number}</strong></span>
-            <span className="font-bold text-[#082138] bg-slate-100 px-3 py-1 rounded-full">
-              Page 1 of 2 (Continued on Next Sheet)
-            </span>
-            <span>Murthi Machin Works</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ===================== PAGE 2 ===================== */}
-      <div
-        className="a4-page-sheet bg-white text-slate-900 select-none box-border shadow-2xl mx-auto overflow-hidden relative"
-        style={sheetStyle}
-      >
-        {renderSvgDecorations()}
-        <div className="relative z-10 h-full flex flex-col justify-between">
+          {renderTable(items, 0, 200, false)}
           <div>
-            {renderContinuationHeader(2, 2)}
-            {renderTable(page2Items, 5, 230, true, false)}
             {renderTotalsAndTax()}
             {renderBankAndSignatory()}
           </div>
-          <div className="pt-2 border-t border-slate-300 flex items-center justify-between text-[10px] text-slate-600 font-medium">
-            <span>Invoice: <strong className="font-mono text-slate-900">{bill.invoice_number}</strong></span>
-            <span className="font-bold text-[#082138] bg-slate-100 px-3 py-1 rounded-full">
-              Page 2 of 2 (Final Sheet)
-            </span>
-            <span>Murthi Machin Works</span>
-          </div>
         </div>
       </div>
+    );
+  }
+
+  // Multi-Page Bill (> 11 items)
+  return (
+    <div id={id} className="space-y-6 print:space-y-0">
+      {paginatedPages.map(({ pageItems, startIdx }, pageIdx) => {
+        const pageNumber = pageIdx + 1;
+        const isLastPage = pageNumber === paginatedPages.length;
+
+        return (
+          <div
+            key={pageIdx}
+            className="a4-page-sheet bg-white text-slate-900 select-none box-border shadow-2xl mx-auto overflow-hidden relative"
+            style={sheetStyle}
+          >
+            {renderSvgDecorations()}
+            <div className="relative z-10 h-full flex flex-col justify-between">
+              <div>
+                {renderFullBrandHeader()}
+                {renderInvoiceBanner()}
+                {renderNoAndDateRow()}
+                {/* On Page 2 and subsequent pages, DO NOT repeat Customer Box ("name") or Transport Box ("order number etc") */}
+                {pageIdx === 0 && (
+                  <>
+                    {renderCustomerBox()}
+                    {renderTransportBox()}
+                  </>
+                )}
+              </div>
+
+              {/* Table with items for this page (expands to fill vertical space) */}
+              {renderTable(pageItems, startIdx, 200, !isLastPage, pageNumber + 1)}
+
+              {/* Bottom content: Totals & Signature pinned at the LAST page bottom */}
+              {isLastPage ? (
+                <div>
+                  {renderTotalsAndTax()}
+                  {renderBankAndSignatory()}
+                  <div className="pt-1.5 flex items-center justify-between text-[9px] text-slate-500 font-medium">
+                    <span>Invoice: <strong className="font-mono text-slate-800">{bill.invoice_number}</strong></span>
+                    <span className="font-bold text-[#082138] bg-slate-100 px-2.5 py-0.5 rounded-full">
+                      Sheet {pageNumber} of {paginatedPages.length} (Final Sheet)
+                    </span>
+                    <span>Murthi Machin Works</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-2 border-t border-slate-300 flex items-center justify-between text-[10px] text-slate-600 font-medium">
+                  <span>Invoice: <strong className="font-mono text-slate-900">{bill.invoice_number}</strong></span>
+                  <span className="font-bold text-[#082138] bg-slate-100 px-3 py-1 rounded-full">
+                    Sheet {pageNumber} of {paginatedPages.length} (Continued on Sheet {pageNumber + 1})
+                  </span>
+                  <span>Murthi Machin Works</span>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };

@@ -155,47 +155,6 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
     </div>
   );
 
-  // Compact Continuation Brand Header (for Page 2)
-  const renderContinuationHeader = (pageNumber: number, totalPages: number) => (
-    <div className="flex items-center justify-between border-b-2 border-[#082138] pb-2 mb-3">
-      <div className="flex items-center gap-2.5">
-        <div className="w-[38px] h-[38px] shrink-0">
-          <svg viewBox="0 0 100 100" className="w-full h-full">
-            <circle cx="50" cy="50" r="45" fill="#082138" />
-            <circle cx="50" cy="50" r="33" fill="#008CD6" />
-            <circle cx="50" cy="50" r="28" fill="#ffffff" />
-            <circle cx="50" cy="50" r="25" fill="#082138" />
-            <text x="50" y="59" fill="#ffffff" fontSize="28" fontWeight="900" textAnchor="middle">
-              M
-            </text>
-          </svg>
-        </div>
-        <div>
-          <h2 className="font-black text-[18px] text-[#082138] leading-none">
-            MURTHI MACHIN WORKS
-          </h2>
-          <p className="text-[9px] font-bold text-[#008CD6] tracking-wider mt-0.5">
-            QUOTATION — CONTINUATION SHEET (PAGE {pageNumber} OF {totalPages})
-          </p>
-        </div>
-      </div>
-      <div className="text-right text-[9.5px] space-y-0.5 text-slate-800">
-        <div>
-          <span className="text-slate-500 font-semibold">Quotation No:</span>{' '}
-          <strong className="font-mono text-[#082138] font-bold">{quotation.quotation_number}</strong>
-        </div>
-        <div>
-          <span className="text-slate-500 font-semibold">Messers:</span>{' '}
-          <strong className="text-slate-900">{quotation.customer_name}</strong>
-        </div>
-        <div>
-          <span className="text-slate-500 font-semibold">Date:</span>{' '}
-          <strong className="font-mono text-slate-900">{formattedDate}</strong>
-        </div>
-      </div>
-    </div>
-  );
-
   // Quotation Banner Ribbon & GSTIN
   const renderQuotationBanner = () => (
     <div className="relative flex items-center justify-between h-[46px] overflow-hidden rounded-xs mb-2">
@@ -342,18 +301,14 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
   const renderTable = (
     itemsList: QuotationItem[],
     startIdx: number,
-    minHeightPx: number,
-    isContinuationPage: boolean = false,
-    showContinuationNotice: boolean = false
+    minHeightPx: number = 200,
+    showContinuationNotice: boolean = false,
+    nextPageNum?: number
   ) => {
-    const estimatedRowHeightPx = 32;
-    const contentHeightPx = itemsList.length * estimatedRowHeightPx;
-    const fillerHeightPx = Math.max(0, minHeightPx - contentHeightPx);
-
     return (
-      <div className="overflow-hidden bg-white mb-2" style={{ border: '1.6px solid #082138' }}>
+      <div className="overflow-hidden bg-white mb-2 flex-1 flex flex-col" style={{ border: '1.6px solid #082138' }}>
         {/* Table Header */}
-        <div className="bg-[#082138] text-white font-bold h-[34px] flex items-stretch text-[10px]">
+        <div className="bg-[#082138] text-white font-bold h-[34px] flex items-stretch text-[10px] shrink-0">
           <div className="w-[50px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold">
             Sl.No
           </div>
@@ -383,7 +338,7 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
         </div>
 
         {/* Table Body */}
-        <div className="flex flex-col bg-white" style={{ minHeight: `${minHeightPx}px` }}>
+        <div className="flex-1 flex flex-col bg-white">
           {itemsList.map((item, idx) => {
             const rateParts = splitRupeesPaise(item.rate || 0);
             const amountParts = splitRupeesPaise(item.amount || 0);
@@ -433,7 +388,7 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
           })}
 
           {/* Continuous Vertical Lines Filler */}
-          <div className="flex-1 flex items-stretch" style={{ minHeight: `${fillerHeightPx}px` }}>
+          <div className="flex-1 flex items-stretch min-h-[36px]">
             <div className="w-[50px] shrink-0 border-r border-slate-300" />
             <div className="w-[305px] shrink-0 border-r border-slate-300" />
             <div className="w-[78px] shrink-0 border-r border-slate-300" />
@@ -451,9 +406,9 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
 
         {/* Continuation Row (Notice at bottom of Page 1) */}
         {showContinuationNotice && (
-          <div className="bg-[#082138] text-white px-4 py-2 flex items-center justify-between text-[11px] font-bold border-t border-slate-300">
-            <span className="tracking-wide">Items Continued on Page 2 →</span>
-            <span className="text-cyan-300 text-[10px] font-mono">Page 1 Total Items: {itemsList.length}</span>
+          <div className="bg-[#082138] text-white px-4 py-1.5 flex items-center justify-between text-[10px] font-bold border-t border-slate-300 shrink-0">
+            <span className="tracking-wide">Items Continued on Sheet {nextPageNum || 2} →</span>
+            <span className="text-cyan-300 text-[9.5px] font-mono">This Sheet Items: {itemsList.length}</span>
           </div>
         )}
       </div>
@@ -649,39 +604,62 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
     boxSizing: 'border-box'
   };
 
-  // Case 1: Single Page Quotation (5 items or fewer)
-  if (items.length <= 5) {
+  // Intelligent A4 Pagination for Quotations
+  // Up to 10 items comfortably fit on a single A4 page with full corporate header,
+  // customer details, terms grid, table, totals, terms disclaimer, and bank/signatory.
+  const paginateQuotationItems = (itemList: QuotationItem[]): { pageItems: QuotationItem[]; startIdx: number }[] => {
+    if (itemList.length <= 10) {
+      return [{ pageItems: itemList, startIdx: 0 }];
+    }
+
+    const pages: { pageItems: QuotationItem[]; startIdx: number }[] = [];
+    const total = itemList.length;
+
+    // For multi-page:
+    // Page 1 has customer & terms grid info, but no bottom totals/terms/signatory.
+    let page1Count = 11;
+    if (total <= 14) {
+      page1Count = Math.ceil(total / 2);
+    } else if (total - page1Count < 3) {
+      page1Count = total - 3;
+    }
+
+    pages.push({
+      pageItems: itemList.slice(0, page1Count),
+      startIdx: 0
+    });
+
+    let currentIdx = page1Count;
+    while (currentIdx < total) {
+      const remainingCount = total - currentIdx;
+      // If remaining items fit on the final page (capacity up to 10 items with totals & terms disclaimer):
+      if (remainingCount <= 10) {
+        pages.push({
+          pageItems: itemList.slice(currentIdx),
+          startIdx: currentIdx
+        });
+        break;
+      }
+
+      // Intermediate page (capacity up to 14 items)
+      const nextChunk = Math.min(13, Math.ceil(remainingCount / 2));
+      pages.push({
+        pageItems: itemList.slice(currentIdx, currentIdx + nextChunk),
+        startIdx: currentIdx
+      });
+      currentIdx += nextChunk;
+    }
+
+    return pages;
+  };
+
+  const paginatedPages = paginateQuotationItems(items);
+
+  // Single Page Quotation (up to 10 items)
+  if (paginatedPages.length === 1) {
     return (
       <div
         id={id}
-        className="a4-page-sheet bg-white text-slate-900 select-none box-border shadow-2xl mx-auto overflow-hidden relative"
-        style={sheetStyle}
-      >
-        {renderSvgDecorations()}
-        <div className="relative z-10 h-full flex flex-col justify-start">
-          {renderFullBrandHeader()}
-          {renderQuotationBanner()}
-          {renderNoAndDateRow()}
-          {renderCustomerBox()}
-          {renderTermsGrid()}
-          {renderTable(items, 0, 290, false, false)}
-          {renderTotalsAndTax()}
-          {renderTermsDisclaimer()}
-          {renderBankAndSignatory()}
-        </div>
-      </div>
-    );
-  }
-
-  // Case 2: Multi-Page Quotation (> 5 items)
-  // Split into Page 1 (first 5 items) and Page 2 (remaining items)
-  const page1Items = items.slice(0, 5);
-  const page2Items = items.slice(5);
-
-  return (
-    <div id={id} className="space-y-6 print:space-y-0">
-      {/* ===================== PAGE 1 ===================== */}
-      <div
         className="a4-page-sheet bg-white text-slate-900 select-none box-border shadow-2xl mx-auto overflow-hidden relative"
         style={sheetStyle}
       >
@@ -693,43 +671,76 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
             {renderNoAndDateRow()}
             {renderCustomerBox()}
             {renderTermsGrid()}
-            {renderTable(page1Items, 0, 360, false, true)}
           </div>
-          {/* Page 1 Bottom Footer */}
-          <div className="pt-2 border-t border-slate-300 flex items-center justify-between text-[10px] text-slate-600 font-medium">
-            <span>Quotation: <strong className="font-mono text-slate-900">{quotation.quotation_number}</strong></span>
-            <span className="font-bold text-[#082138] bg-slate-100 px-3 py-1 rounded-full">
-              Page 1 of 2 (Continued on Next Sheet)
-            </span>
-            <span>Murthi Machin Works</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ===================== PAGE 2 ===================== */}
-      <div
-        className="a4-page-sheet bg-white text-slate-900 select-none box-border shadow-2xl mx-auto overflow-hidden relative"
-        style={sheetStyle}
-      >
-        {renderSvgDecorations()}
-        <div className="relative z-10 h-full flex flex-col justify-between">
+          {renderTable(items, 0, 200, false)}
           <div>
-            {renderContinuationHeader(2, 2)}
-            {renderTable(page2Items, 5, 230, true, false)}
             {renderTotalsAndTax()}
             {renderTermsDisclaimer()}
             {renderBankAndSignatory()}
           </div>
-          {/* Page 2 Bottom Footer */}
-          <div className="pt-2 border-t border-slate-300 flex items-center justify-between text-[10px] text-slate-600 font-medium">
-            <span>Quotation: <strong className="font-mono text-slate-900">{quotation.quotation_number}</strong></span>
-            <span className="font-bold text-[#082138] bg-slate-100 px-3 py-1 rounded-full">
-              Page 2 of 2 (Final Sheet)
-            </span>
-            <span>Murthi Machin Works</span>
-          </div>
         </div>
       </div>
+    );
+  }
+
+  // Multi-Page Quotation (> 10 items)
+  return (
+    <div id={id} className="space-y-6 print:space-y-0">
+      {paginatedPages.map(({ pageItems, startIdx }, pageIdx) => {
+        const pageNumber = pageIdx + 1;
+        const isLastPage = pageNumber === paginatedPages.length;
+
+        return (
+          <div
+            key={pageIdx}
+            className="a4-page-sheet bg-white text-slate-900 select-none box-border shadow-2xl mx-auto overflow-hidden relative"
+            style={sheetStyle}
+          >
+            {renderSvgDecorations()}
+            <div className="relative z-10 h-full flex flex-col justify-between">
+              <div>
+                {renderFullBrandHeader()}
+                {renderQuotationBanner()}
+                {renderNoAndDateRow()}
+                {/* On Page 2 and subsequent pages, DO NOT repeat Customer Box ("name") or Terms Grid ("order number etc") */}
+                {pageIdx === 0 && (
+                  <>
+                    {renderCustomerBox()}
+                    {renderTermsGrid()}
+                  </>
+                )}
+              </div>
+
+              {/* Table with items for this page (expands to fill vertical space) */}
+              {renderTable(pageItems, startIdx, 200, !isLastPage, pageNumber + 1)}
+
+              {/* Bottom content: Totals, Terms & Signature pinned at the LAST page bottom */}
+              {isLastPage ? (
+                <div>
+                  {renderTotalsAndTax()}
+                  {renderTermsDisclaimer()}
+                  {renderBankAndSignatory()}
+                  <div className="pt-1.5 flex items-center justify-between text-[9px] text-slate-500 font-medium">
+                    <span>Quotation: <strong className="font-mono text-slate-800">{quotation.quotation_number}</strong></span>
+                    <span className="font-bold text-[#082138] bg-slate-100 px-2.5 py-0.5 rounded-full">
+                      Sheet {pageNumber} of {paginatedPages.length} (Final Sheet)
+                    </span>
+                    <span>Murthi Machin Works</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-2 border-t border-slate-300 flex items-center justify-between text-[10px] text-slate-600 font-medium">
+                  <span>Quotation: <strong className="font-mono text-slate-900">{quotation.quotation_number}</strong></span>
+                  <span className="font-bold text-[#082138] bg-slate-100 px-3 py-1 rounded-full">
+                    Sheet {pageNumber} of {paginatedPages.length} (Continued on Sheet {pageNumber + 1})
+                  </span>
+                  <span>Murthi Machin Works</span>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };
