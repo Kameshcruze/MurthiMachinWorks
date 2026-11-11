@@ -3,6 +3,7 @@ import { useNavigation } from '../../context/NavigationContext';
 import { useCart } from '../../context/CartContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
+import { dataService, DATA_CHANGE_EVENT } from '../../services/dataService';
 import {
   Phone,
   Mail,
@@ -75,14 +76,54 @@ export const Header: React.FC = () => {
     { label: 'CONTACT US', page: 'contact' as const },
   ];
 
-  const machineryCategories = [
-    { label: 'Lathe Machines', slug: 'lathe-machines' },
-    { label: 'Drilling Machines', slug: 'drilling-machines' },
-    { label: 'Hydraulic Press Machines', slug: 'hydraulic-press-machines' },
+  // Dynamic Machinery categories sorted in ascending alphabetical order from top (A to Z)
+  const [categories, setCategories] = useState<{ label: string; slug: string }[]>([]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const cats = await dataService.getCategories();
+        if (cats && cats.length > 0) {
+          const sorted = cats
+            .filter(c => c.is_active !== false)
+            .map(c => ({ label: c.name, slug: c.slug }))
+            .sort((a, b) => a.label.localeCompare(b.label));
+          setCategories(sorted);
+        }
+      } catch (e) {
+        console.warn('Failed to load categories for header dropdown:', e);
+      }
+    };
+
+    loadCategories();
+    const handleDataChange = (e: any) => {
+      const entity = e.detail?.entity;
+      const entities: string[] = e.detail?.entities || (entity ? [entity] : []);
+      if (
+        !entity ||
+        entities.includes('categories') ||
+        entities.includes('all') ||
+        entity === 'categories' ||
+        entity === 'all'
+      ) {
+        loadCategories();
+      }
+    };
+    window.addEventListener(DATA_CHANGE_EVENT, handleDataChange);
+    return () => window.removeEventListener(DATA_CHANGE_EVENT, handleDataChange);
+  }, []);
+
+  // Fallback categories list sorted in ascending alphabetical order
+  const fallbackCategories = [
     { label: 'Cutting Machines', slug: 'cutting-machines' },
-    { label: 'Industrial Workshop Equipment', slug: 'industrial-workshop-equipment' },
+    { label: 'Drilling Machines', slug: 'drilling-machines' },
     { label: 'Fabrication Machines', slug: 'fabrication-machines' },
-  ];
+    { label: 'Hydraulic Press Machines', slug: 'hydraulic-press-machines' },
+    { label: 'Industrial Workshop Equipment', slug: 'industrial-workshop-equipment' },
+    { label: 'Lathe Machines', slug: 'lathe-machines' },
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
+  const sortedMachineryCategories = categories.length > 0 ? categories : fallbackCategories;
 
   const handleNavClick = (page: string, e?: React.MouseEvent) => {
     if (page === 'service-area') {
@@ -379,7 +420,7 @@ export const Header: React.FC = () => {
                             <span>All Machinery Catalog</span>
                             <ChevronRight className="w-3.5 h-3.5" />
                           </button>
-                          {machineryCategories.map(cat => (
+                          {sortedMachineryCategories.map(cat => (
                             <button
                               key={cat.slug}
                               onClick={() => {

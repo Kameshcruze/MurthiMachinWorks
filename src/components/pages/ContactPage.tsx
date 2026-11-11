@@ -27,9 +27,7 @@ import {
   Trash2,
   X,
   ExternalLink,
-  Navigation,
-  Award,
-  Truck
+  Navigation
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -321,8 +319,8 @@ export const ContactPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Contact Form & Procurement Guarantees (7 cols) */}
-          <div className="lg:col-span-7 space-y-6">
+          {/* Right: Contact Form (7 cols) */}
+          <div className="lg:col-span-7">
             <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs">
             {isSubmitted ? (
               <div className="py-16 text-center space-y-4">
@@ -612,69 +610,6 @@ export const ContactPage: React.FC = () => {
                 </button>
               </form>
             )}
-            </div>
-
-            {/* Procurement Guarantees & Official Registered Credentials */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#C81E1E]" />
-                  <span className="font-heading font-bold text-xs uppercase tracking-wider text-slate-900">
-                    Machinery Procurement & Inspection Assurances
-                  </span>
-                </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold border border-slate-200">
-                  Direct Factory Desk
-                </span>
-              </div>
-
-              {/* 3 Pillars */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5">
-                  <div className="flex items-center gap-2 text-[#C81E1E]">
-                    <Clock className="w-4 h-4 shrink-0" />
-                    <span className="font-heading font-bold text-xs text-slate-900">4-Hour Response</span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Engineering review of workpiece specs, spindle bore, and swing capacity with direct factory estimate.
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5">
-                  <div className="flex items-center gap-2 text-[#C81E1E]">
-                    <Award className="w-4 h-4 shrink-0" />
-                    <span className="font-heading font-bold text-xs text-slate-900">Live Power Trials</span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Bring test workpieces to our Coimbatore yards to inspect runout, backlash, and tolerances under power.
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5">
-                  <div className="flex items-center gap-2 text-[#C81E1E]">
-                    <Truck className="w-4 h-4 shrink-0" />
-                    <span className="font-heading font-bold text-xs text-slate-900">Pan-India Dispatch</span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Heavy-duty wooden crating, transit insurance coordination, foundation drawings & commissioning support.
-                  </p>
-                </div>
-              </div>
-
-              {/* Official Credentials Bar */}
-              <div className="p-3.5 rounded-xl bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2 text-amber-400 font-bold uppercase tracking-wider text-[11px]">
-                  <ShieldCheck className="w-4 h-4 shrink-0" />
-                  <span>Enterprise Registration:</span>
-                </div>
-                <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-slate-300 text-[11px]">
-                  <span><strong>GSTIN:</strong> 33AABCM9482L1Z4</span>
-                  <span className="hidden sm:inline text-slate-600">•</span>
-                  <span><strong>ISO:</strong> 9001:2015 Metrology Certified</span>
-                  <span className="hidden sm:inline text-slate-600">•</span>
-                  <span><strong>Testing:</strong> Laser Calibration Unit 2</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>

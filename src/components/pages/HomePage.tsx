@@ -336,10 +336,12 @@ export const HomePage: React.FC = () => {
         const productWithImg = catProducts.find(p => p.images && p.images.length > 0 && p.images[0]?.image_url);
         const productImage = productWithImg?.images?.find(i => i.is_primary)?.image_url || productWithImg?.images?.[0]?.image_url;
 
-        // Image priority: product image in this category -> category image_url -> curated fallback
+        // Image priority: category uploaded image_url -> product image in this category -> curated fallback
         const formattedCatImg = formatImageUrl(cat.image_url);
         const fallbackImg = categoryDefaultPhotos[cat.slug] || categoryDefaultPhotos[cat.id] || '/hero-banner.webp';
-        const displayImage = productImage || (formattedCatImg && !formattedCatImg.includes('404') ? formattedCatImg : fallbackImg);
+        const displayImage = (formattedCatImg && !formattedCatImg.includes('404'))
+          ? formattedCatImg
+          : (productImage || fallbackImg);
 
         return {
           id: cat.id,

@@ -25,6 +25,19 @@ export const Footer: React.FC = () => {
 
   const cleanWhatsAppNumber = (settings.whatsapp || '+91 95852 62522').replace(/[^0-9]/g, '');
 
+  // In footer alone: ensure MACHINE is in all capital letters (CAPS)
+  const formatFooterText = (text?: string): string => {
+    if (!text) return '';
+    return text
+      .replace(/machinworks/gi, 'machineworks')
+      .replace(/\bmachin\b/gi, 'MACHINE')
+      .replace(/\bmachine\b/gi, 'MACHINE');
+  };
+
+  const footerEmail = (settings.email || 'murthimachineworks@gmail.com')
+    .toLowerCase()
+    .replace('machinworks', 'machineworks');
+
   const quickLinks = [
     { label: 'Home', page: 'home' as const },
     { label: 'All Machinery & Products', page: 'products' as const },
@@ -198,8 +211,8 @@ export const Footer: React.FC = () => {
                 <MapPin className="w-3.5 h-3.5 text-[#F5A623] shrink-0 mt-0.5" />
                 <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-1">
-                    <span className="font-bold text-white group-hover:text-[#F5A623] transition text-[11px] truncate">
-                      {branch.name}
+                    <span className="font-bold text-white group-hover:text-[#F5A623] transition text-[11px] truncate uppercase">
+                      {formatFooterText(branch.name)}
                     </span>
                     <ExternalLink className="w-2.5 h-2.5 text-slate-500 group-hover:text-[#F5A623] shrink-0" />
                   </div>
@@ -227,8 +240,8 @@ export const Footer: React.FC = () => {
 
             <div className="flex items-center gap-2.5">
               <Mail className="w-4 h-4 text-[#F5A623] shrink-0" />
-              <a href={`mailto:${settings.email || 'murthimachinworks@gmail.com'}`} className="hover:text-white transition">
-                {settings.email || 'murthimachinworks@gmail.com'}
+              <a href={`mailto:${footerEmail}`} className="hover:text-white transition">
+                {footerEmail}
               </a>
             </div>
 
