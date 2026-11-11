@@ -318,11 +318,8 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
           <div className="w-[136px] shrink-0 px-2 flex items-center font-bold text-slate-800 border-r border-slate-300 text-[9px] leading-tight">
             Quotation Amount Before Tax
           </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-bold text-slate-950 whitespace-nowrap min-w-0">
+          <div className="flex-1 text-right pr-3 flex items-center justify-end font-mono font-bold text-slate-950 whitespace-nowrap min-w-0">
             {subtotalParts.rs}
-          </div>
-          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
-            {subtotalParts.ps}
           </div>
         </div>
         {/* Row 2: CGST */}
@@ -334,11 +331,8 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
               <span className="font-bold">{quotation.cgst_rate || 9}%</span>
             </div>
           </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
+          <div className="flex-1 text-right pr-3 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
             {hasTax && isIntraState ? cgstParts.rs : '0'}
-          </div>
-          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
-            {hasTax && isIntraState ? cgstParts.ps : '00'}
           </div>
         </div>
         {/* Row 3: SGST */}
@@ -350,11 +344,8 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
               <span className="font-bold">{quotation.sgst_rate || 9}%</span>
             </div>
           </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
+          <div className="flex-1 text-right pr-3 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
             {hasTax && isIntraState ? sgstParts.rs : '0'}
-          </div>
-          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
-            {hasTax && isIntraState ? sgstParts.ps : '00'}
           </div>
         </div>
         {/* Row 4: IGST */}
@@ -366,11 +357,8 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
               <span className="font-bold">{quotation.igst_rate || 18}%</span>
             </div>
           </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
+          <div className="flex-1 text-right pr-3 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
             {hasTax && isInterState ? igstParts.rs : '0'}
-          </div>
-          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
-            {hasTax && isInterState ? igstParts.ps : '00'}
           </div>
         </div>
         {/* Row 5: Total */}
@@ -381,14 +369,11 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
           <div className="w-[136px] shrink-0 px-2 flex items-center font-black text-[#082138] text-[10.5px] leading-tight border-r border-[#082138]">
             Quotation Total Amount
           </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-black text-[12px] text-[#082138] whitespace-nowrap min-w-0">
+          <div className="flex-1 text-right pr-3 flex items-center justify-end font-mono font-black text-[12px] text-[#082138] whitespace-nowrap min-w-0">
             <span className="inline-flex items-center gap-1 whitespace-nowrap">
               <span>₹</span>
               <span>{totalParts.rs}</span>
             </span>
-          </div>
-          <div className="w-[42px] shrink-0 border-l border-[#082138] flex items-center justify-center font-mono text-[9px] font-bold text-[#082138]">
-            {totalParts.ps}
           </div>
         </div>
       </div>
@@ -417,22 +402,14 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
           <div className="w-[80px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold tracking-wide">
             HSN Code
           </div>
-          <div className="w-[114px] shrink-0 border-r border-white/40 flex flex-col justify-center text-center">
-            <div className="border-b border-white/40 pb-0.5 font-bold tracking-wide">Rate</div>
-            <div className="flex items-stretch text-[10px] pt-0.5 h-[17px]">
-              <span className="w-[74px] shrink-0 border-r border-white/40 font-semibold flex items-center justify-center">Rs.</span>
-              <span className="w-[40px] shrink-0 font-semibold flex items-center justify-center">Ps.</span>
-            </div>
+          <div className="w-[114px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold tracking-wide">
+            Rate (Rs.)
           </div>
           <div className="w-[54px] shrink-0 border-r border-white/40 flex items-center justify-center font-bold tracking-wide">
             Qty
           </div>
-          <div className="flex-1 flex flex-col justify-center text-center">
-            <div className="border-b border-white/40 pb-0.5 font-bold tracking-wide">Amount</div>
-            <div className="flex items-stretch text-[10px] pt-0.5 h-[17px]">
-              <span className="flex-1 border-r border-white/40 font-semibold flex items-center justify-center">Rs.</span>
-              <span className="w-[42px] shrink-0 font-semibold flex items-center justify-center">Ps.</span>
-            </div>
+          <div className="flex-1 flex items-center justify-center font-bold tracking-wide">
+            Amount (Rs.)
           </div>
         </div>
 
@@ -463,24 +440,14 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
                 <div className="w-[80px] shrink-0 border-r border-slate-300 flex items-center justify-center font-mono text-[12px] text-slate-800 font-semibold py-2.5 bg-white">
                   {item.hsn_code || '84581100'}
                 </div>
-                <div className="w-[114px] shrink-0 border-r border-slate-300 flex items-stretch bg-white">
-                  <div className="w-[74px] shrink-0 border-r border-slate-300 pr-2.5 py-2.5 flex items-center justify-end font-mono font-bold text-slate-900 text-[13px] whitespace-nowrap">
-                    {rateParts.rs}
-                  </div>
-                  <div className="w-[40px] shrink-0 py-2.5 flex items-center justify-center font-mono text-[11px] text-slate-600">
-                    {rateParts.ps}
-                  </div>
+                <div className="w-[114px] shrink-0 border-r border-slate-300 pr-3 py-2.5 flex items-center justify-end font-mono font-bold text-slate-900 text-[13px] whitespace-nowrap bg-white">
+                  {rateParts.rs}
                 </div>
                 <div className="w-[54px] shrink-0 border-r border-slate-300 flex items-center justify-center font-mono font-bold text-slate-950 text-[13px] py-2.5 bg-white">
                   {item.quantity}
                 </div>
-                <div className="flex-1 flex items-stretch bg-white">
-                  <div className="flex-1 pr-2.5 py-2.5 flex items-center justify-end font-mono font-black text-slate-950 text-[13px] whitespace-nowrap">
-                    {amountParts.rs}
-                  </div>
-                  <div className="w-[42px] shrink-0 border-l border-slate-300 py-2.5 flex items-center justify-center font-mono text-[11px] text-slate-600">
-                    {amountParts.ps}
-                  </div>
+                <div className="flex-1 pr-3 py-2.5 flex items-center justify-end font-mono font-black text-slate-950 text-[13px] whitespace-nowrap bg-white">
+                  {amountParts.rs}
                 </div>
               </div>
             );
@@ -491,15 +458,9 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
             <div className="w-[52px] shrink-0 border-r border-slate-300" />
             <div className="w-[298px] shrink-0 border-r border-slate-300" />
             <div className="w-[80px] shrink-0 border-r border-slate-300" />
-            <div className="w-[114px] shrink-0 border-r border-slate-300 flex items-stretch">
-              <div className="w-[74px] shrink-0 border-r border-slate-300" />
-              <div className="w-[40px] shrink-0" />
-            </div>
+            <div className="w-[114px] shrink-0 border-r border-slate-300" />
             <div className="w-[54px] shrink-0 border-r border-slate-300" />
-            <div className="flex-1 flex items-stretch">
-              <div className="flex-1" />
-              <div className="w-[42px] shrink-0 border-l border-slate-300" />
-            </div>
+            <div className="flex-1" />
           </div>
         </div>
 
