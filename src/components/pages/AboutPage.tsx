@@ -69,7 +69,7 @@ export const AboutPage: React.FC = () => {
                 Murthi Machine Works is a Coimbatore-based industrial machinery business with 35 years of experience in the machinery industry. We specialise in the buying and selling of new and used machinery, along with machine repair, breakdown service, installation, and commissioning.
               </p>
               <p>
-                Founded under the leadership of Mr. Maruthachala Murthi P, our business caters to the diverse machinery requirements of manufacturing industries, engineering companies, fabrication units, industrial workshops, and businesses across South India.
+                Founded under the leadership of <strong className="font-bold text-slate-800">Mr. Maruthachala Murthi P</strong>, our business caters to the diverse machinery requirements of manufacturing industries, engineering companies, fabrication units, industrial workshops, and businesses across South India.
               </p>
               <p>
                 Over the years, we have developed an understanding of the machinery requirements of various industrial and manufacturing businesses. Our business focuses on helping customers identify machinery suited to their applications, production requirements, and operational needs.
