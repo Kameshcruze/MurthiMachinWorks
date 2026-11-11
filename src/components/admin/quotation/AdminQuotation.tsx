@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { toPng } from 'html-to-image';
 import { Quotation, QuotationItem, Product, Category } from '../../../types';
 import { dataService, DATA_CHANGE_EVENT } from '../../../services/dataService';
@@ -593,9 +592,10 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
     if (qtn && qtn.id) {
       setSelectedQuotation(qtn);
     }
+    setViewMode('preview');
     setTimeout(() => {
       window.print();
-    }, 50);
+    }, 100);
   };
 
   // Filter quotations
@@ -613,16 +613,6 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
 
   return (
     <div className="space-y-6">
-      {/* =======================================================================
-          DEDICATED PRINT CONTAINER (Targeted exclusively by @media print)
-         ======================================================================= */}
-      {typeof document !== 'undefined' && createPortal(
-        <div id="printable-a4-document" className="hidden print:block">
-          <QuotationTemplate quotation={selectedQuotation || currentPreviewQuotation || quotations[0]} />
-        </div>,
-        document.body
-      )}
-
       {/* =======================================================================
           VIEW: LIST OF ALL QUOTATIONS
          ======================================================================= */}
@@ -1373,7 +1363,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
       {viewMode === 'preview' && selectedQuotation && (
         <div className="space-y-6">
           {/* Top Preview Action Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm sticky top-0 z-30">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm sticky top-0 z-30 print:hidden">
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -1459,8 +1449,9 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
           </div>
 
           {/* Centered A4 Canvas Display */}
-          <div className="bg-slate-800/90 p-8 rounded-2xl shadow-inner overflow-auto flex justify-center items-start min-h-[700px]">
+          <div className="bg-slate-800/90 p-8 rounded-2xl shadow-inner overflow-auto flex justify-center items-start min-h-[700px] print:bg-transparent print:p-0 print:m-0 print:min-h-0 print:overflow-visible print:shadow-none print:rounded-none print:border-none">
             <div
+              className="print:transform-none print:m-0 print:p-0"
               style={{
                 transform: `scale(${previewScale})`,
                 transformOrigin: 'top center',

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { toPng } from 'html-to-image';
 import { Bill, BillItem, Product, Category } from '../../../types';
 import { dataService, DATA_CHANGE_EVENT } from '../../../services/dataService';
@@ -583,9 +582,10 @@ export const AdminBilling: React.FC = () => {
     if (bill && bill.id) {
       setSelectedBill(bill);
     }
+    setViewMode('preview');
     setTimeout(() => {
       window.print();
-    }, 50);
+    }, 100);
   };
 
   // Filter bills in history list
@@ -602,18 +602,8 @@ export const AdminBilling: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* =======================================================================
-          DEDICATED PRINT CONTAINER (Targeted exclusively by @media print)
-         ======================================================================= */}
-      {typeof document !== 'undefined' && createPortal(
-        <div id="printable-a4-document" className="hidden print:block">
-          <BillInvoiceTemplate bill={selectedBill || currentPreviewBill || bills[0]} />
-        </div>,
-        document.body
-      )}
-
       {/* Top Header / Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs print:hidden">
         <div>
           <div className="flex items-center gap-2">
             <span className="p-2 rounded-lg bg-[#082138] text-white">
@@ -1511,7 +1501,7 @@ export const AdminBilling: React.FC = () => {
          ========================================================================= */}
       {viewMode === 'preview' && selectedBill && (
         <div className="space-y-4">
-          <div className="bg-slate-200 p-6 rounded-2xl border border-slate-300 overflow-x-auto flex justify-center shadow-inner">
+          <div className="bg-slate-200 p-6 rounded-2xl border border-slate-300 overflow-x-auto flex justify-center shadow-inner print:bg-transparent print:p-0 print:m-0 print:border-none print:shadow-none print:rounded-none print:overflow-visible">
             <BillInvoiceTemplate
               bill={selectedBill}
               id="a4-invoice-render-preview"

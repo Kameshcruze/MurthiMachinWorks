@@ -86,10 +86,10 @@
 }
 
 /* ==========================================================================
-   PRINT OPTIMIZATION FOR TAX INVOICE / BILL / QUOTATION
-   - Completely isolates the document by hiding #root from print flow
-   - Eliminates all extra white sheets
-   - Guarantees strict A4 dimensions (210mm x 297mm) edge-to-edge
+   PRINT OPTIMIZATION FOR A4 QUOTATION & TAX INVOICE
+   - Bug 1 fix: neutralizes preview transform:scale(0.85), p-8, and overflow
+   - Bug 2 fix: strict 210mm x 297mm bounds, overflow: hidden on html/body,
+                and page-break-after: avoid
    ========================================================================== */
 @page {
   size: A4 portrait;
@@ -97,83 +97,154 @@
 }
 
 @media print {
-  /* 1. Remove entire React app shell (#root) so it takes 0px in print layout */
-  #root {
-    display: none !important;
-    height: 0 !important;
-    max-height: 0 !important;
-    overflow: hidden !important;
-  }
-
+  /* 1 & 2. Zero-margin html and body filling exactly 210mm x 297mm with overflow hidden */
   html, body {
     margin: 0 !important;
     padding: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    max-width: 210mm !important;
+    max-height: 297mm !important;
+    overflow: hidden !important;
     background: #ffffff !important;
     color: #000000 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    width: 210mm !important;
-    height: 100% !important;
+  }
+
+  /* 6. Hide everything that is NOT the quotation/invoice */
+  header,
+  nav,
+  aside,
+  footer,
+  button,
+  .no-print,
+  .print\:hidden,
+  [data-no-print="true"],
+  .toast,
+  [role="status"],
+  [aria-live] {
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* 4 & 7. Neutralize all parent wrappers so they don't cause offsets, gaps, or extra page height */
+  #root,
+  #root > div,
+  main,
+  .min-h-screen,
+  .h-screen,
+  .space-y-6,
+  .space-y-4 {
+    position: static !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    filter: none !important;
+    background: transparent !important;
+  }
+
+  /* Neutralize canvas preview wrappers: remove dark background, padding, and zoom scale transform */
+  .bg-slate-800\/90,
+  .bg-slate-200,
+  div[style*="transform"] {
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: 210mm !important;
     overflow: visible !important;
   }
 
-  *, *::before, *::after {
-    box-shadow: none !important;
-    text-shadow: none !important;
-  }
-
-  /* 2. Make portaled dedicated print container the ONLY printed element */
+  /* 3 & 5. Quotation container: exactly 210mm x 297mm, overflow hidden, no break */
+  .a4-page-sheet,
+  #a4-quotation-render-preview,
+  #a4-invoice-render-preview,
+  #a4-quotation-render,
+  #a4-invoice-render,
   #printable-a4-document {
     display: block !important;
-    position: relative !important;
-    left: 0 !important;
-    top: 0 !important;
     width: 210mm !important;
+    max-width: 210mm !important;
+    min-width: 210mm !important;
+    height: 297mm !important;
+    max-height: 297mm !important;
+    min-height: 297mm !important;
     margin: 0 !important;
-    padding: 0 !important;
-    background: #ffffff !important;
-    box-shadow: none !important;
-    border: none !important;
-    z-index: auto !important;
-  }
-
-  /* 3. Ensure each A4 sheet fills the paper edge-to-edge without overflowing into blank pages */
-  .a4-page-sheet {
-    display: block !important;
-    width: 210mm !important;
-    height: 296.5mm !important;
-    min-height: 296.5mm !important;
-    max-height: 296.5mm !important;
+    padding: 20px 24px 20px 24px !important;
     box-sizing: border-box !important;
-    margin: 0 !important;
-    padding: 10mm 12mm 10mm 12mm !important;
-    box-shadow: none !important;
-    border: none !important;
-    border-radius: 0 !important;
-    background: #ffffff !important;
     overflow: hidden !important;
     position: relative !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    transform: none !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    page-break-after: auto !important;
-    break-after: auto !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
   }
 
+  /* Multi-page handling: allow break only between sheets if multiple exist */
   .a4-page-sheet:not(:last-child) {
     page-break-after: always !important;
     break-after: page !important;
   }
 
-  /* Fallback selectors for any direct render IDs */
-  #a4-invoice-render,
-  #a4-quotation-render,
-  #a4-invoice-render-preview,
-  #a4-quotation-render-preview {
-    box-shadow: none !important;
-    margin: 0 auto !important;
+  .a4-page-sheet:last-child {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* 8. Exact color preservation for quotation and all child elements */
+  .a4-page-sheet,
+  .a4-page-sheet *,
+  .a4-page-sheet *::before,
+  .a4-page-sheet *::after {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 9. Corner decorative shapes stay absolute inside 210mm x 297mm container */
+  .a4-page-sheet > svg {
+    position: absolute !important;
+    pointer-events: none !important;
+    z-index: 0 !important;
+  }
+
+  /* 10. Table, items, and children max-width and box-sizing to prevent right column clipping */
+  .a4-page-sheet > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .a4-page-sheet table,
+  .a4-page-sheet [style*="border: 1.6px solid"],
+  .a4-page-sheet .flex-1 {
+    box-sizing: border-box !important;
   }
 }
