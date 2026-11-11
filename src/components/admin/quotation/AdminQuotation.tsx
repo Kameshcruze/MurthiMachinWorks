@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { toPng } from 'html-to-image';
 import { Quotation, QuotationItem, Product, Category } from '../../../types';
 import { dataService, DATA_CHANGE_EVENT } from '../../../services/dataService';
@@ -615,9 +616,12 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
       {/* =======================================================================
           DEDICATED PRINT CONTAINER (Targeted exclusively by @media print)
          ======================================================================= */}
-      <div id="printable-a4-document" className="hidden print:block">
-        <QuotationTemplate quotation={selectedQuotation || currentPreviewQuotation || quotations[0]} />
-      </div>
+      {typeof document !== 'undefined' && createPortal(
+        <div id="printable-a4-document" className="hidden print:block">
+          <QuotationTemplate quotation={selectedQuotation || currentPreviewQuotation || quotations[0]} />
+        </div>,
+        document.body
+      )}
 
       {/* =======================================================================
           VIEW: LIST OF ALL QUOTATIONS

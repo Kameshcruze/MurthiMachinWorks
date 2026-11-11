@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { toPng } from 'html-to-image';
 import { Bill, BillItem, Product, Category } from '../../../types';
 import { dataService, DATA_CHANGE_EVENT } from '../../../services/dataService';
@@ -604,9 +605,12 @@ export const AdminBilling: React.FC = () => {
       {/* =======================================================================
           DEDICATED PRINT CONTAINER (Targeted exclusively by @media print)
          ======================================================================= */}
-      <div id="printable-a4-document" className="hidden print:block">
-        <BillInvoiceTemplate bill={selectedBill || currentPreviewBill || bills[0]} />
-      </div>
+      {typeof document !== 'undefined' && createPortal(
+        <div id="printable-a4-document" className="hidden print:block">
+          <BillInvoiceTemplate bill={selectedBill || currentPreviewBill || bills[0]} />
+        </div>,
+        document.body
+      )}
 
       {/* Top Header / Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs">

@@ -177,7 +177,7 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
           </div>
         </div>
       </div>
-      <div className="text-right pr-3">
+      <div className="text-right pr-0">
         <span className="text-[13.5px] font-black text-[#082138] tracking-wider">
           GSTIN No: 33ALVPM1230G1Z8
         </span>
@@ -187,7 +187,7 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
 
   // No & Date Row
   const renderNoAndDateRow = () => (
-    <div className="flex items-center justify-between px-1 text-[11.5px] font-bold text-slate-900 mb-2">
+    <div className="flex items-center justify-between text-[11.5px] font-bold text-slate-900 mb-2">
       <div className="flex items-baseline gap-2 flex-1 max-w-[360px]">
         <span className="font-bold text-slate-950 shrink-0">No. :</span>
         <div className="border-b border-slate-700 flex-1 pb-0.5 font-bold font-mono text-[11.5px] text-slate-950 pl-2">
@@ -297,13 +297,112 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
     </div>
   );
 
+  // Totals & Tax Breakdown Box (Seamlessly unified into the table frame)
+  const renderTotalsAndTax = () => (
+    <div className="flex items-stretch border-t-2 border-[#082138] bg-white shrink-0">
+      <div
+        className="p-2.5 flex flex-col justify-center border-r border-slate-400 bg-white shrink-0"
+        style={{ width: '430px' }}
+      >
+        <div>
+          <span className="font-bold text-[#082138] text-[11.5px]">Rupees in Words :</span>
+          <div className="mt-1 font-semibold text-[10.5px] text-slate-900 leading-snug italic pr-2">
+            {quotation.rupees_in_words || '—'}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 text-[9.5px]">
+        {/* Row 1: Amount Before Tax */}
+        <div className="flex items-stretch border-b border-slate-300 h-[26px]">
+          <div className="w-[136px] shrink-0 px-2 flex items-center font-bold text-slate-800 border-r border-slate-300 text-[9px] leading-tight">
+            Quotation Amount Before Tax
+          </div>
+          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-bold text-slate-950 whitespace-nowrap min-w-0">
+            {subtotalParts.rs}
+          </div>
+          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
+            {subtotalParts.ps}
+          </div>
+        </div>
+        {/* Row 2: CGST */}
+        <div className="flex items-stretch border-b border-slate-300 h-[24px] text-slate-800">
+          <div className="w-[136px] shrink-0 px-2 flex items-center justify-between border-r border-slate-300">
+            <span className="font-semibold">CGST</span>
+            <div className="flex items-center gap-1 text-[8.5px]">
+              <span className="text-slate-500">@</span>
+              <span className="font-bold">{quotation.cgst_rate || 9}%</span>
+            </div>
+          </div>
+          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
+            {hasTax && isIntraState ? cgstParts.rs : '0'}
+          </div>
+          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
+            {hasTax && isIntraState ? cgstParts.ps : '00'}
+          </div>
+        </div>
+        {/* Row 3: SGST */}
+        <div className="flex items-stretch border-b border-slate-300 h-[24px] text-slate-800">
+          <div className="w-[136px] shrink-0 px-2 flex items-center justify-between border-r border-slate-300">
+            <span className="font-semibold">SGST</span>
+            <div className="flex items-center gap-1 text-[8.5px]">
+              <span className="text-slate-500">@</span>
+              <span className="font-bold">{quotation.sgst_rate || 9}%</span>
+            </div>
+          </div>
+          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
+            {hasTax && isIntraState ? sgstParts.rs : '0'}
+          </div>
+          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
+            {hasTax && isIntraState ? sgstParts.ps : '00'}
+          </div>
+        </div>
+        {/* Row 4: IGST */}
+        <div className="flex items-stretch border-b border-slate-300 h-[24px] text-slate-800">
+          <div className="w-[136px] shrink-0 px-2 flex items-center justify-between border-r border-slate-300">
+            <span className="font-semibold">IGST</span>
+            <div className="flex items-center gap-1 text-[8.5px]">
+              <span className="text-slate-500">@</span>
+              <span className="font-bold">{quotation.igst_rate || 18}%</span>
+            </div>
+          </div>
+          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
+            {hasTax && isInterState ? igstParts.rs : '0'}
+          </div>
+          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
+            {hasTax && isInterState ? igstParts.ps : '00'}
+          </div>
+        </div>
+        {/* Row 5: Total */}
+        <div
+          className="flex items-stretch h-[28px]"
+          style={{ backgroundColor: '#CCE4F7', borderTop: '1.4px solid #082138' }}
+        >
+          <div className="w-[136px] shrink-0 px-2 flex items-center font-black text-[#082138] text-[10.5px] leading-tight border-r border-[#082138]">
+            Quotation Total Amount
+          </div>
+          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-black text-[12px] text-[#082138] whitespace-nowrap min-w-0">
+            <span className="inline-flex items-center gap-1 whitespace-nowrap">
+              <span>₹</span>
+              <span>{totalParts.rs}</span>
+            </span>
+          </div>
+          <div className="w-[42px] shrink-0 border-l border-[#082138] flex items-center justify-center font-mono text-[9px] font-bold text-[#082138]">
+            {totalParts.ps}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   // Machinery Table Rows
   const renderTable = (
     itemsList: QuotationItem[],
     startIdx: number,
     minHeightPx: number = 200,
     showContinuationNotice: boolean = false,
-    nextPageNum?: number
+    nextPageNum?: number,
+    isLastPage: boolean = true
   ) => {
     return (
       <div className="overflow-hidden bg-white mb-2 flex-1 flex flex-col" style={{ border: '1.6px solid #082138' }}>
@@ -411,111 +510,12 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
             <span className="text-cyan-300 text-[10.5px] font-mono">This Sheet Items: {itemsList.length}</span>
           </div>
         )}
+
+        {/* Totals & Tax Breakdown Box (Seamlessly unified into the table frame on final sheet) */}
+        {isLastPage && renderTotalsAndTax()}
       </div>
     );
   };
-
-  // Totals & Tax Breakdown Box
-  const renderTotalsAndTax = () => (
-    <div className="flex items-stretch border-t border-slate-400 bg-white">
-      <div
-        className="p-2.5 flex flex-col justify-between border-r border-slate-400 bg-white shrink-0"
-        style={{ width: '430px' }}
-      >
-        <div>
-          <span className="font-bold text-[#082138] text-[11.5px]">Rupees in Words :</span>
-          <div className="mt-1 font-semibold text-[10.5px] text-slate-900 leading-snug italic pr-2">
-            {quotation.rupees_in_words || '—'}
-          </div>
-        </div>
-        <div className="space-y-2.5 pt-2">
-          <div className="w-full border-b border-slate-300" />
-          <div className="w-full border-b border-slate-300" />
-        </div>
-      </div>
-
-      <div className="flex-1 text-[9.5px]">
-        {/* Row 1: Amount Before Tax */}
-        <div className="flex items-stretch border-b border-slate-300 h-[26px]">
-          <div className="w-[136px] shrink-0 px-2 flex items-center font-bold text-slate-800 border-r border-slate-300 text-[9px] leading-tight">
-            Quotation Amount Before Tax
-          </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-bold text-slate-950 whitespace-nowrap min-w-0">
-            {subtotalParts.rs}
-          </div>
-          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
-            {subtotalParts.ps}
-          </div>
-        </div>
-        {/* Row 2: CGST */}
-        <div className="flex items-stretch border-b border-slate-300 h-[24px] text-slate-800">
-          <div className="w-[136px] shrink-0 px-2 flex items-center justify-between border-r border-slate-300">
-            <span className="font-semibold">CGST</span>
-            <div className="flex items-center gap-1 text-[8.5px]">
-              <span className="text-slate-500">@</span>
-              <span className="font-bold">{quotation.cgst_rate || 9}%</span>
-            </div>
-          </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
-            {hasTax && isIntraState ? cgstParts.rs : '0'}
-          </div>
-          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
-            {hasTax && isIntraState ? cgstParts.ps : '00'}
-          </div>
-        </div>
-        {/* Row 3: SGST */}
-        <div className="flex items-stretch border-b border-slate-300 h-[24px] text-slate-800">
-          <div className="w-[136px] shrink-0 px-2 flex items-center justify-between border-r border-slate-300">
-            <span className="font-semibold">SGST</span>
-            <div className="flex items-center gap-1 text-[8.5px]">
-              <span className="text-slate-500">@</span>
-              <span className="font-bold">{quotation.sgst_rate || 9}%</span>
-            </div>
-          </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
-            {hasTax && isIntraState ? sgstParts.rs : '0'}
-          </div>
-          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
-            {hasTax && isIntraState ? sgstParts.ps : '00'}
-          </div>
-        </div>
-        {/* Row 4: IGST */}
-        <div className="flex items-stretch border-b border-slate-300 h-[24px] text-slate-800">
-          <div className="w-[136px] shrink-0 px-2 flex items-center justify-between border-r border-slate-300">
-            <span className="font-semibold">IGST</span>
-            <div className="flex items-center gap-1 text-[8.5px]">
-              <span className="text-slate-500">@</span>
-              <span className="font-bold">{quotation.igst_rate || 18}%</span>
-            </div>
-          </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-medium text-slate-900 whitespace-nowrap min-w-0">
-            {hasTax && isInterState ? igstParts.rs : '0'}
-          </div>
-          <div className="w-[42px] shrink-0 border-l border-slate-300 flex items-center justify-center font-mono text-[8.5px] text-slate-600">
-            {hasTax && isInterState ? igstParts.ps : '00'}
-          </div>
-        </div>
-        {/* Row 5: Total */}
-        <div
-          className="flex items-stretch h-[28px]"
-          style={{ backgroundColor: '#CCE4F7', borderTop: '1.4px solid #082138' }}
-        >
-          <div className="w-[136px] shrink-0 px-2 flex items-center font-black text-[#082138] text-[10.5px] leading-tight border-r border-[#082138]">
-            Quotation Total Amount
-          </div>
-          <div className="flex-1 text-right pr-2 flex items-center justify-end font-mono font-black text-[12px] text-[#082138] whitespace-nowrap min-w-0">
-            <span className="inline-flex items-center gap-1 whitespace-nowrap">
-              <span>₹</span>
-              <span>{totalParts.rs}</span>
-            </span>
-          </div>
-          <div className="w-[42px] shrink-0 border-l border-[#082138] flex items-center justify-center font-mono text-[9px] font-bold text-[#082138]">
-            {totalParts.ps}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
   // Terms & Conditions Box
   const renderTermsDisclaimer = () => (
@@ -598,7 +598,7 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
     height: '1123px',
     minHeight: '1123px',
     maxHeight: '1123px',
-    padding: '20px 26px 20px 26px',
+    padding: '20px 24px 20px 24px',
     fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     backgroundColor: '#ffffff',
     boxSizing: 'border-box'
@@ -649,9 +649,8 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
             {renderCustomerBox()}
             {renderTermsGrid()}
           </div>
-          {renderTable(items, 0, 200, false)}
+          {renderTable(items, 0, 200, false, undefined, true)}
           <div>
-            {renderTotalsAndTax()}
             {renderTermsDisclaimer()}
             {renderBankAndSignatory()}
           </div>
@@ -689,12 +688,11 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
               </div>
 
               {/* Table with items for this page (expands to fill vertical space) */}
-              {renderTable(pageItems, startIdx, 200, !isLastPage, pageNumber + 1)}
+              {renderTable(pageItems, startIdx, 200, !isLastPage, pageNumber + 1, isLastPage)}
 
-              {/* Bottom content: Totals, Terms & Signature pinned at the LAST page bottom */}
+              {/* Bottom content: Terms & Signature pinned at the LAST page bottom */}
               {isLastPage ? (
                 <div>
-                  {renderTotalsAndTax()}
                   {renderTermsDisclaimer()}
                   {renderBankAndSignatory()}
                   <div className="pt-1.5 flex items-center justify-between text-[9px] text-slate-500 font-medium">
