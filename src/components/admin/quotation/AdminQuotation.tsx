@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toPng } from 'html-to-image';
+import { jsPDF } from 'jspdf';
 import { Quotation, QuotationItem, Product, Category } from '../../../types';
 import { dataService, DATA_CHANGE_EVENT } from '../../../services/dataService';
 import { useSettings } from '../../../context/SettingsContext';
@@ -7,6 +8,7 @@ import { formatPrice, numberToIndianWords, generateNextQuotationNo, formatDateIn
 import { QuotationTemplate } from './QuotationTemplate';
 import {
   FileText,
+  FileDown,
   Plus,
   Download,
   Printer,
@@ -49,6 +51,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [previewScale, setPreviewScale] = useState(0.82);
   const [showLivePreviewInForm, setShowLivePreviewInForm] = useState(true);
@@ -505,57 +508,156 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
         await handleSaveQuotationRecord(false, false);
       }
 
-      // Clone element into off-screen container without CSS transforms
-      const cloneContainer = document.createElement('div');
-      cloneContainer.style.position = 'fixed';
-      cloneContainer.style.left = '-9999px';
-      cloneContainer.style.top = '0px';
-      cloneContainer.style.width = '794px';
-      cloneContainer.style.height = '1123px';
-      cloneContainer.style.zIndex = '-9999';
-      cloneContainer.style.backgroundColor = '#ffffff';
-      cloneContainer.style.overflow = 'hidden';
-
-      const clone = qtnEl.cloneNode(true) as HTMLElement;
-      clone.style.transform = 'none';
-      clone.style.margin = '0';
-      clone.style.boxShadow = 'none';
-      clone.style.width = '794px';
-      clone.style.height = '1123px';
-      cloneContainer.appendChild(clone);
-      document.body.appendChild(cloneContainer);
-
-      await new Promise(r => setTimeout(r, 120));
-
-      const dataUrl = await toPng(clone, {
-        pixelRatio: 2,
-        backgroundColor: '#ffffff',
-        width: 794,
-        height: 1123,
-        cacheBust: true
-      });
-
-      if (document.body.contains(cloneContainer)) {
-        document.body.removeChild(cloneContainer);
-      }
+      const sheetElements = qtnEl.classList.contains('a4-page-sheet')
+        ? [qtnEl]
+        : Array.from(qtnEl.querySelectorAll<HTMLElement>('.a4-page-sheet'));
+      const sheets = sheetElements.length > 0 ? sheetElements : [qtnEl];
 
       const safeQtnNum = (targetQtn.quotation_number || 'Quotation').replace(/[\/\\]/g, '-');
       const safeCustomer = (targetQtn.customer_name || 'Customer').replace(/[^a-zA-Z0-9_-]/g, '_');
-      const fileName = `${safeQtnNum}_${safeCustomer}.png`;
 
-      const link = document.createElement('a');
-      link.download = fileName;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      for (let i = 0; i < sheets.length; i++) {
+        const sheet = sheets[i];
+        const cloneContainer = document.createElement('div');
+        cloneContainer.style.position = 'fixed';
+        cloneContainer.style.left = '-9999px';
+        cloneContainer.style.top = '0px';
+        cloneContainer.style.width = '794px';
+        cloneContainer.style.height = '1123px';
+        cloneContainer.style.zIndex = '-9999';
+        cloneContainer.style.backgroundColor = '#ffffff';
+        cloneContainer.style.overflow = 'hidden';
 
-      showToast('Quotation Image Saved', `Successfully exported ${fileName}`, 'success');
+        const clone = sheet.cloneNode(true) as HTMLElement;
+        clone.style.transform = 'none';
+        clone.style.margin = '0';
+        clone.style.boxShadow = 'none';
+        clone.style.width = '794px';
+        clone.style.height = '1123px';
+        cloneContainer.appendChild(clone);
+        document.body.appendChild(cloneContainer);
+
+        await new Promise(r => setTimeout(r, 120));
+
+        const dataUrl = await toPng(clone, {
+          pixelRatio: 2,
+          backgroundColor: '#ffffff',
+          width: 794,
+          height: 1123,
+          cacheBust: true
+        });
+
+        if (document.body.contains(cloneContainer)) {
+          document.body.removeChild(cloneContainer);
+        }
+
+        const fileName = sheets.length > 1
+          ? `${safeQtnNum}_${safeCustomer}_Sheet_${i + 1}.png`
+          : `${safeQtnNum}_${safeCustomer}.png`;
+
+        const link = document.createElement('a');
+        link.download = fileName;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      showToast('Quotation Image Saved', 'Successfully exported high-resolution quotation image', 'success');
     } catch (err: any) {
       console.error('Error generating A4 quotation image:', err);
       showToast('Generation Error', err.message || 'Could not export quotation image', 'error');
     } finally {
       setIsGeneratingImage(false);
+    }
+  };
+
+  // Download Exact A4-sized PDF format using jsPDF + html-to-image
+  const handleDownloadA4Pdf = async (qtnToDownload?: Quotation) => {
+    const targetQtn = qtnToDownload || selectedQuotation || currentPreviewQuotation;
+    const elementId = viewMode === 'preview' ? 'a4-quotation-render-preview' : 'a4-quotation-render-live';
+    const qtnEl = document.getElementById(elementId) || document.getElementById('a4-quotation-render');
+
+    if (!qtnEl) {
+      showToast('Notice', 'Unable to capture quotation layout. Please try again.', 'error');
+      return;
+    }
+
+    try {
+      setIsGeneratingPdf(true);
+      showToast('Generating PDF', 'Compiling A4 PDF document...', 'info');
+
+      // Auto-save in background only if editing or creating in form
+      if (viewMode === 'edit' || viewMode === 'create') {
+        await handleSaveQuotationRecord(false, false);
+      }
+
+      const sheetElements = qtnEl.classList.contains('a4-page-sheet')
+        ? [qtnEl]
+        : Array.from(qtnEl.querySelectorAll<HTMLElement>('.a4-page-sheet'));
+      const sheets = sheetElements.length > 0 ? sheetElements : [qtnEl];
+
+      // Standard A4 portrait: 210mm x 297mm
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+      });
+
+      for (let i = 0; i < sheets.length; i++) {
+        const sheet = sheets[i];
+        const cloneContainer = document.createElement('div');
+        cloneContainer.style.position = 'fixed';
+        cloneContainer.style.left = '-9999px';
+        cloneContainer.style.top = '0px';
+        cloneContainer.style.width = '794px';
+        cloneContainer.style.height = '1123px';
+        cloneContainer.style.zIndex = '-9999';
+        cloneContainer.style.backgroundColor = '#ffffff';
+        cloneContainer.style.overflow = 'hidden';
+
+        const clone = sheet.cloneNode(true) as HTMLElement;
+        clone.style.transform = 'none';
+        clone.style.margin = '0';
+        clone.style.boxShadow = 'none';
+        clone.style.width = '794px';
+        clone.style.height = '1123px';
+        cloneContainer.appendChild(clone);
+        document.body.appendChild(cloneContainer);
+
+        await new Promise(r => setTimeout(r, 120));
+
+        const dataUrl = await toPng(clone, {
+          pixelRatio: 2,
+          backgroundColor: '#ffffff',
+          width: 794,
+          height: 1123,
+          cacheBust: true
+        });
+
+        if (document.body.contains(cloneContainer)) {
+          document.body.removeChild(cloneContainer);
+        }
+
+        if (i > 0) {
+          pdf.addPage('a4', 'portrait');
+        }
+
+        pdf.addImage(dataUrl, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
+      }
+
+      const safeQtnNum = (targetQtn.quotation_number || 'Quotation').replace(/[\/\\]/g, '-');
+      const safeCustomer = (targetQtn.customer_name || 'Customer').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const fileName = `${safeQtnNum}_${safeCustomer}.pdf`;
+
+      pdf.save(fileName);
+      showToast('Quotation PDF Saved', `Successfully exported ${fileName}`, 'success');
+    } catch (err: any) {
+      console.error('Error generating A4 quotation PDF:', err);
+      showToast('PDF Error', err.message || 'Could not export quotation PDF', 'error');
+    } finally {
+      setIsGeneratingPdf(false);
     }
   };
 
@@ -815,6 +917,19 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
 
                             <button
                               type="button"
+                              onClick={() => {
+                                setSelectedQuotation(qtn);
+                                setViewMode('preview');
+                                setTimeout(() => handleDownloadA4Pdf(qtn), 250);
+                              }}
+                              className="p-1.5 text-rose-600 hover:text-white hover:bg-rose-600 rounded-lg transition-colors"
+                              title="Download PDF format"
+                            >
+                              <FileDown className="w-4 h-4" />
+                            </button>
+
+                            <button
+                              type="button"
                               onClick={() => handleEditQuotation(qtn)}
                               className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                               title="Edit Quotation"
@@ -903,9 +1018,21 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                 disabled={isGeneratingImage}
                 onClick={() => handleDownloadA4Image()}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+                title="Download quotation as high-resolution image"
               >
                 <Download className="w-4 h-4" />
                 <span>{isGeneratingImage ? 'Rendering...' : 'Download Image'}</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={isGeneratingPdf}
+                onClick={() => handleDownloadA4Pdf()}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+                title="Download quotation in PDF format"
+              >
+                <FileDown className="w-4 h-4" />
+                <span>{isGeneratingPdf ? 'Generating PDF...' : 'Download PDF'}</span>
               </button>
 
               <button
@@ -1441,9 +1568,21 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                 disabled={isGeneratingImage}
                 onClick={() => handleDownloadA4Image(selectedQuotation)}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#082138] hover:bg-[#0b2f50] shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                title="Download quotation as high-resolution image"
               >
                 <Download className="w-4 h-4 text-cyan-300" />
                 <span>{isGeneratingImage ? 'Rendering...' : 'Download A4 Image'}</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={isGeneratingPdf}
+                onClick={() => handleDownloadA4Pdf(selectedQuotation)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                title="Download quotation in PDF format"
+              >
+                <FileDown className="w-4 h-4 text-rose-100" />
+                <span>{isGeneratingPdf ? 'Generating PDF...' : 'Download PDF'}</span>
               </button>
             </div>
           </div>

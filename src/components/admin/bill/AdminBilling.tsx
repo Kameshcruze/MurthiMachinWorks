@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toPng } from 'html-to-image';
+import { jsPDF } from 'jspdf';
 import { Bill, BillItem, Product, Category } from '../../../types';
 import { dataService, DATA_CHANGE_EVENT } from '../../../services/dataService';
 import { useSettings } from '../../../context/SettingsContext';
@@ -7,6 +8,7 @@ import { formatPrice, numberToIndianWords, generateNextInvoiceNo, formatDateIndi
 import { BillInvoiceTemplate } from './BillInvoiceTemplate';
 import {
   FileText,
+  FileDown,
   Plus,
   Download,
   Printer,
@@ -40,6 +42,7 @@ export const AdminBilling: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [previewScale, setPreviewScale] = useState(0.82);
 
@@ -501,7 +504,7 @@ export const AdminBilling: React.FC = () => {
     await handleSaveBillRecord(true, true);
   };
 
-  // Download Exact A4-sized Image using html2canvas with off-screen unscaled clone
+  // Download Exact A4-sized Image using html-to-image with off-screen unscaled clone
   const handleDownloadA4Image = async (billToDownload?: Bill) => {
     const targetBill = billToDownload || selectedBill || currentPreviewBill;
     const elementId = viewMode === 'preview' ? 'a4-invoice-render-preview' : 'a4-invoice-render-live';
@@ -521,59 +524,153 @@ export const AdminBilling: React.FC = () => {
         await handleSaveBillRecord(false, false);
       }
 
-      // 2. Clone invoice element into an off-screen container without CSS transforms
-      const cloneContainer = document.createElement('div');
-      cloneContainer.style.position = 'fixed';
-      cloneContainer.style.left = '-9999px';
-      cloneContainer.style.top = '0px';
-      cloneContainer.style.width = '794px';
-      cloneContainer.style.height = '1123px';
-      cloneContainer.style.zIndex = '-9999';
-      cloneContainer.style.backgroundColor = '#ffffff';
-      cloneContainer.style.overflow = 'hidden';
-
-      const clone = invoiceEl.cloneNode(true) as HTMLElement;
-      clone.style.transform = 'none';
-      clone.style.margin = '0';
-      clone.style.boxShadow = 'none';
-      clone.style.width = '794px';
-      clone.style.height = '1123px';
-      cloneContainer.appendChild(clone);
-      document.body.appendChild(cloneContainer);
-
-      // Short pause to ensure fonts and layout settle
-      await new Promise(r => setTimeout(r, 120));
-
-      // Render crisp image using browser-native SVG rasterization (fully supports oklch, CSS grids, SVGs)
-      const dataUrl = await toPng(clone, {
-        pixelRatio: 2,
-        backgroundColor: '#ffffff',
-        width: 794,
-        height: 1123,
-        cacheBust: true
-      });
-
-      // Cleanup offscreen clone
-      if (document.body.contains(cloneContainer)) {
-        document.body.removeChild(cloneContainer);
-      }
+      const sheetElements = invoiceEl.classList.contains('a4-page-sheet')
+        ? [invoiceEl]
+        : Array.from(invoiceEl.querySelectorAll<HTMLElement>('.a4-page-sheet'));
+      const sheets = sheetElements.length > 0 ? sheetElements : [invoiceEl];
 
       const cleanInvoiceNumber = (targetBill.invoice_number || 'MMW-INVOICE').replace(/[^a-zA-Z0-9_-]/g, '_');
-      const fileName = `Murthi_Machin_Works_Invoice_${cleanInvoiceNumber}.png`;
 
-      const downloadLink = document.createElement('a');
-      downloadLink.href = dataUrl;
-      downloadLink.download = fileName;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+      for (let i = 0; i < sheets.length; i++) {
+        const sheet = sheets[i];
+        const cloneContainer = document.createElement('div');
+        cloneContainer.style.position = 'fixed';
+        cloneContainer.style.left = '-9999px';
+        cloneContainer.style.top = '0px';
+        cloneContainer.style.width = '794px';
+        cloneContainer.style.height = '1123px';
+        cloneContainer.style.zIndex = '-9999';
+        cloneContainer.style.backgroundColor = '#ffffff';
+        cloneContainer.style.overflow = 'hidden';
 
-      showToast('Download Ready', `Saved A4 Invoice Image: ${fileName}`, 'success');
+        const clone = sheet.cloneNode(true) as HTMLElement;
+        clone.style.transform = 'none';
+        clone.style.margin = '0';
+        clone.style.boxShadow = 'none';
+        clone.style.width = '794px';
+        clone.style.height = '1123px';
+        cloneContainer.appendChild(clone);
+        document.body.appendChild(cloneContainer);
+
+        await new Promise(r => setTimeout(r, 120));
+
+        const dataUrl = await toPng(clone, {
+          pixelRatio: 2,
+          backgroundColor: '#ffffff',
+          width: 794,
+          height: 1123,
+          cacheBust: true
+        });
+
+        if (document.body.contains(cloneContainer)) {
+          document.body.removeChild(cloneContainer);
+        }
+
+        const fileName = sheets.length > 1
+          ? `Murthi_Machine_Works_Invoice_${cleanInvoiceNumber}_Sheet_${i + 1}.png`
+          : `Murthi_Machine_Works_Invoice_${cleanInvoiceNumber}.png`;
+
+        const downloadLink = document.createElement('a');
+        downloadLink.href = dataUrl;
+        downloadLink.download = fileName;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+      }
+
+      showToast('Download Ready', 'Saved A4 Invoice Image successfully', 'success');
     } catch (err: any) {
       console.error('Error rendering A4 image:', err);
       showToast('Export Error', 'Failed to generate A4 image. Please try again or use Print.', 'error');
     } finally {
       setIsGeneratingImage(false);
+    }
+  };
+
+  // Download Exact A4-sized PDF using jsPDF + html-to-image
+  const handleDownloadA4Pdf = async (billToDownload?: Bill) => {
+    const targetBill = billToDownload || selectedBill || currentPreviewBill;
+    const elementId = viewMode === 'preview' ? 'a4-invoice-render-preview' : 'a4-invoice-render-live';
+    const invoiceEl = document.getElementById(elementId) || document.getElementById('a4-invoice-render');
+
+    if (!invoiceEl) {
+      showToast('Notice', 'Unable to capture bill layout. Please try again.', 'error');
+      return;
+    }
+
+    try {
+      setIsGeneratingPdf(true);
+      showToast('Generating PDF', 'Compiling high-resolution A4 tax invoice PDF...', 'info');
+
+      if (viewMode === 'edit' || viewMode === 'create') {
+        await handleSaveBillRecord(false, false);
+      }
+
+      const sheetElements = invoiceEl.classList.contains('a4-page-sheet')
+        ? [invoiceEl]
+        : Array.from(invoiceEl.querySelectorAll<HTMLElement>('.a4-page-sheet'));
+      const sheets = sheetElements.length > 0 ? sheetElements : [invoiceEl];
+
+      // Standard A4 portrait in mm: 210 x 297
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+      });
+
+      for (let i = 0; i < sheets.length; i++) {
+        const sheet = sheets[i];
+        const cloneContainer = document.createElement('div');
+        cloneContainer.style.position = 'fixed';
+        cloneContainer.style.left = '-9999px';
+        cloneContainer.style.top = '0px';
+        cloneContainer.style.width = '794px';
+        cloneContainer.style.height = '1123px';
+        cloneContainer.style.zIndex = '-9999';
+        cloneContainer.style.backgroundColor = '#ffffff';
+        cloneContainer.style.overflow = 'hidden';
+
+        const clone = sheet.cloneNode(true) as HTMLElement;
+        clone.style.transform = 'none';
+        clone.style.margin = '0';
+        clone.style.boxShadow = 'none';
+        clone.style.width = '794px';
+        clone.style.height = '1123px';
+        cloneContainer.appendChild(clone);
+        document.body.appendChild(cloneContainer);
+
+        await new Promise(r => setTimeout(r, 120));
+
+        const dataUrl = await toPng(clone, {
+          pixelRatio: 2,
+          backgroundColor: '#ffffff',
+          width: 794,
+          height: 1123,
+          cacheBust: true
+        });
+
+        if (document.body.contains(cloneContainer)) {
+          document.body.removeChild(cloneContainer);
+        }
+
+        if (i > 0) {
+          pdf.addPage('a4', 'portrait');
+        }
+
+        pdf.addImage(dataUrl, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
+      }
+
+      const cleanInvoiceNumber = (targetBill.invoice_number || 'MMW-INVOICE').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const fileName = `Murthi_Machine_Works_Invoice_${cleanInvoiceNumber}.pdf`;
+
+      pdf.save(fileName);
+      showToast('Invoice PDF Ready', `Saved A4 Invoice PDF: ${fileName}`, 'success');
+    } catch (err: any) {
+      console.error('Error generating invoice PDF:', err);
+      showToast('PDF Error', 'Failed to generate PDF. Please try again or use Print.', 'error');
+    } finally {
+      setIsGeneratingPdf(false);
     }
   };
 
@@ -614,7 +711,7 @@ export const AdminBilling: React.FC = () => {
                 Bill Generator &amp; Tax Invoices
               </h2>
               <p className="text-xs text-slate-500">
-                Generate official Murthi Machin Works commercial bills &amp; download in A4-sized image
+                Generate official Murthi Machine Works commercial bills &amp; download in A4 PDF or image format
               </p>
             </div>
           </div>
@@ -651,9 +748,20 @@ export const AdminBilling: React.FC = () => {
                     onClick={() => handleDownloadA4Image(currentPreviewBill)}
                     disabled={isGeneratingImage}
                     className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
+                    title="Download bill as high-resolution image"
                   >
                     <Download className="w-4 h-4" />
                     <span>{isGeneratingImage ? 'Exporting...' : 'Download Image'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadA4Pdf(currentPreviewBill)}
+                    disabled={isGeneratingPdf}
+                    className="px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg shadow flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
+                    title="Download bill in PDF format"
+                  >
+                    <FileDown className="w-4 h-4" />
+                    <span>{isGeneratingPdf ? 'Generating PDF...' : 'Download PDF'}</span>
                   </button>
                 </>
               )}
@@ -685,9 +793,21 @@ export const AdminBilling: React.FC = () => {
                 onClick={() => handleDownloadA4Image(selectedBill)}
                 disabled={isGeneratingImage}
                 className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow flex items-center gap-2 transition disabled:opacity-50 cursor-pointer"
+                title="Download A4 Image"
               >
                 <Download className="w-4 h-4" />
                 <span>{isGeneratingImage ? 'Generating Image...' : 'Download A4 Image'}</span>
+              </button>
+              <button
+                id="btn-download-preview-pdf"
+                type="button"
+                onClick={() => handleDownloadA4Pdf(selectedBill)}
+                disabled={isGeneratingPdf}
+                className="px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg shadow flex items-center gap-2 transition disabled:opacity-50 cursor-pointer"
+                title="Download bill in PDF format"
+              >
+                <FileDown className="w-4 h-4" />
+                <span>{isGeneratingPdf ? 'Generating PDF...' : 'Download PDF'}</span>
               </button>
               <button
                 type="button"
@@ -848,6 +968,18 @@ export const AdminBilling: React.FC = () => {
                                 title="Download A4 Image"
                               >
                                 <Download className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedBill(bill);
+                                  setViewMode('preview');
+                                  setTimeout(() => handleDownloadA4Pdf(bill), 250);
+                                }}
+                                className="p-1.5 text-rose-600 hover:text-white hover:bg-rose-600 rounded-lg transition"
+                                title="Download PDF format"
+                              >
+                                <FileDown className="w-4 h-4" />
                               </button>
                               <button
                                 type="button"
@@ -1402,9 +1534,21 @@ export const AdminBilling: React.FC = () => {
                   onClick={() => handleDownloadA4Image(currentPreviewBill)}
                   disabled={isGeneratingImage}
                   className="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow flex items-center gap-2 transition disabled:opacity-50 cursor-pointer"
+                  title="Download A4 Image"
                 >
                   <Download className="w-4 h-4" />
                   <span>{isGeneratingImage ? 'Generating Image...' : 'Download A4 Image Now'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleDownloadA4Pdf(currentPreviewBill)}
+                  disabled={isGeneratingPdf}
+                  className="px-5 py-3 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow flex items-center gap-2 transition disabled:opacity-50 cursor-pointer"
+                  title="Download tax invoice in PDF format"
+                >
+                  <FileDown className="w-4 h-4" />
+                  <span>{isGeneratingPdf ? 'Generating PDF...' : 'Download PDF Now'}</span>
                 </button>
 
                 <button
@@ -1469,9 +1613,21 @@ export const AdminBilling: React.FC = () => {
                     onClick={() => handleDownloadA4Image(currentPreviewBill)}
                     disabled={isGeneratingImage}
                     className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold rounded-lg flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                    title="Download bill as high-resolution image"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Download Image</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadA4Pdf(currentPreviewBill)}
+                    disabled={isGeneratingPdf}
+                    className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-bold rounded-lg flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                    title="Download bill in PDF format"
+                  >
+                    <FileDown className="w-3.5 h-3.5" />
+                    <span>Download PDF</span>
                   </button>
                 </div>
               </div>
