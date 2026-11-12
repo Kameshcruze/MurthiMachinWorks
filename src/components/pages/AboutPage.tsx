@@ -64,7 +64,7 @@ export const AboutPage: React.FC = () => {
             <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900 tracking-tight">
               Murthi Machine Works – 35 Years of Machinery Experience
             </h2>
-            <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed">
+            <div className="space-y-3 text-xs sm:text-sm text-slate-600 leading-relaxed text-justify">
               <p>
                 Murthi Machine Works is a Coimbatore-based industrial machinery business with 35 years of experience in the machinery industry. We specialise in the buying and selling of new and used machinery, along with machine repair, breakdown service, installation, and commissioning.
               </p>
