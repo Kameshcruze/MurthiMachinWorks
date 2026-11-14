@@ -10,6 +10,7 @@ import { Footer } from './components/layout/Footer';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { ToastContainer } from './components/common/ToastContainer';
 import { WhatsAppFloatingButton } from './components/common/WhatsAppFloatingButton';
+import { PWAInstallButton } from './components/common/PWAInstallButton';
 import { EnquiryDrawer } from './components/cart/EnquiryDrawer';
 
 // Public Pages
@@ -141,6 +142,7 @@ export default function App() {
         <CartProvider>
           <NavigationProvider>
             <AppContent />
+            <PWAInstallButton />
           </NavigationProvider>
         </CartProvider>
       </AuthProvider>
