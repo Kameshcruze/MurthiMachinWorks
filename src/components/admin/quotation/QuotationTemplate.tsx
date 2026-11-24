@@ -76,9 +76,9 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
   const renderFullBrandHeader = () => (
     <div className="flex items-start justify-between mb-2">
       {/* Left: Industrial Cogwheel Logo + Brand Name */}
-      <div className="flex items-center gap-3.5">
+      <div className="flex items-center gap-3.5 shrink-0">
         <div className="w-[72px] h-[72px] shrink-0">
-          <svg viewBox="0 0 100 100" className="w-full h-full">
+          <svg width="72" height="72" viewBox="0 0 100 100" className="w-[72px] h-[72px] block">
             <g fill="#082138">
               {[...Array(12)].map((_, i) => (
                 <rect
@@ -110,15 +110,15 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
           </svg>
         </div>
         <div className="flex flex-col justify-center">
-          <h1 className="font-black text-[34px] tracking-tight text-[#082138] leading-none" style={{ fontWeight: 900 }}>
+          <h1 className="font-black text-[34px] tracking-tight text-[#082138] leading-none whitespace-nowrap" style={{ fontWeight: 900 }}>
             MURTHI
           </h1>
-          <h2 className="font-black text-[27px] tracking-tight text-[#008CD6] leading-none mt-1" style={{ fontWeight: 900 }}>
+          <h2 className="font-black text-[27px] tracking-tight text-[#008CD6] leading-none mt-1 whitespace-nowrap" style={{ fontWeight: 900 }}>
             MACHIN WORKS
           </h2>
           <div className="text-[8.5px] font-semibold text-slate-800 leading-[1.25] mt-1.5">
-            <p>Machinery Merchants for Industrial use, New, Old &amp;</p>
-            <p>Recondition Works, Textile &amp; Fabrications Works</p>
+            <p className="whitespace-nowrap">Machinery Merchants for Industrial use, New, Old &amp;</p>
+            <p className="whitespace-nowrap">Recondition Works, Textile &amp; Fabrications Works</p>
           </div>
         </div>
       </div>
@@ -556,13 +556,17 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
   // Common sheet styling (A4 standard: 794px x 1123px)
   const sheetStyle: React.CSSProperties = {
     width: '794px',
+    minWidth: '794px',
+    maxWidth: '794px',
     height: '1123px',
     minHeight: '1123px',
     maxHeight: '1123px',
     padding: '20px 24px 20px 24px',
     fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     backgroundColor: '#ffffff',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    WebkitTextSizeAdjust: '100%',
+    textSizeAdjust: '100%'
   };
 
   // Strict Fixed A4 Pagination for Quotations:

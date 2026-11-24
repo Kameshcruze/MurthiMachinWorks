@@ -3,19 +3,8 @@ import { useNavigation } from '../../context/NavigationContext';
 import { useSettings } from '../../context/SettingsContext';
 import {
   ChevronRight,
-  ShieldCheck,
   Award,
-  Factory,
-  Cog,
-  Wrench,
-  Users,
-  CheckCircle2,
-  MapPin,
-  Phone,
-  Mail,
-  ArrowRight,
-  Layers,
-  Sparkles
+  Factory
 } from 'lucide-react';
 
 export const AboutPage: React.FC = () => {
@@ -23,7 +12,7 @@ export const AboutPage: React.FC = () => {
   const { settings } = useSettings();
 
   return (
-    <div className="bg-slate-50 min-h-screen pb-20">
+    <div className="bg-slate-50 min-h-screen pb-14">
       {/* Header Banner */}
       <div className="bg-slate-900 text-white py-12 sm:py-16 px-4 sm:px-8 border-b border-slate-800 relative overflow-hidden">
         <div className="absolute inset-0 industrial-dark-grid opacity-40" />
@@ -53,7 +42,7 @@ export const AboutPage: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-12 space-y-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-10 sm:pt-12 space-y-10 sm:space-y-12">
         {/* Story Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-6 space-y-4">
@@ -129,68 +118,6 @@ export const AboutPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Quality Pillars */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-12 shadow-xs space-y-8">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <h3 className="font-heading font-extrabold text-2xl sm:text-3xl text-slate-900">
-              Our Core Engineering Principles
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600">
-              Every single machine bearing the Murthi emblem is built to rigorous mechanical specifications.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 bg-slate-50 rounded-xl border border-slate-200/80 space-y-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
-                <Layers className="w-5 h-5" />
-              </div>
-              <h4 className="font-heading font-bold text-base text-slate-900">Meehanite Grade 25 Castings</h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Strict metallurgical control with 2% Nickel-Chrome alloy composition, natural artificial seasoning, and induction flame-hardened bedways for lifetime rigidity.
-              </p>
-            </div>
-
-            <div className="p-6 bg-slate-50 rounded-xl border border-slate-200/80 space-y-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <h4 className="font-heading font-bold text-base text-slate-900">IS:1878 Grade-1 Testing Protocol</h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Total radial and axial run-out of main spindles kept within 0.005mm. Beds scraped to 20-25 contact spots per sq. inch for friction-free smooth carriage traverse.
-              </p>
-            </div>
-
-            <div className="p-6 bg-slate-50 rounded-xl border border-slate-200/80 space-y-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
-                <Wrench className="w-5 h-5" />
-              </div>
-              <h4 className="font-heading font-bold text-base text-slate-900">Lifetime Spares & Service Guarantee</h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                We maintain an extensive inventory of hardened gears, lead screws, apron assemblies, spindle bearings, and electrical components for immediate dispatch.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* CTA Footer in About */}
-        <div className="bg-slate-900 rounded-2xl p-8 sm:p-12 text-white flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-800">
-          <div className="space-y-2 text-center md:text-left">
-            <h3 className="font-heading font-bold text-2xl">Plan a Visit to Our Coimbatore Plant</h3>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
-              Inspect ongoing assembly, witness test cuts under live heavy loads, and consult with our technical designers.
-            </p>
-          </div>
-
-          <button
-            onClick={() => navigateTo('contact')}
-            className="px-6 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow transition shrink-0 flex items-center gap-2"
-          >
-            <span>Contact & Location Details</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
         </div>
       </div>
     </div>

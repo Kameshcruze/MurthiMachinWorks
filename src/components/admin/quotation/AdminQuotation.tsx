@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { toPng } from 'html-to-image';
+import { toPng, getFontEmbedCSS } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import { Quotation, QuotationItem, Product, Category } from '../../../types';
 import { dataService, DATA_CHANGE_EVENT } from '../../../services/dataService';
@@ -576,7 +576,11 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
   const handleDownloadA4Pdf = async (qtnToDownload?: Quotation) => {
     const targetQtn = qtnToDownload || selectedQuotation || currentPreviewQuotation;
     const elementId = viewMode === 'preview' ? 'a4-quotation-render-preview' : 'a4-quotation-render-live';
-    const qtnEl = document.getElementById(elementId) || document.getElementById('a4-quotation-render');
+    const qtnEl =
+      document.getElementById(elementId) ||
+      document.getElementById('a4-quotation-render-preview') ||
+      document.getElementById('a4-quotation-render-live') ||
+      document.getElementById('a4-quotation-render');
 
     if (!qtnEl) {
       showToast('Notice', 'Unable to capture quotation layout. Please try again.', 'error');
@@ -592,6 +596,11 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
         await handleSaveQuotationRecord(false, false);
       }
 
+      // Ensure web fonts (e.g., Space Grotesk for header brand title) are fully loaded before rasterizing
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
       const sheetElements = qtnEl.classList.contains('a4-page-sheet')
         ? [qtnEl]
         : Array.from(qtnEl.querySelectorAll<HTMLElement>('.a4-page-sheet'));
@@ -605,39 +614,108 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
         compress: true
       });
 
+      const isMobileOrWebKit =
+        /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+        (/AppleWebKit/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent));
+
+      let cachedFontEmbedCSS: string | undefined;
+
       for (let i = 0; i < sheets.length; i++) {
         const sheet = sheets[i];
+
+        // Isolate the 794x1123 render stage inside a 0x0 fixed viewport host at (0,0)
+        // so narrow mobile viewports cannot trigger text autosizing/font-boosting or horizontal overflow.
+        const cloneHost = document.createElement('div');
+        cloneHost.style.position = 'fixed';
+        cloneHost.style.left = '0px';
+        cloneHost.style.top = '0px';
+        cloneHost.style.width = '0px';
+        cloneHost.style.height = '0px';
+        cloneHost.style.overflow = 'hidden';
+        cloneHost.style.pointerEvents = 'none';
+        cloneHost.style.zIndex = '-9999';
+        cloneHost.style.setProperty('-webkit-text-size-adjust', '100%');
+        cloneHost.style.setProperty('text-size-adjust', '100%');
+
         const cloneContainer = document.createElement('div');
-        cloneContainer.style.position = 'fixed';
-        cloneContainer.style.left = '-9999px';
-        cloneContainer.style.top = '0px';
+        cloneContainer.style.position = 'relative';
         cloneContainer.style.width = '794px';
+        cloneContainer.style.minWidth = '794px';
+        cloneContainer.style.maxWidth = '794px';
         cloneContainer.style.height = '1123px';
-        cloneContainer.style.zIndex = '-9999';
+        cloneContainer.style.minHeight = '1123px';
+        cloneContainer.style.maxHeight = '1123px';
         cloneContainer.style.backgroundColor = '#ffffff';
         cloneContainer.style.overflow = 'hidden';
+        cloneContainer.style.boxSizing = 'border-box';
+        cloneContainer.style.setProperty('-webkit-text-size-adjust', '100%');
+        cloneContainer.style.setProperty('text-size-adjust', '100%');
 
         const clone = sheet.cloneNode(true) as HTMLElement;
         clone.style.transform = 'none';
         clone.style.margin = '0';
         clone.style.boxShadow = 'none';
         clone.style.width = '794px';
+        clone.style.minWidth = '794px';
+        clone.style.maxWidth = '794px';
         clone.style.height = '1123px';
+        clone.style.minHeight = '1123px';
+        clone.style.maxHeight = '1123px';
+        clone.style.setProperty('-webkit-text-size-adjust', '100%');
+        clone.style.setProperty('text-size-adjust', '100%');
+
         cloneContainer.appendChild(clone);
-        document.body.appendChild(cloneContainer);
+        cloneHost.appendChild(cloneContainer);
+        document.body.appendChild(cloneHost);
 
-        await new Promise(r => setTimeout(r, 120));
+        let dataUrl: string;
+        try {
+          // Wait for layout & paint flush before measuring computed styles
+          await new Promise<void>(resolve =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+          );
+          await new Promise(r => setTimeout(r, 80));
 
-        const dataUrl = await toPng(clone, {
-          pixelRatio: 2,
-          backgroundColor: '#ffffff',
-          width: 794,
-          height: 1123,
-          cacheBust: true
-        });
+          if (cachedFontEmbedCSS === undefined) {
+            try {
+              cachedFontEmbedCSS = await getFontEmbedCSS(clone, { cacheBust: true });
+            } catch {
+              cachedFontEmbedCSS = '';
+            }
+          }
 
-        if (document.body.contains(cloneContainer)) {
-          document.body.removeChild(cloneContainer);
+          const renderOptions = {
+            pixelRatio: 2,
+            backgroundColor: '#ffffff',
+            width: 794,
+            height: 1123,
+            canvasWidth: 794,
+            canvasHeight: 1123,
+            skipAutoScale: true,
+            cacheBust: true,
+            ...(cachedFontEmbedCSS ? { fontEmbedCSS: cachedFontEmbedCSS } : {}),
+            style: {
+              transform: 'none',
+              margin: '0',
+              width: '794px',
+              minWidth: '794px',
+              maxWidth: '794px',
+              height: '1123px',
+              minHeight: '1123px',
+              maxHeight: '1123px'
+            }
+          };
+
+          // Mobile/WebKit browsers may decode embedded <foreignObject> fonts/SVGs asynchronously on the first draw
+          if (isMobileOrWebKit && i === 0) {
+            await toPng(clone, renderOptions);
+          }
+
+          dataUrl = await toPng(clone, renderOptions);
+        } finally {
+          if (document.body.contains(cloneHost)) {
+            document.body.removeChild(cloneHost);
+          }
         }
 
         if (i > 0) {
