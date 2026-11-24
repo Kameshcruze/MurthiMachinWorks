@@ -73,6 +73,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
     {
       id: `qtn-item-${Date.now()}-1`,
       product_description: 'VISWAKALA POWER PRESS (10 TON CAPACITY)',
+      hsn_code: '',
       quantity: 1,
       rate: 120000,
       amount: 120000
@@ -80,11 +81,13 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
     {
       id: `qtn-item-${Date.now()}-2`,
       product_description: '3 PHASE 1 HP MOTOR, SWITCH AND BELT',
+      hsn_code: '',
       quantity: 1,
       rate: 9000,
       amount: 9000
     }
   ]);
+  const [hsnErrors, setHsnErrors] = useState<Record<string, boolean>>({});
 
   // Tax & Totals
   const [taxType, setTaxType] = useState<'intra_state' | 'inter_state' | 'none'>('intra_state');
@@ -151,11 +154,13 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
       {
         id: `qtn-item-${Date.now()}-1`,
         product_description: '',
+        hsn_code: '',
         quantity: 1,
         rate: 0,
         amount: 0
       }
     ]);
+    setHsnErrors({});
 
     setTaxType('intra_state');
     setCgstRate(9);
@@ -187,12 +192,14 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
             {
               id: `qtn-item-${Date.now()}-1`,
               product_description: '',
+              hsn_code: '',
               quantity: 1,
               rate: 0,
               amount: 0
             }
           ]
     );
+    setHsnErrors({});
 
     setTaxType(qtn.tax_type || 'intra_state');
     setCgstRate(qtn.cgst_rate !== undefined ? qtn.cgst_rate : 9);
@@ -248,6 +255,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
     setIgstRate(qtn.igst_rate);
     setRupeesInWords(qtn.rupees_in_words || '');
     setTerms([...(qtn.terms_and_conditions || [])]);
+    setHsnErrors({});
     setViewMode('create');
     showToast('Quotation Duplicated', `Created copy under ${nextQtn}`, 'info');
   };
@@ -277,7 +285,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
       {
         id: `qtn-item-${Date.now()}-${prev.length + 1}`,
         product_description: '',
-        hsn_code: '84581100',
+        hsn_code: '',
         serial_number: '',
         quantity: 1,
         rate: 0,
@@ -331,7 +339,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
       const target = {
         ...copy[index],
         product_description: `${prod.name.toUpperCase()}${prod.stock_status ? ` (${prod.stock_status.toUpperCase().replace('_', ' ')})` : ''}`,
-        hsn_code: '84581100',
+        hsn_code: copy[index].hsn_code ?? '',
         serial_number: prod.sku || '',
         rate: prod.price || 0,
         amount: (copy[index].quantity || 1) * (prod.price || 0)
@@ -407,15 +415,43 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
     showNotification = true,
     changeView = true
   ): Promise<Quotation | null> => {
+    // Validate mandatory HSN Code for all quotation items
+    const missingHsnMap: Record<string, boolean> = {};
+    let firstMissingHsnIdx = -1;
+    items.forEach((item, idx) => {
+      if (!item.hsn_code || item.hsn_code.trim().length === 0) {
+        missingHsnMap[item.id] = true;
+        if (firstMissingHsnIdx === -1) {
+          firstMissingHsnIdx = idx;
+        }
+      }
+    });
+
+    if (firstMissingHsnIdx !== -1) {
+      setHsnErrors(missingHsnMap);
+      showToast('HSN Code Mandatory', 'Please enter an HSN Code for all quotation items before saving.', 'error');
+      const targetInput = document.getElementById(`quotation-item-hsn-${firstMissingHsnIdx}`) as HTMLInputElement | null;
+      if (targetInput) {
+        targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetInput.focus();
+      }
+      return null;
+    }
+
+    setHsnErrors({});
+
     const validCustomerName = customerName.trim() || 'Messers. Client';
     const validQuotationNumber = quotationNumber.trim() || generateNextQuotationNo(quotations);
 
-    let validItems = items.filter(i => i.product_description && i.product_description.trim().length > 0);
+    let validItems = items
+      .filter(i => i.product_description && i.product_description.trim().length > 0)
+      .map(i => ({ ...i, hsn_code: i.hsn_code?.trim() || '' }));
     if (validItems.length === 0) {
       validItems = [
         {
           id: `qtn-item-${Date.now()}-1`,
           product_description: 'Industrial Machinery & Equipment',
+          hsn_code: items[0]?.hsn_code?.trim() || '',
           quantity: 1,
           rate: subtotal || 0,
           amount: subtotal || 0
@@ -505,7 +541,8 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
 
       // Auto-save in background only if editing or creating in form
       if (viewMode === 'edit' || viewMode === 'create') {
-        await handleSaveQuotationRecord(false, false);
+        const savedRecord = await handleSaveQuotationRecord(false, false);
+        if (!savedRecord) return;
       }
 
       const sheetElements = qtnEl.classList.contains('a4-page-sheet')
@@ -593,7 +630,8 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
 
       // Auto-save in background only if editing or creating in form
       if (viewMode === 'edit' || viewMode === 'create') {
-        await handleSaveQuotationRecord(false, false);
+        const savedRecord = await handleSaveQuotationRecord(false, false);
+        if (!savedRecord) return;
       }
 
       // Ensure web fonts (e.g., Space Grotesk for header brand title) are fully loaded before rasterizing
@@ -750,7 +788,7 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
           product_name: it.product_description,
           serial_number: '',
           category: 'Machinery',
-          hsn_code: '84621000',
+          hsn_code: it.hsn_code || '',
           quantity: it.quantity,
           rate: it.rate,
           amount: it.amount
@@ -1344,15 +1382,37 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                         <div>
                           <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                            HSN Code
+                            HSN Code <span className="text-rose-600">*</span>
                           </label>
                           <input
+                            id={`quotation-item-hsn-${idx}`}
                             type="text"
-                            value={item.hsn_code || '84581100'}
-                            onChange={e => handleItemChange(idx, 'hsn_code', e.target.value)}
-                            placeholder="84581100"
-                            className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:border-[#008CD6] outline-none font-mono"
+                            value={item.hsn_code ?? ''}
+                            onChange={e => {
+                              const val = e.target.value;
+                              handleItemChange(idx, 'hsn_code', val);
+                              if (hsnErrors[item.id] && val.trim().length > 0) {
+                                setHsnErrors(prev => {
+                                  const next = { ...prev };
+                                  delete next[item.id];
+                                  return next;
+                                });
+                              }
+                            }}
+                            placeholder="Enter HSN Code"
+                            autoComplete="off"
+                            required
+                            className={`w-full px-3 py-1.5 text-xs bg-white border rounded-lg outline-none font-mono ${
+                              hsnErrors[item.id]
+                                ? 'border-rose-500 ring-1 ring-rose-500/30 focus:border-rose-500'
+                                : 'border-slate-200 focus:border-[#008CD6]'
+                            }`}
                           />
+                          {hsnErrors[item.id] && (
+                            <p className="text-[10.5px] font-semibold text-rose-600 mt-1">
+                              HSN Code is mandatory
+                            </p>
+                          )}
                         </div>
 
                         <div>

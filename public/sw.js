@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'mmw-pwa-v1';
+const CACHE_VERSION = 'mmw-pwa-v2';
 const APP_SHELL_CACHE = `${CACHE_VERSION}-shell`;
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 
@@ -55,9 +55,21 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+function isViteDevRequest(url) {
+  return (
+    url.pathname.startsWith('/src/') ||
+    url.pathname.startsWith('/@vite/') ||
+    url.pathname.startsWith('/@react-refresh') ||
+    url.pathname.startsWith('/@fs/') ||
+    url.pathname.startsWith('/@id/') ||
+    url.pathname.startsWith('/node_modules/')
+  );
+}
+
 function isStaticAssetRequest(request, url) {
   if (url.origin !== self.location.origin) return false;
   if (url.pathname === '/sw.js') return false;
+  if (isViteDevRequest(url)) return false;
   return (
     url.pathname.startsWith('/assets/') ||
     url.pathname.startsWith('/icons/') ||
@@ -78,6 +90,9 @@ self.addEventListener('fetch', (event) => {
 
   // Never intercept third-party APIs or dynamic backend requests
   if (url.origin !== self.location.origin) return;
+
+  // Never cache Vite dev source/module requests
+  if (isViteDevRequest(url)) return;
 
   const isHtmlRequest =
     request.mode === 'navigate' ||

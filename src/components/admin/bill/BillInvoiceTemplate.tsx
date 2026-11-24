@@ -417,7 +417,7 @@ export const BillInvoiceTemplate: React.FC<BillInvoiceTemplateProps> = ({ bill, 
                   )}
                 </div>
                 <div className="w-[80px] shrink-0 border-r border-slate-300 flex items-center justify-center font-mono text-[12px] text-slate-800 font-semibold py-2.5 bg-white">
-                  {item.hsn_code || '84581100'}
+                  {item.hsn_code || ''}
                 </div>
                 <div className="w-[114px] shrink-0 border-r border-slate-300 pr-3 py-2.5 flex items-center justify-end font-mono font-bold text-slate-900 text-[13px] whitespace-nowrap bg-white">
                   {rateParts.rs}

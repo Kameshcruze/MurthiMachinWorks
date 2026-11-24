@@ -2351,7 +2351,7 @@ export const dataService = {
       product_name: String(it?.product_name || 'Industrial Machinery').trim(),
       serial_number: String(it?.serial_number || '').trim(),
       category: String(it?.category || 'Machinery').trim(),
-      hsn_code: String(it?.hsn_code || '84581100').trim(),
+      hsn_code: String(it?.hsn_code || '').trim(),
       quantity: Number(it?.quantity) > 0 ? Number(it?.quantity) : 1,
       rate: Number(it?.rate) >= 0 ? Number(it?.rate) : 0,
       amount: Number(it?.amount) >= 0 ? Number(it?.amount) : (Number(it?.quantity) || 1) * (Number(it?.rate) || 0)
@@ -2476,7 +2476,7 @@ export const dataService = {
       product_name: String(it?.product_name || 'Industrial Machinery').trim(),
       serial_number: String(it?.serial_number || '').trim(),
       category: String(it?.category || 'Machinery').trim(),
-      hsn_code: String(it?.hsn_code || '84581100').trim(),
+      hsn_code: String(it?.hsn_code || '').trim(),
       quantity: Number(it?.quantity) > 0 ? Number(it?.quantity) : 1,
       rate: Number(it?.rate) >= 0 ? Number(it?.rate) : 0,
       amount: Number(it?.amount) >= 0 ? Number(it?.amount) : (Number(it?.quantity) || 1) * (Number(it?.rate) || 0)

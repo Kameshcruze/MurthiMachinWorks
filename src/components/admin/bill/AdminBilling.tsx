@@ -73,12 +73,13 @@ export const AdminBilling: React.FC = () => {
       product_name: '',
       serial_number: '',
       category: '',
-      hsn_code: '84581100',
+      hsn_code: '',
       quantity: 1,
       rate: 0,
       amount: 0
     }
   ]);
+  const [hsnErrors, setHsnErrors] = useState<Record<string, boolean>>({});
 
   // Tax & Totals
   const [taxType, setTaxType] = useState<'intra_state' | 'inter_state'>('intra_state');
@@ -156,12 +157,13 @@ export const AdminBilling: React.FC = () => {
         product_name: '',
         serial_number: '',
         category: '',
-        hsn_code: '84581100',
+        hsn_code: '',
         quantity: 1,
         rate: 0,
         amount: 0
       }
     ]);
+    setHsnErrors({});
 
     setTaxType('intra_state');
     setCgstRate(9);
@@ -189,6 +191,7 @@ export const AdminBilling: React.FC = () => {
     setVehicleNumber(bill.vehicle_number || '');
     setEwayBillNo(bill.eway_bill_no || '');
     setItems(bill.items && bill.items.length > 0 ? bill.items : []);
+    setHsnErrors({});
     setTaxType(bill.tax_type || 'intra_state');
     setCgstRate(bill.cgst_rate ?? 9);
     setSgstRate(bill.sgst_rate ?? 9);
@@ -230,6 +233,7 @@ export const AdminBilling: React.FC = () => {
         id: `item-${Date.now()}-${Math.random()}`
       }))
     );
+    setHsnErrors({});
     setTaxType(bill.tax_type);
     setCgstRate(bill.cgst_rate);
     setSgstRate(bill.sgst_rate);
@@ -267,7 +271,7 @@ export const AdminBilling: React.FC = () => {
         product_name: '',
         serial_number: '',
         category: '',
-        hsn_code: '84581100',
+        hsn_code: '',
         quantity: 1,
         rate: 0,
         amount: 0
@@ -319,13 +323,6 @@ export const AdminBilling: React.FC = () => {
     const cat = categories.find(c => c.id === prod.category_id);
     const catName = cat ? cat.name : 'Industrial Machinery';
 
-    // Guess HSN based on category or default
-    let defaultHsn = '84581100'; // Lathes
-    if (prod.name.toLowerCase().includes('milling')) defaultHsn = '84595100';
-    if (prod.name.toLowerCase().includes('shaping') || prod.name.toLowerCase().includes('slotting')) defaultHsn = '84612000';
-    if (prod.name.toLowerCase().includes('drilling')) defaultHsn = '84592900';
-    if (prod.name.toLowerCase().includes('power press')) defaultHsn = '84621000';
-
     setItems(prev => {
       const copy = [...prev];
       const target = {
@@ -333,7 +330,7 @@ export const AdminBilling: React.FC = () => {
         product_name: prod.name,
         serial_number: prod.sku || `MMW-${prod.id.slice(0, 6).toUpperCase()}`,
         category: catName,
-        hsn_code: defaultHsn,
+        hsn_code: copy[index].hsn_code ?? '',
         rate: prod.price || 0,
         amount: (copy[index].quantity || 1) * (prod.price || 0)
       };
@@ -408,10 +405,37 @@ export const AdminBilling: React.FC = () => {
 
   // Reusable robust save function
   const handleSaveBillRecord = async (showNotification = true, changeView = true): Promise<Bill | null> => {
+    // Validate mandatory HSN Code for all bill items
+    const missingHsnMap: Record<string, boolean> = {};
+    let firstMissingHsnIdx = -1;
+    (items || []).forEach((item, idx) => {
+      if (!item?.hsn_code || String(item.hsn_code).trim().length === 0) {
+        missingHsnMap[item.id] = true;
+        if (firstMissingHsnIdx === -1) {
+          firstMissingHsnIdx = idx;
+        }
+      }
+    });
+
+    if (firstMissingHsnIdx !== -1) {
+      setHsnErrors(missingHsnMap);
+      showToast('HSN Code Mandatory', 'Please enter an HSN Code for all bill items before saving.', 'error');
+      const targetInput = document.getElementById(`bill-item-hsn-${firstMissingHsnIdx}`) as HTMLInputElement | null;
+      if (targetInput) {
+        targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetInput.focus();
+      }
+      return null;
+    }
+
+    setHsnErrors({});
+
     const validCustomerName = (customerName || '').trim() || 'Messers. Buyer';
     const validInvoiceNumber = (invoiceNumber || '').trim() || generateNextInvoiceNo(bills);
 
-    let validItems = (items || []).filter(i => i && i.product_name && String(i.product_name).trim().length > 0);
+    let validItems = (items || [])
+      .filter(i => i && i.product_name && String(i.product_name).trim().length > 0)
+      .map(i => ({ ...i, hsn_code: String(i.hsn_code || '').trim() }));
     if (validItems.length === 0) {
       validItems = [
         {
@@ -419,7 +443,7 @@ export const AdminBilling: React.FC = () => {
           product_name: 'Industrial Machinery',
           serial_number: 'MMW-EQUIP',
           category: 'Machinery',
-          hsn_code: '84581100',
+          hsn_code: String(items[0]?.hsn_code || '').trim(),
           quantity: 1,
           rate: subtotal || 0,
           amount: subtotal || 0
@@ -521,7 +545,8 @@ export const AdminBilling: React.FC = () => {
 
       // 1. Auto-save bill in background ONLY if in edit or create mode
       if (viewMode === 'edit' || viewMode === 'create') {
-        await handleSaveBillRecord(false, false);
+        const savedRecord = await handleSaveBillRecord(false, false);
+        if (!savedRecord) return;
       }
 
       const sheetElements = invoiceEl.classList.contains('a4-page-sheet')
@@ -603,7 +628,8 @@ export const AdminBilling: React.FC = () => {
       showToast('Generating PDF', 'Compiling high-resolution A4 tax invoice PDF...', 'info');
 
       if (viewMode === 'edit' || viewMode === 'create') {
-        await handleSaveBillRecord(false, false);
+        const savedRecord = await handleSaveBillRecord(false, false);
+        if (!savedRecord) return;
       }
 
       const sheetElements = invoiceEl.classList.contains('a4-page-sheet')
@@ -1239,15 +1265,37 @@ export const AdminBilling: React.FC = () => {
                         {/* HSN Code */}
                         <div className="sm:col-span-3">
                           <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                            HSN Code
+                            HSN Code <span className="text-rose-500">*</span>
                           </label>
                           <input
+                            id={`bill-item-hsn-${index}`}
                             type="text"
-                            value={item.hsn_code || '84581100'}
-                            onChange={e => handleItemChange(index, 'hsn_code', e.target.value)}
-                            placeholder="84581100"
-                            className="w-full px-2.5 py-1.5 text-xs font-mono border border-slate-300 rounded-lg focus:ring-1 focus:ring-[#0088CC]"
+                            value={item.hsn_code ?? ''}
+                            onChange={e => {
+                              const val = e.target.value;
+                              handleItemChange(index, 'hsn_code', val);
+                              if (hsnErrors[item.id] && val.trim().length > 0) {
+                                setHsnErrors(prev => {
+                                  const next = { ...prev };
+                                  delete next[item.id];
+                                  return next;
+                                });
+                              }
+                            }}
+                            placeholder="Enter HSN Code"
+                            autoComplete="off"
+                            required
+                            className={`w-full px-2.5 py-1.5 text-xs font-mono border rounded-lg outline-none ${
+                              hsnErrors[item.id]
+                                ? 'border-rose-500 ring-1 ring-rose-500/30 focus:border-rose-500'
+                                : 'border-slate-300 focus:ring-1 focus:ring-[#0088CC]'
+                            }`}
                           />
+                          {hsnErrors[item.id] && (
+                            <p className="text-[10.5px] font-semibold text-rose-600 mt-1">
+                              HSN Code is mandatory
+                            </p>
+                          )}
                         </div>
 
                         {/* Qty */}
