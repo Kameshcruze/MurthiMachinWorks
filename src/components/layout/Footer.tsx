@@ -258,6 +258,18 @@ export const Footer: React.FC = () => {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <p>© {new Date().getFullYear()} Murthi Machine Works. All rights reserved.</p>
 
+          <p>
+            Developed by{' '}
+            <a
+              href="https://www.elitewebdevelopers.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-300 hover:text-[#F5A623] font-semibold transition"
+            >
+              Elite Web Developers
+            </a>
+          </p>
+
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigateTo('privacy')}
