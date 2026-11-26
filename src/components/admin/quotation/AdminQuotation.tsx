@@ -68,6 +68,16 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
   const [customerPhone, setCustomerPhone] = useState('');
   const [quotationStatus, setQuotationStatus] = useState<'draft' | 'sent' | 'accepted' | 'rejected' | 'converted'>('draft');
 
+  // Commercial Terms & Enquiry Reference Box Fields
+  const [enquiryRef, setEnquiryRef] = useState('Direct Enquiry');
+  const [enquiryDate, setEnquiryDate] = useState(new Date().toISOString().slice(0, 10));
+  const [quotationValidity, setQuotationValidity] = useState('15 Days from Date');
+  const [paymentTerms, setPaymentTerms] = useState('50% Advance & Balance on Dispatch');
+  const [deliveryTimeline, setDeliveryTimeline] = useState('Ready Stock / 7 to 10 Days');
+  const [priceBasis, setPriceBasis] = useState('Ex-Works Coimbatore');
+  const [taxesAndDuties, setTaxesAndDuties] = useState('GST 18% (CGST 9% + SGST 9%)');
+  const [packingAndFreight, setPackingAndFreight] = useState('Extra at actuals / To Pay Basis through customer carrier');
+
   // Items
   const [items, setItems] = useState<QuotationItem[]>([
     {
@@ -141,14 +151,24 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
   // Initialize new quotation form
   const handleOpenCreateNew = () => {
     const nextQtn = generateNextQuotationNo(quotations);
+    const today = new Date().toISOString().slice(0, 10);
     setSelectedQuotation(null);
     setQuotationNumber(nextQtn);
-    setQuotationDate(new Date().toISOString().slice(0, 10));
+    setQuotationDate(today);
     setCustomerName('');
     setCustomerAddress('');
     setCustomerGstin('');
     setCustomerPhone('');
     setQuotationStatus('draft');
+
+    setEnquiryRef('Direct Enquiry');
+    setEnquiryDate(today);
+    setQuotationValidity('15 Days from Date');
+    setPaymentTerms('50% Advance & Balance on Dispatch');
+    setDeliveryTimeline('Ready Stock / 7 to 10 Days');
+    setPriceBasis('Ex-Works Coimbatore');
+    setTaxesAndDuties('GST 18% (CGST 9% + SGST 9%)');
+    setPackingAndFreight('Extra at actuals / To Pay Basis through customer carrier');
 
     setItems([
       {
@@ -176,14 +196,32 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
 
   // Open existing quotation for editing
   const handleEditQuotation = (qtn: Quotation) => {
+    const loadedDate = qtn.quotation_date || new Date().toISOString().slice(0, 10);
+    const loadedTaxType = qtn.tax_type || 'intra_state';
+    const defaultTaxText =
+      loadedTaxType === 'none'
+        ? 'Zero Tax / As Applicable'
+        : loadedTaxType === 'inter_state'
+        ? 'GST 18% (IGST 18%)'
+        : 'GST 18% (CGST 9% + SGST 9%)';
+
     setSelectedQuotation(qtn);
     setQuotationNumber(qtn.quotation_number);
-    setQuotationDate(qtn.quotation_date || new Date().toISOString().slice(0, 10));
+    setQuotationDate(loadedDate);
     setCustomerName(qtn.customer_name);
     setCustomerAddress(qtn.customer_address || '');
     setCustomerGstin(qtn.customer_gstin || '');
     setCustomerPhone(qtn.customer_phone || '');
     setQuotationStatus(qtn.status || 'draft');
+
+    setEnquiryRef(qtn.enquiry_ref ?? qtn.notes ?? 'Direct Enquiry');
+    setEnquiryDate(qtn.enquiry_date ?? loadedDate);
+    setQuotationValidity(qtn.quotation_validity ?? '15 Days from Date');
+    setPaymentTerms(qtn.payment_terms ?? '50% Advance & Balance on Dispatch');
+    setDeliveryTimeline(qtn.delivery_timeline ?? 'Ready Stock / 7 to 10 Days');
+    setPriceBasis(qtn.price_basis ?? 'Ex-Works Coimbatore');
+    setTaxesAndDuties(qtn.taxes_and_duties ?? defaultTaxText);
+    setPackingAndFreight(qtn.packing_and_freight ?? 'Extra at actuals / To Pay Basis through customer carrier');
 
     setItems(
       qtn.items && qtn.items.length > 0
@@ -233,14 +271,32 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
   // Duplicate quotation
   const handleDuplicateQuotation = (qtn: Quotation) => {
     const nextQtn = generateNextQuotationNo(quotations);
+    const today = new Date().toISOString().slice(0, 10);
+    const dupTaxType = qtn.tax_type || 'intra_state';
+    const defaultTaxText =
+      dupTaxType === 'none'
+        ? 'Zero Tax / As Applicable'
+        : dupTaxType === 'inter_state'
+        ? 'GST 18% (IGST 18%)'
+        : 'GST 18% (CGST 9% + SGST 9%)';
+
     setSelectedQuotation(null);
     setQuotationNumber(nextQtn);
-    setQuotationDate(new Date().toISOString().slice(0, 10));
+    setQuotationDate(today);
     setCustomerName(qtn.customer_name);
     setCustomerAddress(qtn.customer_address || '');
     setCustomerGstin(qtn.customer_gstin || '');
     setCustomerPhone(qtn.customer_phone || '');
     setQuotationStatus('draft');
+
+    setEnquiryRef(qtn.enquiry_ref ?? qtn.notes ?? 'Direct Enquiry');
+    setEnquiryDate(today);
+    setQuotationValidity(qtn.quotation_validity ?? '15 Days from Date');
+    setPaymentTerms(qtn.payment_terms ?? '50% Advance & Balance on Dispatch');
+    setDeliveryTimeline(qtn.delivery_timeline ?? 'Ready Stock / 7 to 10 Days');
+    setPriceBasis(qtn.price_basis ?? 'Ex-Works Coimbatore');
+    setTaxesAndDuties(qtn.taxes_and_duties ?? defaultTaxText);
+    setPackingAndFreight(qtn.packing_and_freight ?? 'Extra at actuals / To Pay Basis through customer carrier');
 
     setItems(
       qtn.items.map(it => ({
@@ -389,6 +445,14 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
       'SF NO 12/13, New Street, Suriya Nagar,\nKamatchipuram, Ondipudur,\nCoimbatore - 641016',
     customer_gstin: customerGstin || '33ABVFS0964K1ZK',
     customer_phone: customerPhone,
+    enquiry_ref: enquiryRef,
+    enquiry_date: enquiryDate,
+    quotation_validity: quotationValidity,
+    payment_terms: paymentTerms,
+    delivery_timeline: deliveryTimeline,
+    price_basis: priceBasis,
+    taxes_and_duties: taxesAndDuties,
+    packing_and_freight: packingAndFreight,
     items,
     subtotal,
     tax_type: taxType,
@@ -467,6 +531,15 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
         customer_address: customerAddress.trim(),
         customer_gstin: customerGstin.trim() || undefined,
         customer_phone: customerPhone.trim() || undefined,
+        enquiry_ref: enquiryRef.trim(),
+        enquiry_date: enquiryDate || undefined,
+        quotation_validity: quotationValidity.trim(),
+        payment_terms: paymentTerms.trim(),
+        delivery_timeline: deliveryTimeline.trim(),
+        price_basis: priceBasis.trim(),
+        taxes_and_duties: taxesAndDuties.trim(),
+        packing_and_freight: packingAndFreight.trim(),
+        notes: enquiryRef.trim() || undefined,
         items: validItems,
         subtotal,
         tax_type: taxType,
@@ -1301,6 +1374,125 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                 </div>
               </div>
 
+              {/* Section 2B: Commercial Terms & Enquiry Reference */}
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                <div className="border-b border-slate-100 pb-3">
+                  <h3 className="text-sm font-bold text-[#082138] flex items-center gap-2">
+                    <Sliders className="w-4 h-4 text-[#008CD6]" />
+                    Commercial Terms &amp; Enquiry Reference
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Your Enquiry Ref
+                    </label>
+                    <input
+                      type="text"
+                      value={enquiryRef}
+                      onChange={e => setEnquiryRef(e.target.value)}
+                      placeholder="Direct Enquiry"
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Dated
+                    </label>
+                    <input
+                      type="date"
+                      value={enquiryDate}
+                      onChange={e => setEnquiryDate(e.target.value)}
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Quotation Validity
+                    </label>
+                    <input
+                      type="text"
+                      value={quotationValidity}
+                      onChange={e => setQuotationValidity(e.target.value)}
+                      placeholder="15 Days from Date"
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Payment Terms
+                    </label>
+                    <input
+                      type="text"
+                      value={paymentTerms}
+                      onChange={e => setPaymentTerms(e.target.value)}
+                      placeholder="50% Advance & Balance on Dispatch"
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Delivery Timeline
+                    </label>
+                    <input
+                      type="text"
+                      value={deliveryTimeline}
+                      onChange={e => setDeliveryTimeline(e.target.value)}
+                      placeholder="Ready Stock / 7 to 10 Days"
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Price Basis
+                    </label>
+                    <input
+                      type="text"
+                      value={priceBasis}
+                      onChange={e => setPriceBasis(e.target.value)}
+                      placeholder="Ex-Works Coimbatore"
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Taxes &amp; Duties
+                    </label>
+                    <input
+                      type="text"
+                      value={taxesAndDuties}
+                      onChange={e => setTaxesAndDuties(e.target.value)}
+                      placeholder="GST 18% (CGST 9% + SGST 9%)"
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Packing &amp; Freight
+                    </label>
+                    <input
+                      type="text"
+                      value={packingAndFreight}
+                      onChange={e => setPackingAndFreight(e.target.value)}
+                      placeholder="Extra at actuals / To Pay Basis through customer carrier"
+                      className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Section 3: Quotation Items (Machines) */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -1485,7 +1677,25 @@ export const AdminQuotation: React.FC<AdminQuotationProps> = ({ onNavigateToBill
                     </label>
                     <select
                       value={taxType}
-                      onChange={e => setTaxType(e.target.value as any)}
+                      onChange={e => {
+                        const nextTaxType = e.target.value as 'intra_state' | 'inter_state' | 'none';
+                        setTaxType(nextTaxType);
+                        const standardTaxTexts = [
+                          '',
+                          'GST 18% (CGST 9% + SGST 9%)',
+                          'GST 18% (IGST 18%)',
+                          'Zero Tax / As Applicable'
+                        ];
+                        if (standardTaxTexts.includes(taxesAndDuties.trim())) {
+                          setTaxesAndDuties(
+                            nextTaxType === 'none'
+                              ? 'Zero Tax / As Applicable'
+                              : nextTaxType === 'inter_state'
+                              ? 'GST 18% (IGST 18%)'
+                              : 'GST 18% (CGST 9% + SGST 9%)'
+                          );
+                        }
+                      }}
                       className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-[#008CD6] outline-none"
                     >
                       <option value="intra_state">Intra-State (CGST 9% + SGST 9%)</option>

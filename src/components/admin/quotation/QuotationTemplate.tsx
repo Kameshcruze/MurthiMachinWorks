@@ -236,66 +236,84 @@ export const QuotationTemplate: React.FC<QuotationTemplateProps> = ({
   );
 
   // Commercial Terms Grid Box
-  const renderTermsGrid = () => (
-    <div
-      className="rounded-lg p-2.5 text-[9.5px] mb-2"
-      style={{
-        border: '1.4px solid #9CCBF0',
-        backgroundColor: '#F4F9FD'
-      }}
-    >
-      <div className="grid grid-cols-12 gap-x-3.5 gap-y-2 items-center">
-        <div className="col-span-5 flex items-center gap-1.5">
-          <span className="font-bold text-[#082138] shrink-0">Your Enquiry Ref :</span>
-          <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-bold text-slate-900 font-mono text-[10px]">
-            {quotation.notes || 'Direct Enquiry'}
+  const renderTermsGrid = () => {
+    const enquiryRefDisplay = quotation.enquiry_ref ?? (quotation.notes || 'Direct Enquiry');
+    const enquiryDateDisplay =
+      quotation.enquiry_date !== undefined && quotation.enquiry_date !== null
+        ? (quotation.enquiry_date ? (formatDateIndian(quotation.enquiry_date) || quotation.enquiry_date) : '')
+        : formattedDate;
+    const quotationValidityDisplay = quotation.quotation_validity ?? '15 Days from Date';
+    const paymentTermsDisplay = quotation.payment_terms ?? '50% Advance & Balance on Dispatch';
+    const deliveryTimelineDisplay = quotation.delivery_timeline ?? 'Ready Stock / 7 to 10 Days';
+    const priceBasisDisplay = quotation.price_basis ?? 'Ex-Works Coimbatore';
+    const defaultTaxesAndDuties = hasTax
+      ? (isIntraState ? 'GST 18% (CGST 9% + SGST 9%)' : 'GST 18% (IGST 18%)')
+      : 'Zero Tax / As Applicable';
+    const taxesAndDutiesDisplay = quotation.taxes_and_duties ?? defaultTaxesAndDuties;
+    const packingAndFreightDisplay =
+      quotation.packing_and_freight ?? 'Extra at actuals / To Pay Basis through customer carrier';
+
+    return (
+      <div
+        className="rounded-lg p-2.5 text-[9.5px] mb-2"
+        style={{
+          border: '1.4px solid #9CCBF0',
+          backgroundColor: '#F4F9FD'
+        }}
+      >
+        <div className="grid grid-cols-12 gap-x-3.5 gap-y-2 items-center">
+          <div className="col-span-5 flex items-center gap-1.5">
+            <span className="font-bold text-[#082138] shrink-0">Your Enquiry Ref :</span>
+            <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-bold text-slate-900 font-mono text-[10px]">
+              {enquiryRefDisplay}
+            </div>
           </div>
-        </div>
-        <div className="col-span-3 flex items-center gap-1.5">
-          <span className="font-bold text-[#082138] shrink-0">Dated :</span>
-          <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-bold text-slate-900 font-mono text-[10px]">
-            {formattedDate}
+          <div className="col-span-3 flex items-center gap-1.5">
+            <span className="font-bold text-[#082138] shrink-0">Dated :</span>
+            <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-bold text-slate-900 font-mono text-[10px]">
+              {enquiryDateDisplay}
+            </div>
           </div>
-        </div>
-        <div className="col-span-4 flex items-center gap-1.5">
-          <span className="font-bold text-[#082138] shrink-0">Quotation Validity :</span>
-          <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-bold text-slate-900 text-[10px]">
-            15 Days from Date
+          <div className="col-span-4 flex items-center gap-1.5">
+            <span className="font-bold text-[#082138] shrink-0">Quotation Validity :</span>
+            <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-bold text-slate-900 text-[10px]">
+              {quotationValidityDisplay}
+            </div>
           </div>
-        </div>
-        <div className="col-span-5 flex items-center gap-1.5">
-          <span className="font-bold text-[#082138] shrink-0">Payment Terms :</span>
-          <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-medium text-slate-900 text-[9.5px]">
-            50% Advance &amp; Balance on Dispatch
+          <div className="col-span-5 flex items-center gap-1.5">
+            <span className="font-bold text-[#082138] shrink-0">Payment Terms :</span>
+            <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-medium text-slate-900 text-[9.5px]">
+              {paymentTermsDisplay}
+            </div>
           </div>
-        </div>
-        <div className="col-span-4 flex items-center gap-1.5">
-          <span className="font-bold text-[#082138] shrink-0">Delivery Timeline :</span>
-          <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-medium text-slate-900 text-[9.5px]">
-            Ready Stock / 7 to 10 Days
+          <div className="col-span-4 flex items-center gap-1.5">
+            <span className="font-bold text-[#082138] shrink-0">Delivery Timeline :</span>
+            <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-medium text-slate-900 text-[9.5px]">
+              {deliveryTimelineDisplay}
+            </div>
           </div>
-        </div>
-        <div className="col-span-3 flex items-center gap-1.5">
-          <span className="font-bold text-[#082138] shrink-0">Price Basis :</span>
-          <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-bold text-slate-900 text-[10px]">
-            Ex-Works Coimbatore
+          <div className="col-span-3 flex items-center gap-1.5">
+            <span className="font-bold text-[#082138] shrink-0">Price Basis :</span>
+            <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-bold text-slate-900 text-[10px]">
+              {priceBasisDisplay}
+            </div>
           </div>
-        </div>
-        <div className="col-span-5 flex items-center gap-1.5">
-          <span className="font-bold text-[#082138] shrink-0">Taxes &amp; Duties :</span>
-          <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-bold text-slate-900 text-[10px]">
-            {hasTax ? (isIntraState ? 'GST 18% (CGST 9% + SGST 9%)' : 'GST 18% (IGST 18%)') : 'Zero Tax / As Applicable'}
+          <div className="col-span-5 flex items-center gap-1.5">
+            <span className="font-bold text-[#082138] shrink-0">Taxes &amp; Duties :</span>
+            <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-bold text-slate-900 text-[10px]">
+              {taxesAndDutiesDisplay}
+            </div>
           </div>
-        </div>
-        <div className="col-span-7 flex items-center gap-1.5">
-          <span className="font-bold text-[#082138] shrink-0">Packing &amp; Freight :</span>
-          <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-bold text-slate-900 text-[10px]">
-            Extra at actuals / To Pay Basis through customer carrier
+          <div className="col-span-7 flex items-center gap-1.5">
+            <span className="font-bold text-[#082138] shrink-0">Packing &amp; Freight :</span>
+            <div className="border-b border-slate-400 flex-1 min-h-[15px] pl-1 font-bold text-slate-900 text-[10px]">
+              {packingAndFreightDisplay}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Totals & Tax Breakdown Box (Seamlessly unified into the table frame)
   const renderTotalsAndTax = () => (

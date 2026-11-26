@@ -552,6 +552,14 @@ CREATE TABLE IF NOT EXISTS public.quotations (
     customer_address TEXT,
     customer_gstin TEXT,
     customer_phone TEXT,
+    enquiry_ref TEXT DEFAULT 'Direct Enquiry',
+    enquiry_date DATE,
+    quotation_validity TEXT DEFAULT '15 Days from Date',
+    payment_terms TEXT DEFAULT '50% Advance & Balance on Dispatch',
+    delivery_timeline TEXT DEFAULT 'Ready Stock / 7 to 10 Days',
+    price_basis TEXT DEFAULT 'Ex-Works Coimbatore',
+    taxes_and_duties TEXT,
+    packing_and_freight TEXT DEFAULT 'Extra at actuals / To Pay Basis through customer carrier',
     items JSONB NOT NULL DEFAULT '[]'::jsonb,
     subtotal NUMERIC(12,2) NOT NULL DEFAULT 0,
     tax_type TEXT NOT NULL DEFAULT 'intra_state',
@@ -576,6 +584,17 @@ CREATE TABLE IF NOT EXISTS public.quotations (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Upgrade existing quotations table with editable commercial terms columns
+ALTER TABLE public.quotations
+ADD COLUMN IF NOT EXISTS enquiry_ref TEXT DEFAULT 'Direct Enquiry',
+ADD COLUMN IF NOT EXISTS enquiry_date DATE,
+ADD COLUMN IF NOT EXISTS quotation_validity TEXT DEFAULT '15 Days from Date',
+ADD COLUMN IF NOT EXISTS payment_terms TEXT DEFAULT '50% Advance & Balance on Dispatch',
+ADD COLUMN IF NOT EXISTS delivery_timeline TEXT DEFAULT 'Ready Stock / 7 to 10 Days',
+ADD COLUMN IF NOT EXISTS price_basis TEXT DEFAULT 'Ex-Works Coimbatore',
+ADD COLUMN IF NOT EXISTS taxes_and_duties TEXT,
+ADD COLUMN IF NOT EXISTS packing_and_freight TEXT DEFAULT 'Extra at actuals / To Pay Basis through customer carrier';
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.quotations ENABLE ROW LEVEL SECURITY;

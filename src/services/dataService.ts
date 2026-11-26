@@ -2642,12 +2642,15 @@ export const dataService = {
     const sanitizedItems: QuotationItem[] = rawItems.map((it: any, idx: number) => ({
       id: it?.id || `qtn-item-${Date.now()}-${idx}`,
       product_description: String(it?.product_description || 'Industrial Machinery & Equipment').trim(),
+      hsn_code: String(it?.hsn_code || '').trim(),
+      serial_number: String(it?.serial_number || '').trim(),
       quantity: Number(it?.quantity) > 0 ? Number(it?.quantity) : 1,
       rate: Number(it?.rate) >= 0 ? Number(it?.rate) : 0,
       amount: Number(it?.amount) >= 0 ? Number(it?.amount) : (Number(it?.quantity) || 1) * (Number(it?.rate) || 0)
     }));
 
     const quotationDate = sanitizeDate(qData.quotation_date) || nowIso.slice(0, 10);
+    const enquiryDateValue = qData.enquiry_date !== undefined ? sanitizeDate(qData.enquiry_date) : quotationDate;
     const defaultTerms = [
       'Payment 50% Advance and balance before delivery.',
       'Machine Packing, Loading and Freight charges will be extra.'
@@ -2661,6 +2664,14 @@ export const dataService = {
       customer_address: qData.customer_address?.trim() || '',
       customer_gstin: qData.customer_gstin?.trim() || null,
       customer_phone: qData.customer_phone?.trim() || null,
+      enquiry_ref: qData.enquiry_ref !== undefined ? qData.enquiry_ref.trim() : (qData.notes?.trim() || 'Direct Enquiry'),
+      enquiry_date: enquiryDateValue,
+      quotation_validity: qData.quotation_validity !== undefined ? qData.quotation_validity.trim() : '15 Days from Date',
+      payment_terms: qData.payment_terms !== undefined ? qData.payment_terms.trim() : '50% Advance & Balance on Dispatch',
+      delivery_timeline: qData.delivery_timeline !== undefined ? qData.delivery_timeline.trim() : 'Ready Stock / 7 to 10 Days',
+      price_basis: qData.price_basis !== undefined ? qData.price_basis.trim() : 'Ex-Works Coimbatore',
+      taxes_and_duties: qData.taxes_and_duties !== undefined ? qData.taxes_and_duties.trim() : null,
+      packing_and_freight: qData.packing_and_freight !== undefined ? qData.packing_and_freight.trim() : 'Extra at actuals / To Pay Basis through customer carrier',
       items: sanitizedItems,
       subtotal: Number(qData.subtotal) || 0,
       tax_type: qData.tax_type || 'intra_state',
@@ -2680,7 +2691,7 @@ export const dataService = {
       bank_account_no: qData.bank_account_no?.trim() || '44117451637',
       bank_ifsc: qData.bank_ifsc?.trim() || 'SBIN0021453',
       bank_branch: qData.bank_branch?.trim() || 'Avarampalayam',
-      notes: qData.notes?.trim() || null,
+      notes: qData.enquiry_ref?.trim() || qData.notes?.trim() || null,
       status: qData.status || 'draft',
       converted_bill_id: qData.converted_bill_id || null,
       created_by: currentUser.name || 'Murthi Admin',
@@ -2698,6 +2709,22 @@ export const dataService = {
           payload.quotation_number = nextQtn;
           const retry = await supabase.from('quotations').insert([payload]);
           error = retry.error;
+        }
+        if (error && (error.code === 'PGRST204' || error.code === '42703' || error.message?.includes('column'))) {
+          console.warn('Supabase quotations table missing new commercial term columns. Run the ALTER TABLE SQL migration. Saving base fields:', error.message);
+          const {
+            enquiry_ref: _er,
+            enquiry_date: _ed,
+            quotation_validity: _qv,
+            payment_terms: _pt,
+            delivery_timeline: _dt,
+            price_basis: _pb,
+            taxes_and_duties: _td,
+            packing_and_freight: _pf,
+            ...basePayload
+          } = payload;
+          const fallbackRetry = await supabase.from('quotations').insert([basePayload]);
+          error = fallbackRetry.error;
         }
         if (error) {
           console.warn('Supabase quotations insert warning (saved locally):', error.message);
@@ -2747,6 +2774,8 @@ export const dataService = {
     const sanitizedItems: QuotationItem[] = rawItems.map((it: any, idx: number) => ({
       id: it?.id || `qtn-item-${Date.now()}-${idx}`,
       product_description: String(it?.product_description || 'Industrial Machinery & Equipment').trim(),
+      hsn_code: String(it?.hsn_code || '').trim(),
+      serial_number: String(it?.serial_number || '').trim(),
       quantity: Number(it?.quantity) > 0 ? Number(it?.quantity) : 1,
       rate: Number(it?.rate) >= 0 ? Number(it?.rate) : 0,
       amount: Number(it?.amount) >= 0 ? Number(it?.amount) : (Number(it?.quantity) || 1) * (Number(it?.rate) || 0)
@@ -2759,6 +2788,14 @@ export const dataService = {
       customer_address: merged.customer_address?.trim() || '',
       customer_gstin: merged.customer_gstin?.trim() || null,
       customer_phone: merged.customer_phone?.trim() || null,
+      enquiry_ref: merged.enquiry_ref !== undefined ? merged.enquiry_ref.trim() : (existing.enquiry_ref ?? existing.notes ?? 'Direct Enquiry'),
+      enquiry_date: merged.enquiry_date !== undefined ? sanitizeDate(merged.enquiry_date) : (existing.enquiry_date ?? existing.quotation_date),
+      quotation_validity: merged.quotation_validity !== undefined ? merged.quotation_validity.trim() : (existing.quotation_validity ?? '15 Days from Date'),
+      payment_terms: merged.payment_terms !== undefined ? merged.payment_terms.trim() : (existing.payment_terms ?? '50% Advance & Balance on Dispatch'),
+      delivery_timeline: merged.delivery_timeline !== undefined ? merged.delivery_timeline.trim() : (existing.delivery_timeline ?? 'Ready Stock / 7 to 10 Days'),
+      price_basis: merged.price_basis !== undefined ? merged.price_basis.trim() : (existing.price_basis ?? 'Ex-Works Coimbatore'),
+      taxes_and_duties: merged.taxes_and_duties !== undefined ? merged.taxes_and_duties.trim() : (existing.taxes_and_duties ?? null),
+      packing_and_freight: merged.packing_and_freight !== undefined ? merged.packing_and_freight.trim() : (existing.packing_and_freight ?? 'Extra at actuals / To Pay Basis through customer carrier'),
       items: sanitizedItems,
       subtotal: Number(merged.subtotal) || 0,
       tax_type: merged.tax_type || 'intra_state',
@@ -2776,7 +2813,7 @@ export const dataService = {
       bank_account_no: merged.bank_account_no?.trim() || '44117451637',
       bank_ifsc: merged.bank_ifsc?.trim() || 'SBIN0021453',
       bank_branch: merged.bank_branch?.trim() || 'Avarampalayam',
-      notes: merged.notes?.trim() || null,
+      notes: merged.enquiry_ref?.trim() || merged.notes?.trim() || null,
       status: merged.status || existing.status || 'draft',
       converted_bill_id: merged.converted_bill_id || existing.converted_bill_id || null,
       updated_at: nowIso
@@ -2785,7 +2822,23 @@ export const dataService = {
     const supabase = getSupabaseClient();
     if (supabase && isSupabaseConfigured()) {
       try {
-        const { error } = await supabase.from('quotations').update(updatePayload).eq('id', id);
+        let { error } = await supabase.from('quotations').update(updatePayload).eq('id', id);
+        if (error && (error.code === 'PGRST204' || error.code === '42703' || error.message?.includes('column'))) {
+          console.warn('Supabase quotations table missing new commercial term columns. Run the ALTER TABLE SQL migration. Saving base fields:', error.message);
+          const {
+            enquiry_ref: _er,
+            enquiry_date: _ed,
+            quotation_validity: _qv,
+            payment_terms: _pt,
+            delivery_timeline: _dt,
+            price_basis: _pb,
+            taxes_and_duties: _td,
+            packing_and_freight: _pf,
+            ...baseUpdatePayload
+          } = updatePayload;
+          const fallbackRetry = await supabase.from('quotations').update(baseUpdatePayload).eq('id', id);
+          error = fallbackRetry.error;
+        }
         if (error) {
           console.warn('Supabase updateQuotation warning:', error.message);
         }

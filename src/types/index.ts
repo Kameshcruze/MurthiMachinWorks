@@ -279,6 +279,14 @@ export interface Quotation {
   customer_address: string;
   customer_gstin?: string;
   customer_phone?: string;
+  enquiry_ref?: string;
+  enquiry_date?: string;
+  quotation_validity?: string;
+  payment_terms?: string;
+  delivery_timeline?: string;
+  price_basis?: string;
+  taxes_and_duties?: string;
+  packing_and_freight?: string;
   items: QuotationItem[];
   subtotal: number;
   tax_type: 'intra_state' | 'inter_state' | 'none';
